@@ -1,327 +1,89 @@
 ---
-/** Ported from reference/shap-postal-round.html. Keep copy and section order in step with it. */
+/** Home page. Visual design ported from reference/shap-postal-round.html; content per docs/build-brief.md. */
 import Base from '../layouts/Base.astro';
-import ThemeToggle from '../components/ThemeToggle.astro';
-import SketchMap from '../components/SketchMap.astro';
-import { FACTS, LIMITS, STOPS } from '../lib/config.ts';
-import { todayInShap } from '../lib/rounds.ts';
-
-const today = todayInShap();
+import { FACTS, ROUNDS, SITE } from '../lib/config.ts';
 ---
 <Base
-  title="The Shap Postal Round"
-  description="Walk or run the last postal round in Shap, Cumbria: an 18 km loop from Birchwood Cafe through Swindale and Wet Sleddale, from Alan Cleaver's The Postal Paths."
+  description="Walk or run the old Shap postman's round: a heritage route through Swindale and Wet Sleddale on the eastern edge of the Lake District, starting and finishing at Birchwood Cafe."
 >
-  <header class="hero">
-    <div class="wrap hero-grid">
-      <div>
-        <div class="kicker">
-          <span class="slot" aria-hidden="true"></span>Shap, Cumbria
-          <span class="theme"><ThemeToggle /></span>
-        </div>
-        <h1>Shap Postal Path</h1>
-        <p class="strap">The loneliest postal path</p>
-        <p class="lede">
-          Until 1976 a postman walked the post out of Shap every morning: over the fields to Shap Abbey, up to isolated
-          Tailbert, down into Swindale and over the fell to Wet Sleddale. Now you can walk or run the round yourself.
-        </p>
-        <blockquote class="quote">
-          It broke my heart.
-          <cite>Stuart Lewis, the last postman to walk the round, on being given a van</cite>
-        </blockquote>
-        <div class="actions">
-          <a class="btn" href="#route">See the round</a>
-          <a class="btn red" href="#log">Log your round</a>
-        </div>
-      </div>
-      <dl class="facts" aria-label="Route at a glance">
-        {
-          FACTS.map(([k, v]) => (
-            <>
-              <dt>{k}</dt>
-              <dd>{v}</dd>
-            </>
-          ))
-        }
-      </dl>
-    </div>
-  </header>
-
   <main id="main">
-    <section id="book">
+    <div class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="kicker"><span class="slot" aria-hidden="true"></span>Shap, Cumbria</div>
+          <h1>{SITE.name}</h1>
+          <p class="strap">{SITE.strapline}</p>
+          <p class="lede">
+            Until 1976 a postman walked the post out of Shap every morning: over the fields to Shap Abbey, up to isolated
+            Tailbert, down into Swindale and over the fell to Wet Sleddale. Now you can walk or run the round yourself.
+          </p>
+          <p>{SITE.placement}</p>
+          <blockquote class="quote">
+            It broke my heart.
+            <cite>Stuart Lewis, the last postman to walk the round, on being given a van</cite>
+          </blockquote>
+          <div class="actions">
+            <a class="btn" href="/route/">The route</a>
+            <a class="btn red" href="/log/">Log your round</a>
+          </div>
+        </div>
+        <dl class="facts" aria-label="Route at a glance">
+          {
+            FACTS.map(([k, v]) => (
+              <>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </>
+            ))
+          }
+        </dl>
+      </div>
+    </div>
+
+    <section aria-labelledby="why-h">
       <div class="wrap book">
         <div class="book-card">
-          <strong>The Postal Paths</strong>
-          Rediscovering Britain’s forgotten trails and the people who walked them
-          <div class="author">Alan Cleaver</div>
-          <div>Monoray, 2025</div>
+          <strong>Why Birchwood Cafe?</strong>
+          The café is run by the family who ran Shap’s post office and sorting office for generations. The post always
+          began here, so the round does too.
         </div>
         <div class="measure">
-          <h2>Where the story comes from</h2>
+          <h2 id="why-h">Two rounds, one start</h2>
           <p>
-            Whitehaven author Alan Cleaver spent five years tracing the routes rural postmen and women walked, from the
-            penny post of the 1840s until vans replaced them in the late 1960s and 1970s. His book follows those paths
-            from the Outer Hebrides to the Cornish coast, and gathers the stories of the posties who walked them.
+            <strong>{ROUNDS.long.name}</strong> is about {ROUNDS.long.miles} miles, the full round as the postie walked
+            it. <strong>{ROUNDS.short.name}</strong> is about {ROUNDS.short.miles} miles, leaving out the summer-only
+            cottages.
           </p>
           <p>
-            These were long days. Rounds of 10 to 20 miles were common, walked six days a week in every weather, often by
-            the same person for most of their working life. Where the road took too long, postmen made their own
-            shortcuts. Many are still marked on maps as postman’s paths.
+            It isn’t a race. Walk it or run it, in one go or in stages. If you’d like to, add your name to the round book
+            when you’re back.
           </p>
-          <p>
-            Shap is one of the Cumbrian rounds in the book. Stuart Lewis walked its 15 miles until 1976, carrying a
-            leather pouch to sell stamps and postal orders at the farms. Before him, in the 1950s, the round belonged to
-            Jimmy Eland.
-          </p>
+          <p><a href="/story/">Read the story of the round</a></p>
         </div>
       </div>
     </section>
 
-    <section id="route">
+    <section aria-labelledby="plan-h">
       <div class="wrap">
-        <h2>The round</h2>
-        <p class="measure">
-          A circular route out of Shap and back, following Alan Cleaver’s mapping of the round. Start and finish at
-          Birchwood Cafe, run by the family of one of the last postmen to walk it.
-        </p>
-        <div class="route">
-          <SketchMap />
-          <div>
-            <ol class="stops">
-              {
-                STOPS.map((s) => (
-                  <li>
-                    <h3>{s.name}</h3>
-                    <p set:html={s.html} />
-                  </li>
-                ))
-              }
-            </ol>
-            <div class="safety">
-              <strong>Before you go.</strong> This is a long, rough day with pathless, boggy sections. Mountain Rescue
-              advise carrying a map and compass, and knowing how to use them, even if you have GPS. Check the forecast,
-              tell someone your plan, and close every gate behind you.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="log">
-      <div class="wrap log">
-        <div class="measure">
-          <h2>Log your round</h2>
-          <p>
-            Walked it or ran it? Add yourself to the round book. Upload the GPX file from your watch or phone and we check
-            it starts and finishes in Shap and covers the whole loop.
-          </p>
-          <p>
-            No GPX? Add a link to your Strava, Garmin or Komoot activity instead, or a photo from the Thorney Bank
-            postbox. The Birchwood team checks entries without a GPX by hand.
-          </p>
-          <p class="hint">
-            Your name, date and time appear on the public leaderboard. Your GPX file and photo are used to check your
-            round and are not shown to others.
-          </p>
-        </div>
-
-        <form id="f" novalidate>
-          <div class="field">
-            <label for="name">Your name</label>
-            <input id="name" name="name" type="text" maxlength={LIMITS.nameMax} autocomplete="name" required />
-          </div>
-          <div class="field">
-            <span class="label" id="modelbl">How did you do it?</span>
-            <div class="seg" role="radiogroup" aria-labelledby="modelbl">
-              <label><input type="radio" name="mode" value="walk" checked /><span>Walked</span></label>
-              <label><input type="radio" name="mode" value="run" /><span>Ran</span></label>
-            </div>
-          </div>
-          <div class="field">
-            <label for="gpx">GPX file <span class="hint">(recommended)</span></label>
-            <div class="drop">
-              <input id="gpx" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" />
-              <div class="gpxresult" id="gpxres" aria-live="polite"></div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="field">
-              <label for="date">Date</label>
-              <input id="date" name="date" type="date" required max={today} min={LIMITS.earliestDate} />
-            </div>
-            <div class="field">
-              <span class="label" id="timelbl">Time taken</span>
-              <div class="time" role="group" aria-labelledby="timelbl">
-                <input id="hh" name="hours" type="text" inputmode="numeric" maxlength="2" placeholder="h" aria-label="Hours" />:
-                <input id="mm" name="minutes" type="text" inputmode="numeric" maxlength="2" placeholder="mm" aria-label="Minutes" />
-              </div>
-            </div>
-          </div>
-          <div class="field">
-            <label for="link">Activity link <span class="hint">(optional)</span></label>
-            <input id="link" name="link" type="url" maxlength={LIMITS.linkMax} placeholder="https://www.strava.com/activities/…" />
-          </div>
-          <div class="field">
-            <label for="photo">Photo evidence <span class="hint">(optional)</span></label>
-            <input id="photo" type="file" accept="image/jpeg,image/png,image/webp" />
-          </div>
-          <div class="field">
-            <label for="note">A line for the round book <span class="hint">(optional)</span></label>
-            <textarea id="note" name="note" rows="2" maxlength={LIMITS.noteMax} placeholder="Snow on Glede Howe, tea at Birchwood after"></textarea>
-          </div>
-          <div class="hp" aria-hidden="true">
-            <label for="website">Leave this empty</label>
-            <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
-          </div>
-          <button class="btn red" type="submit" id="submit">Add my round</button>
-          <div class="msg" id="msg" role="status" aria-live="polite"></div>
-        </form>
-      </div>
-    </section>
-
-    <section id="board">
-      <div class="wrap">
-        <h2>The round book</h2>
-        <div class="board-head">
-          <p style="margin:0" id="count">Everyone who has completed the Shap round, newest first.</p>
-          <div class="tabs" role="group" aria-label="Sort leaderboard">
-            <button type="button" data-view="date" aria-pressed="true">By date</button>
-            <button type="button" data-view="run" aria-pressed="false">Fastest runs</button>
-            <button type="button" data-view="walk" aria-pressed="false">Fastest walks</button>
-          </div>
-        </div>
-        <div class="tablewrap">
-          <table>
-            <thead>
-              <tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Date</th><th scope="col">Time</th><th scope="col">Evidence</th></tr>
-            </thead>
-            <tbody id="rows"></tbody>
-          </table>
-          <div class="empty" id="empty">Loading the round book…</div>
+        <h2 id="plan-h">Plan your round</h2>
+        <div class="cards">
+          <a class="card" href="/route/">
+            <h3>The route</h3>
+            <p>Both rounds, stop by stop, with GPX downloads and current notices.</p>
+            <p class="more">See the route →</p>
+          </a>
+          <a class="card" href="/safety/">
+            <h3>Safety &amp; respect</h3>
+            <p>Rough, pathless, unwaymarked fell. What to take, and how to look after the land.</p>
+            <p class="more">Before you go →</p>
+          </a>
+          <a class="card" href="/log/">
+            <h3>The round book</h3>
+            <p>Done it? Log your round with any free GPS app and see who else has.</p>
+            <p class="more">Log your round →</p>
+          </a>
         </div>
       </div>
     </section>
   </main>
-
-  <footer>
-    <div class="wrap cols">
-      <div>
-        <h3>Birchwood Cafe</h3>
-        <p>Birchwood House, Main Street, Shap CA10 3NJ<br />Tuesday to Saturday, 9am to 4pm<br />01931 749033</p>
-      </div>
-      <div>
-        <h3>Read and listen</h3>
-        <ul>
-          <li>Alan Cleaver, <em>The Postal Paths</em> (Monoray, 2025)</li>
-          <li>Alan Cleaver’s Hidden Cumbria route notes for the Shap postman’s path</li>
-          <li>Countrystride podcast #43, Shap and the Postman’s Path</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Walk responsibly</h3>
-        <p>
-          Much of the route crosses working farmland. Keep dogs on leads near stock, use gates and stiles, and leave no
-          trace.
-        </p>
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    import '../scripts/home.ts';
-  </script>
 </Base>
-
-<style is:global>
-  /* hero */
-  .hero { padding: 3.5rem 0 4rem; border-top: 0; position: relative; overflow: hidden; }
-  .hero-grid { display: grid; grid-template-columns: 1.25fr 1fr; gap: 2.5rem; align-items: end; }
-  .kicker { font-family: var(--sans); font-weight: 500; color: var(--ink-soft); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem; }
-  .kicker .theme { margin-left: auto; }
-  .slot { display: inline-block; width: 2.2rem; height: 0.55rem; background: var(--red); border-radius: 2px; }
-  .hero h1 { font-size: clamp(2.8rem, 8vw, 5.6rem); color: var(--fell); margin-bottom: 0.15em; }
-  .strap { font-style: italic; font-size: clamp(1.4rem, 3vw, 1.9rem); color: var(--red); margin-bottom: 1.2rem; }
-  .hero .lede { font-size: 1.3rem; color: var(--ink); max-width: 34rem; }
-  .quote { border-left: 4px solid var(--red); padding: 0.2rem 0 0.2rem 1.1rem; margin: 1.8rem 0 0; font-style: italic; font-size: 1.35rem; }
-  .quote cite { display: block; font-style: normal; font-family: var(--sans); font-size: 0.95rem; color: var(--ink-soft); margin-top: 0.35rem; }
-  .facts { font-family: var(--sans); display: grid; grid-template-columns: auto 1fr; gap: 0.55rem 1.2rem; background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1.4rem 1.5rem; margin: 0; }
-  .facts dt { color: var(--ink-soft); }
-  .facts dd { margin: 0; font-weight: 700; }
-  .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
-
-  /* book */
-  .book { display: grid; grid-template-columns: 1fr 1.4fr; gap: 3rem; align-items: start; }
-  .book-card { background: var(--fell); color: #eef1e8; padding: 2rem; border-radius: 4px; font-family: var(--sans); }
-  .book-card strong { font-family: var(--serif); font-size: 1.9rem; display: block; line-height: 1.1; margin-bottom: 0.4rem; color: #fff; }
-  .book-card .author { margin-top: 1.5rem; font-weight: 700; letter-spacing: 0.02em; }
-  :root[data-theme='dark'] .book-card { color: #141a13; }
-  :root[data-theme='dark'] .book-card strong { color: #141a13; }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme='light']) .book-card, :root:not([data-theme='light']) .book-card strong { color: #141a13; }
-  }
-
-  /* route */
-  .route { display: grid; grid-template-columns: 1.1fr 1fr; gap: 2.5rem; align-items: start; }
-  .mapbox { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 0.75rem; position: sticky; top: calc(1rem + env(safe-area-inset-top, 0px)); }
-  .mapbox svg { display: block; width: 100%; height: auto; }
-  .mapnote { font-family: var(--sans); font-size: 0.9rem; color: var(--ink-soft); margin: 0.5rem 0.25rem 0; }
-  ol.stops { list-style: none; padding: 0; margin: 0; counter-reset: s; }
-  ol.stops li { counter-increment: s; position: relative; padding: 0 0 1.4rem 3.1rem; border-left: 2px dashed var(--red); margin-left: 1rem; }
-  ol.stops li:last-child { border-left-color: transparent; }
-  ol.stops li::before { content: counter(s); position: absolute; left: -1.05rem; top: -0.1rem; width: 2rem; height: 2rem; border-radius: 50%; background: var(--paper); border: 2px solid var(--red); color: var(--red); font-family: var(--sans); font-weight: 700; display: grid; place-items: center; font-size: 0.95rem; }
-  ol.stops h3 { margin: 0 0 0.2rem; font-size: 1.15rem; }
-  ol.stops p { margin: 0; font-size: 1.02rem; color: var(--ink-soft); }
-  .safety { margin-top: 2rem; background: var(--paper-2); border-radius: 6px; padding: 1.3rem 1.4rem; font-family: var(--sans); font-size: 1rem; }
-  .safety strong { color: var(--red); }
-
-  /* log */
-  .log { display: grid; grid-template-columns: 1fr 1.25fr; gap: 3rem; align-items: start; }
-  form#f { font-family: var(--sans); background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1.5rem; min-width: 0; }
-  .field { margin-bottom: 1rem; min-width: 0; }
-  form#f label, form#f .label { display: block; font-weight: 700; margin-bottom: 0.3rem; }
-  form#f input[type='text'], form#f input[type='date'], form#f input[type='url'], form#f textarea {
-    width: 100%; font: inherit; font-size: 1rem; padding: 0.6rem 0.7rem; border: 1.5px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink);
-  }
-  form#f input[type='file'] { max-width: 100%; font: inherit; font-size: 1rem; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
-  .seg { display: flex; border: 1.5px solid var(--line); border-radius: 4px; overflow: hidden; }
-  form#f .seg label { flex: 1; margin: 0; text-align: center; padding: 0.55rem; cursor: pointer; font-weight: 500; }
-  .seg input { position: absolute; opacity: 0; pointer-events: none; }
-  .seg label:has(input:checked) { background: var(--fell); color: var(--paper); }
-  .seg label:has(input:focus-visible) { outline: 3px solid var(--red); outline-offset: -3px; }
-  .time { display: flex; gap: 0.4rem; align-items: center; }
-  form#f .time input { width: 4.5rem; text-align: center; }
-  .drop { border: 2px dashed var(--line); border-radius: 6px; padding: 1rem; text-align: center; background: var(--paper); }
-  .gpxresult { margin-top: 0.7rem; font-size: 0.95rem; text-align: left; }
-  .gpxresult ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }
-  .msg { margin-top: 0.8rem; font-weight: 500; }
-  .msg.err { color: var(--red); }
-  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-
-  /* board */
-  .board-head { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; justify-content: space-between; margin-bottom: 1rem; font-family: var(--sans); }
-  .tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; }
-  .tabs button { font: inherit; font-weight: 500; border: 1.5px solid var(--line); background: transparent; color: var(--ink); padding: 0.4rem 0.8rem; border-radius: 999px; cursor: pointer; }
-  .tabs button[aria-pressed='true'] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--card); }
-  .tablewrap table { width: 100%; border-collapse: collapse; font-family: var(--sans); font-size: 1rem; min-width: 520px; }
-  .tablewrap th, .tablewrap td { text-align: left; padding: 0.7rem 0.8rem; border-bottom: 1px solid var(--line); vertical-align: top; }
-  .tablewrap th { font-weight: 700; color: var(--ink-soft); font-size: 0.92rem; }
-  .tablewrap tr:last-child td { border-bottom: 0; }
-  .tablewrap td.pos { font-family: var(--serif); font-weight: 800; font-size: 1.2rem; color: var(--fell); width: 2.5rem; }
-  .who { font-weight: 700; }
-  .sub { color: var(--ink-soft); font-size: 0.88rem; }
-  .empty { padding: 2.5rem 1.5rem; text-align: center; font-family: var(--sans); color: var(--ink-soft); }
-  .empty[hidden] { display: none; }
-
-  footer { padding: 3rem 0 4rem; border-top: 1px solid var(--line); font-family: var(--sans); font-size: 0.98rem; color: var(--ink-soft); }
-  footer .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
-  footer h3 { color: var(--ink); font-size: 1.1rem; }
-  footer ul { padding-left: 1.1rem; margin: 0; }
-
-  @media (max-width: 820px) {
-    .hero-grid, .book, .route, .log, footer .cols { grid-template-columns: 1fr; }
-    .mapbox { position: static; }
-    section { padding: 3.2rem 0; }
-  }
-</style>

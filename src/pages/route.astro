@@ -1,0 +1,109 @@
+---
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import Base from '../layouts/Base.astro';
+import SketchMap from '../components/SketchMap.astro';
+import { NOTICES, ROUNDS, STOPS } from '../lib/config.ts';
+
+// A download button appears only once the GPX file has been added to public/gpx/.
+const rounds = Object.values(ROUNDS).map((r) => ({
+  ...r,
+  hasGpx: existsSync(join(process.cwd(), 'public', 'gpx', r.gpxFile)),
+}));
+---
+<Base
+  title="The route"
+  description="The long and short Shap postal rounds from Birchwood Cafe: distances, stops, GPX downloads and current notices."
+>
+  <main id="main">
+    <div class="wrap page-head">
+      <h1>The route</h1>
+      <p class="lede">
+        A circular route out of Shap and back, following Alan Cleaver’s mapping of the round. Start and finish at
+        Birchwood Cafe, run by the family of the last postman to walk it.
+      </p>
+    </div>
+
+    <div class="wrap page-body">
+      <div class="cards">
+        {
+          rounds.map((r) => (
+            <div class="card">
+              <h3>{r.name}</h3>
+              <p class="dist">
+                About {r.miles} miles / {r.km} km
+              </p>
+              <p>{r.summary}</p>
+              {r.hasGpx ? (
+                <p>
+                  <a class="btn small" href={`/gpx/${r.gpxFile}`} download>
+                    Download GPX
+                  </a>
+                </p>
+              ) : (
+                <p class="hint">GPX download coming soon.</p>
+              )}
+            </div>
+          ))
+        }
+      </div>
+      <p class="hint" style="margin-top:1rem">
+        Distances are by GPS. Please follow this route and stay on public footpaths: the GPX is a guide, not a licence
+        to cross private land. The round isn’t waymarked, so carry OS Explorer OL5 and a compass.
+      </p>
+
+      {
+        NOTICES.length > 0 && (
+          <section class="notices" aria-labelledby="notices-h">
+            <h2 id="notices-h">Current notices</h2>
+            {NOTICES.map((n) => (
+              <p class="notice">{n}</p>
+            ))}
+          </section>
+        )
+      }
+
+      <section id="stops" aria-labelledby="stops-h">
+        <h2 id="stops-h">The round, stop by stop</h2>
+        <div class="route">
+          <SketchMap />
+          <div>
+            <ol class="stops">
+              {
+                STOPS.map((s) => (
+                  <li>
+                    <h3>{s.name}</h3>
+                    <p set:html={s.html} />
+                  </li>
+                ))
+              }
+            </ol>
+            <div class="safety">
+              <strong>Before you go.</strong> This is a long, rough day with pathless, boggy sections. Carry a map and
+              compass and know how to use them, even if you have GPS. Check the forecast, tell someone your plan, and
+              close every gate behind you. <a href="/safety/">Safety and respect</a>.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="season-h">
+        <h2 id="season-h">When to go</h2>
+        <div class="measure">
+          <p>
+            The round is low-level, which makes it a good choice in winter and on days of poor visibility, when the high
+            fells are off-limits. In summer, thick bracken and grass can cut up your legs; in winter it dies back and the
+            going is easier, though colder and wetter.
+          </p>
+          <p>New to the round? Try the short round first, then come back for the long one.</p>
+          <p><a class="btn red" href="/log/">Log your round</a></p>
+        </div>
+      </section>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .notices { border-top: 0; padding: 2.5rem 0 0; }
+  .notices h2, #season-h, #stops-h { color: var(--fell); }
+</style>

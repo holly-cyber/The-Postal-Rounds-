@@ -1,16 +1,20 @@
 /**
- * Home page behaviour, ported from the prototype's inline script. Storage moved
+ * Log your round page behaviour, ported from the prototype's inline script. Storage moved
  * server-side: the round book comes from GET /api/rounds, entries go to POST /api/rounds.
  */
-import { LIMITS } from '../lib/config.ts';
+import { LIMITS, ROUNDS, type RoundId } from '../lib/config.ts';
 import { GpxError, parseGpx, type GpxResult } from '../lib/gpx.ts';
 import { formatDate, formatDuration, sortForView, todayInShap, type PublicRound, type View } from '../lib/rounds.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
-let parsed: GpxResult | null = null;
+let gpxText: string | null = null;
 let entries: PublicRound[] = [];
 let view: View = 'date';
+let boardRound: RoundId = 'long';
+
+const chosenRound = () =>
+  (document.querySelector<HTMLInputElement>('input[name=round]:checked')?.value ?? 'long') as RoundId;
 
 const today = todayInShap();
 $<HTMLInputElement>('date').max = today;
@@ -22,7 +26,8 @@ function showGpx(r: GpxResult) {
   box.textContent = '';
   const head = document.createElement('div');
   head.className = r.passed ? 'ok' : 'no';
-  head.textContent = r.passed ? 'Route checked: this is the full Shap round.' : 'This track doesn’t look like the full round yet.';
+  const name = ROUNDS[chosenRound()].name.replace(/^The /, 'the ');
+  head.textContent = r.passed ? `Route checked: this is ${name}.` : `This track doesn’t look like ${name} yet.`;
   box.appendChild(head);
   const ul = document.createElement('ul');
   for (const c of r.checks) {
@@ -52,8 +57,28 @@ function gpxError(message: string) {
   box.appendChild(d);
 }
 
+/** Re-check the chosen GPX against the chosen round. Returns the result, or null. */
+function checkGpx(prefill: boolean): GpxResult | null {
+  if (gpxText === null) return null;
+  try {
+    const parsed = parseGpx(gpxText, chosenRound());
+    showGpx(parsed);
+    if (!prefill) return parsed;
+    if (parsed.startDate && parsed.startDate <= today) $<HTMLInputElement>('date').value = parsed.startDate;
+    if (parsed.elapsedSecs) {
+      const mins = Math.round(parsed.elapsedSecs / 60);
+      $<HTMLInputElement>('hh').value = String(Math.floor(mins / 60));
+      $<HTMLInputElement>('mm').value = String(mins % 60).padStart(2, '0');
+    }
+    return parsed;
+  } catch (err) {
+    gpxError(err instanceof GpxError ? err.message : 'That file isn’t a readable GPX file.');
+    return null;
+  }
+}
+
 $<HTMLInputElement>('gpx').addEventListener('change', async (e) => {
-  parsed = null;
+  gpxText = null;
   $('gpxres').textContent = '';
   const f = (e.target as HTMLInputElement).files?.[0];
   if (!f) return;
@@ -61,19 +86,13 @@ $<HTMLInputElement>('gpx').addEventListener('change', async (e) => {
     gpxError('That file is over 10 MB. Export a GPX without extra sensor data.');
     return;
   }
-  try {
-    parsed = parseGpx(await f.text());
-    showGpx(parsed);
-    if (parsed.startDate && parsed.startDate <= today) $<HTMLInputElement>('date').value = parsed.startDate;
-    if (parsed.elapsedSecs) {
-      const mins = Math.round(parsed.elapsedSecs / 60);
-      $<HTMLInputElement>('hh').value = String(Math.floor(mins / 60));
-      $<HTMLInputElement>('mm').value = String(mins % 60).padStart(2, '0');
-    }
-  } catch (err) {
-    gpxError(err instanceof GpxError ? err.message : 'That file isn’t a readable GPX file.');
-  }
+  gpxText = await f.text();
+  checkGpx(true);
 });
+
+document.querySelectorAll<HTMLInputElement>('input[name=round]').forEach((r) =>
+  r.addEventListener('change', () => checkGpx(false)),
+);
 
 /* ---------- Upload preparation (stay under Netlify's request size limit) ---------- */
 
@@ -126,6 +145,9 @@ form.addEventListener('submit', async (e) => {
   if (m > 59) return focusErr('Minutes must be between 0 and 59.', 'mm');
   if (link && !/^https:\/\//i.test(link)) return focusErr('Activity links must start with https://', 'link');
   if (!gpxFile && !link && !photo) return focusErr('Add a GPX file, an activity link or a photo so we can check your round.');
+  if (!$<HTMLInputElement>('consent').checked) {
+    return focusErr('Please tick the box to agree to your round appearing in the round book.', 'consent');
+  }
   if (photo && photo.size > LIMITS.photoMaxBytes) return focusErr('That photo is over 8 MB.', 'photo');
   if (photo && !(LIMITS.photoTypes as readonly string[]).includes(photo.type)) {
     return focusErr('Photos must be JPEG, PNG or WebP.', 'photo');
@@ -160,12 +182,12 @@ form.addEventListener('submit', async (e) => {
     }
     const entry = body.entry as PublicRound | undefined;
     form.reset();
-    parsed = null;
+    gpxText = null;
     $('gpxres').textContent = '';
     setMsg(
       entry?.gpxChecked
         ? 'Your round is in the book. Well delivered.'
-        : 'Your round is in the book. It will show as checked once the Birchwood team has looked at your evidence.',
+        : 'Your round is in the book. It will show as checked once we’ve looked at your evidence.',
     );
     await load();
     $('board').scrollIntoView();
@@ -178,11 +200,20 @@ form.addEventListener('submit', async (e) => {
 
 /* ---------- Round book ---------- */
 
-const tabs = [...document.querySelectorAll<HTMLButtonElement>('.tabs button')];
+const tabs = [...document.querySelectorAll<HTMLButtonElement>('button[data-view]')];
 tabs.forEach((b) =>
   b.addEventListener('click', () => {
     view = b.dataset.view as View;
     tabs.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    $('roundfilter').hidden = view === 'date';
+    render();
+  }),
+);
+const roundTabs = [...document.querySelectorAll<HTMLButtonElement>('button[data-round]')];
+roundTabs.forEach((b) =>
+  b.addEventListener('click', () => {
+    boardRound = b.dataset.round as RoundId;
+    roundTabs.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     render();
   }),
 );
@@ -190,13 +221,14 @@ tabs.forEach((b) =>
 function render() {
   const rows = $('rows');
   rows.textContent = '';
-  const list = sortForView(entries, view);
+  const list = sortForView(entries, view, boardRound);
   if (view === 'date') {
     $('count').textContent = list.length
       ? `${list.length}${list.length === 1 ? ' round' : ' rounds'} completed, newest first.`
       : 'Everyone who has completed the Shap round, newest first.';
   } else {
-    $('count').textContent = `Fastest checked ${view === 'run' ? 'runs' : 'walks'}. Only rounds with a checked GPX or a verified entry are ranked.`;
+    const which = boardRound === 'long' ? 'long' : 'short';
+    $('count').textContent = `Fastest checked ${view === 'run' ? 'runs' : 'walks'} of the ${which} round. Only rounds with a checked GPX or a verified entry are ranked.`;
   }
   const empty = $('empty');
   empty.hidden = list.length > 0;
@@ -204,7 +236,7 @@ function render() {
     empty.textContent =
       view === 'date'
         ? 'No rounds logged yet. Be the first name in the Shap round book.'
-        : `No checked ${view === 'run' ? 'runs' : 'walks'} yet. Log yours with a GPX file to take the top spot.`;
+        : `No checked ${view === 'run' ? 'runs' : 'walks'} of the ${boardRound} round yet. Log yours with a GPX file to take the top spot.`;
   }
   list.forEach((e, i) => {
     const tr = document.createElement('tr');
@@ -219,7 +251,7 @@ function render() {
     w.appendChild(n);
     const s = document.createElement('div');
     s.className = 'sub';
-    s.textContent = (e.mode === 'run' ? 'Ran' : 'Walked') + (e.km ? `, ${e.km} km` : '');
+    s.textContent = `${e.mode === 'run' ? 'Ran' : 'Walked'} the ${e.round === 'short' ? 'short' : 'long'} round` + (e.km ? `, ${e.km} km` : '');
     w.appendChild(s);
     if (e.note) {
       const q = document.createElement('div');

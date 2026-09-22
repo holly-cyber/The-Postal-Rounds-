@@ -1,14 +1,18 @@
 # The Shap Postal Round
 
-Public site for the last walked postal round in Shap, Cumbria, from Alan Cleaver's
-*The Postal Paths* (Monoray, 2025). People walk or run the ~18 km loop from Birchwood
-Cafe (Main Street, Shap CA10 3NJ), upload a GPX file or other evidence, and appear in a
-dated round book (leaderboard).
+Public heritage site for the last walked postal round in Shap, Cumbria, from Alan Cleaver's
+*The Postal Paths* (Monoray, 2025). People walk or run the long (~14.7 mi) or short "winter"
+(~10.3 mi) round from Birchwood Cafe (Main Street, Shap CA10 3NJ), upload a GPX file or other
+evidence, and appear in a dated round book (leaderboard).
 
-The design and copy source of truth is the prototype `reference/shap-postal-round.html`.
-`src/pages/index.astro` is a port of it; keep them in step and don't redesign. Fonts Alegreya / Alegreya Sans;
-palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`, paper `#EEF1E8`;
-light and dark themes.
+**Scope, principles and content facts: `docs/build-brief.md`.** Read it before changing copy.
+The big ones: zero admin for the café (contact routes to Holly, never the café); not a race;
+café owner not named; "postie" in general copy, "postman" only for Stuart Lewis; always credit
+Alan Cleaver; don't publish anything marked `[UNVERIFIED]` there.
+
+Visual design comes from the prototype `reference/shap-postal-round.html` — don't redesign.
+Fonts Alegreya / Alegreya Sans; palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`,
+paper `#EEF1E8`; light and dark themes.
 
 ## Stack
 
@@ -21,19 +25,21 @@ light and dark themes.
 
 | What | Where |
 |---|---|
-| **All tunable constants** — Birchwood coordinates, check radii/thresholds, upload limits, rate limit, the 8 route stops (text + sketch-map positions), hero facts | `src/lib/config.ts` |
+| **All tunable constants** — site name/strapline, Instagram, pins flag, Birchwood coordinates, the two rounds (distances, GPX file names, per-round check thresholds), upload limits, rate limit, the 8 stops (text + sketch-map positions), home facts, route notices | `src/lib/config.ts` |
+| **Editable page text** (story, safety & respect, FAQ, privacy) | `src/content/pages/*.md` |
+| GPX downloads (buttons appear once the files exist) | `public/gpx/` |
 | **GPX parser + the five checks** (shared by browser and server; DOM-free) | `src/lib/gpx.ts` |
 | Entry shapes, `toPublic()`, sorting for the three leaderboard views | `src/lib/rounds.ts` |
 | Server-side form validation (the check that counts) | `src/server/submission.ts` |
 | Blob stores, admin-token check | `src/server/store.ts`, `src/server/http.ts` |
-| Home page / admin page | `src/pages/index.astro`, `src/pages/admin.astro` |
-| Browser logic (instant GPX feedback, upload, leaderboard; admin) | `src/scripts/home.ts`, `src/scripts/admin.ts` |
+| Pages: home, story, route, safety, log (form + round book), FAQ, contact (Netlify Forms), privacy, admin | `src/pages/` |
+| Browser logic (instant GPX feedback, upload, round book; admin) | `src/scripts/log.ts`, `src/scripts/admin.ts` |
 | Sketch map (drawn from `STOPS`) | `src/components/SketchMap.astro` |
 
 ## API
 
-- `GET /api/rounds` — public fields only: name, mode, date, secs, km, gpxChecked, verified, link, note. Never ids, IPs or file keys.
-- `POST /api/rounds` — multipart. Validates everything, re-runs the GPX checks server-side (never trusts the client), stores JSON in the `rounds` store and files in `evidence` (`<id>/gpx`, `<id>/photo`). Honeypot field `website`. Rate limit: 5 accepted submissions per IP per hour (hashed IP in the `ratelimit` store; IPs are never stored in entries).
+- `GET /api/rounds` — public fields only: name, round, mode, date, secs, km, gpxChecked, verified, link, note. Never ids, IPs or file keys.
+- `POST /api/rounds` — multipart. Requires `round` (long|short) and `consent=yes`. Validates everything, re-runs the GPX checks server-side (never trusts the client), stores JSON in the `rounds` store and files in `evidence` (`<id>/gpx`, `<id>/photo`). Honeypot field `website`. Rate limit: 5 accepted submissions per IP per hour (IP HMAC-hashed with ADMIN_TOKEN in the `ratelimit` store; IPs are never stored in entries).
 - `PATCH /api/rounds/:id` `{ "verified": bool }` and `DELETE /api/rounds/:id` — `Authorization: Bearer $ADMIN_TOKEN`.
 - `GET /api/admin/rounds`, `GET /api/admin/evidence/:id/:kind` — admin only. GPX files and photos are never publicly served.
 
@@ -41,7 +47,7 @@ light and dark themes.
 
 **Request size:** Netlify functions accept ~6 MB per request. The browser gzips GPX files (server detects and unzips, 10 MB limit on the unzipped file) and resizes photos to 2048 px JPEG, so a normal submission is well under 1 MB.
 
-**Evidence tags:** "Verified", "GPX checked", or "Waiting for check" when neither. Fastest runs/walks show only gpxChecked or verified entries with a time. Time is optional; if blank, the GPX elapsed time is used.
+**Evidence tags:** "Verified", "GPX checked", or "Waiting for check" when neither. Fastest runs/walks are per round and show only gpxChecked or verified entries with a time. Time is optional; if blank, the GPX elapsed time is used.
 
 ## Develop
 
@@ -63,5 +69,6 @@ Note: in agent shells Astro 7 backgrounds `astro dev` itself; run netlify dev wi
 1. Push to `main` on GitHub; Netlify builds from `main`.
 2. First time: `netlify init` to link the repo to a site, then `netlify env:set ADMIN_TOKEN <value>` (ask Holly for the value; never commit it).
 3. `netlify deploy --prod` or push to `main` to deploy.
+4. Contact form: in the Netlify UI, enable form detection (Forms) and add an email notification to Holly.
 
 Check with Holly before creating repos or Netlify sites, setting env var values, or making the repo public.

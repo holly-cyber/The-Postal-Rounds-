@@ -1,0 +1,153 @@
+---
+import Base from '../layouts/Base.astro';
+import { LIMITS, SITE } from '../lib/config.ts';
+import { todayInShap } from '../lib/rounds.ts';
+
+const today = todayInShap();
+---
+<Base
+  title="Log your round"
+  description="Add your walk or run of the Shap postal round to the round book, and see who else has done it."
+>
+  <main id="main">
+    <div class="wrap page-head">
+      <h1>Log your round</h1>
+      <p class="lede">Walked it or ran it? Put your name in the round book.</p>
+    </div>
+    <section id="log" style="border-top:0;padding-top:1.5rem">
+      <div class="wrap log">
+        <div class="measure">
+          <h2>How it works</h2>
+          <p>
+            The round isn’t a race, but if you’d like to log your time, you’re welcome to. Record your round on any free
+            GPS app (Strava, Garmin Connect, OS Maps, Komoot or similar), then add it here.
+          </p>
+          <p>
+            Upload the GPX file and we check straight away that it starts and finishes in Shap and covers the round. No
+            GPX? Add a link to your activity, or a photo from the Thorney Bank postbox, and we’ll check it by hand.
+            Because some people will get competitive, only checked rounds count towards the fastest times.
+          </p>
+          <p class="hint">
+            Your name, date and time appear on the public leaderboard. Your GPX file and photo are used to check your
+            round and are not shown to others.
+          </p>
+        </div>
+
+        <form id="f" novalidate>
+          <div class="field">
+            <label for="name">Your name <span class="hint">(or a nickname)</span></label>
+            <input id="name" name="name" type="text" maxlength={LIMITS.nameMax} autocomplete="name" required />
+          </div>
+          <div class="field">
+            <span class="label" id="roundlbl">Which round?</span>
+            <div class="seg" role="radiogroup" aria-labelledby="roundlbl">
+              <label><input type="radio" name="round" value="long" checked /><span>Long round</span></label>
+              <label><input type="radio" name="round" value="short" /><span>Short round</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <span class="label" id="modelbl">How did you do it?</span>
+            <div class="seg" role="radiogroup" aria-labelledby="modelbl">
+              <label><input type="radio" name="mode" value="walk" checked /><span>Walked</span></label>
+              <label><input type="radio" name="mode" value="run" /><span>Ran</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <label for="gpx">GPX file <span class="hint">(recommended)</span></label>
+            <div class="drop">
+              <input id="gpx" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" />
+              <div class="gpxresult" id="gpxres" aria-live="polite"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="date">Date</label>
+              <input id="date" name="date" type="date" required max={today} min={LIMITS.earliestDate} />
+            </div>
+            <div class="field">
+              <span class="label" id="timelbl">Time taken</span>
+              <div class="time" role="group" aria-labelledby="timelbl">
+                <input id="hh" name="hours" type="text" inputmode="numeric" maxlength="2" placeholder="h" aria-label="Hours" />:
+                <input id="mm" name="minutes" type="text" inputmode="numeric" maxlength="2" placeholder="mm" aria-label="Minutes" />
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="link">Activity link <span class="hint">(optional)</span></label>
+            <input id="link" name="link" type="url" maxlength={LIMITS.linkMax} placeholder="https://www.strava.com/activities/…" />
+          </div>
+          <div class="field">
+            <label for="photo">Photo evidence <span class="hint">(optional)</span></label>
+            <input id="photo" type="file" accept="image/jpeg,image/png,image/webp" />
+          </div>
+          <div class="field">
+            <label for="note">A line for the round book <span class="hint">(optional)</span></label>
+            <textarea id="note" name="note" rows="2" maxlength={LIMITS.noteMax} placeholder="Snow on Glede Howe, tea at Birchwood after"></textarea>
+          </div>
+          <div class="field">
+            <label class="consent" for="consent">
+              <input id="consent" name="consent" type="checkbox" value="yes" required />
+              <span>I’m happy for my name, round, date, time, link and note to appear in the public round book.</span>
+            </label>
+          </div>
+          <div class="hp" aria-hidden="true">
+            <label for="website">Leave this empty</label>
+            <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+          <button class="btn red" type="submit" id="submit">Add my round</button>
+          <div class="msg" id="msg" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+
+    <section id="board">
+      <div class="wrap">
+        <h2>The round book</h2>
+        <div class="board-head">
+          <p style="margin:0" id="count">Everyone who has completed the Shap round, newest first.</p>
+          <div class="round-filter tabs" id="roundfilter" role="group" aria-label="Which round" hidden>
+            <button type="button" data-round="long" aria-pressed="true">Long round</button>
+            <button type="button" data-round="short" aria-pressed="false">Short round</button>
+          </div>
+          <div class="tabs" role="group" aria-label="Sort leaderboard">
+            <button type="button" data-view="date" aria-pressed="true">By date</button>
+            <button type="button" data-view="run" aria-pressed="false">Fastest runs</button>
+            <button type="button" data-view="walk" aria-pressed="false">Fastest walks</button>
+          </div>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Date</th><th scope="col">Time</th><th scope="col">Evidence</th></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+          <div class="empty" id="empty">Loading the round book…</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pin" aria-labelledby="pin-h">
+      <div class="wrap measure">
+        <h2 id="pin-h">Your finisher’s pin</h2>
+        {
+          SITE.pinsAvailable ? (
+            <p>
+              Finisher’s pins are collected in person at Birchwood Cafe. Bring your finisher photo, buy a brew and a
+              bite, and have your cake and eat it.
+            </p>
+          ) : (
+            <p>
+              Finisher’s pins are on their way. Once they’re in, you’ll collect yours in person at Birchwood Cafe with
+              your finisher photo.
+            </p>
+          )
+        }
+      </div>
+    </section>
+  </main>
+</Base>
+
+<script>
+  import '../scripts/log.ts';
+</script>

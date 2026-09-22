@@ -20,7 +20,11 @@ const WAYPOINTS: LatLon[] = [
 ];
 
 /** A loop through the waypoints, densified, with a gentle wiggle so it measures like a real walk. */
-export function roundTrack(wiggle = 0.0004): LatLon[] {
+/** Wiggle sizes that make the synthetic loop measure like each round. */
+export const LONG_WIGGLE = 0.00052;
+export const SHORT_WIGGLE = 0.00028;
+
+export function roundTrack(wiggle = SHORT_WIGGLE): LatLon[] {
   const ring = [...WAYPOINTS, WAYPOINTS[0]];
   const out: LatLon[] = [];
   for (let i = 0; i < ring.length - 1; i++) {
@@ -55,10 +59,10 @@ export function toGpx(pts: LatLon[], start = Date.parse('2026-09-12T08:00:00Z'),
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const full = roundTrack();
-  writeFileSync(new URL('./fixtures/round-pass.gpx', import.meta.url), toGpx(full));
+  const out = (name: string, gpx: string) => writeFileSync(new URL(`./fixtures/${name}`, import.meta.url), gpx);
+  out('round-long.gpx', toGpx(roundTrack(LONG_WIGGLE)));
+  out('round-short.gpx', toGpx(roundTrack(SHORT_WIGGLE), undefined, 3 * 3600));
   // Turns back before Swindale and Wet Sleddale.
-  const short = full.filter((p) => p.lon > -2.71 && p.lat > 54.505);
-  writeFileSync(new URL('./fixtures/round-short.gpx', import.meta.url), toGpx(short, undefined, 2 * 3600));
-  console.log('Wrote tests/fixtures/round-pass.gpx and round-short.gpx');
+  out('round-incomplete.gpx', toGpx(roundTrack().filter((p) => p.lon > -2.71 && p.lat > 54.505), undefined, 2 * 3600));
+  console.log('Wrote tests/fixtures/round-long.gpx, round-short.gpx and round-incomplete.gpx');
 }

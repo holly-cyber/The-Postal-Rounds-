@@ -5,7 +5,7 @@
  * Deliberately DOM-free: a small tag scanner works identically in the
  * browser and in Node, where there is no DOMParser.
  */
-import { BIRCHWOOD, ROUND, type LatLon } from './config.ts';
+import { BIRCHWOOD, GPX_RULES as R, ROUNDS, type LatLon, type RoundId } from './config.ts';
 
 export interface GpxPoint extends LatLon {
   time?: number;
@@ -85,7 +85,7 @@ export function parsePoints(text: string): GpxPoint[] {
 
   let pts = scan('trkpt');
   if (!pts.length) pts = scan('rtept');
-  if (pts.length < ROUND.minPoints) {
+  if (pts.length < R.minPoints) {
     throw new GpxError('The GPX file has no track points. Export the recorded activity, not a planned route.');
   }
   return pts;
@@ -93,8 +93,9 @@ export function parsePoints(text: string): GpxPoint[] {
 
 const fmtKm = (km: number) => `${km.toFixed(1)} km`;
 
-/** Run the five round checks against a list of points. */
-export function checkPoints(pts: GpxPoint[]): GpxResult {
+/** Run the round checks for the chosen round against a list of points. */
+export function checkPoints(pts: GpxPoint[], round: RoundId): GpxResult {
+  const rules = ROUNDS[round];
   let km = 0;
   let minLat = Infinity;
   let minLon = Infinity;
@@ -114,38 +115,41 @@ export function checkPoints(pts: GpxPoint[]): GpxResult {
     times.length >= 2 ? Math.max(0, Math.round((times[times.length - 1] - times[0]) / 1000)) : null;
   const startDate = times.length ? new Date(times[0]).toISOString().slice(0, 10) : null;
 
-  const checks: GpxCheck[] = [
+  const reachedWest = minLon <= R.westOfLon;
+  const reachedSouth = minLat <= R.southOfLat;
+  const all: (GpxCheck | null)[] = [
     {
       id: 'start',
       label: 'Starts in Shap',
-      pass: startKm <= ROUND.startRadiusKm,
-      detail: `Starts ${fmtKm(startKm)} from Birchwood (limit ${ROUND.startRadiusKm} km)`,
+      pass: startKm <= R.startRadiusKm,
+      detail: `Starts ${fmtKm(startKm)} from Birchwood (limit ${R.startRadiusKm} km)`,
     },
     {
       id: 'finish',
       label: 'Finishes in Shap',
-      pass: finishKm <= ROUND.finishRadiusKm,
-      detail: `Finishes ${fmtKm(finishKm)} from Birchwood (limit ${ROUND.finishRadiusKm} km)`,
+      pass: finishKm <= R.finishRadiusKm,
+      detail: `Finishes ${fmtKm(finishKm)} from Birchwood (limit ${R.finishRadiusKm} km)`,
     },
     {
       id: 'distance',
       label: `Distance ${(Math.round(km * 10) / 10).toFixed(1)} km`,
-      pass: km >= ROUND.minDistanceKm,
-      detail: `Needs at least ${ROUND.minDistanceKm} km`,
+      pass: km >= rules.minDistanceKm,
+      detail: `Needs at least ${rules.minDistanceKm} km for ${rules.name.toLowerCase()}`,
     },
-    {
+    !rules.requireSwindale ? null : {
       id: 'west',
       label: 'Reaches Swindale',
-      pass: minLon <= ROUND.westOfLon,
-      detail: minLon <= ROUND.westOfLon ? 'Reached Swindale' : 'Did not reach far enough west',
+      pass: reachedWest,
+      detail: reachedWest ? 'Reached Swindale' : 'Did not reach far enough west',
     },
-    {
+    !rules.requireWetSleddale ? null : {
       id: 'south',
       label: 'Reaches Wet Sleddale',
-      pass: minLat <= ROUND.southOfLat,
-      detail: minLat <= ROUND.southOfLat ? 'Reached Wet Sleddale' : 'Did not reach far enough south',
+      pass: reachedSouth,
+      detail: reachedSouth ? 'Reached Wet Sleddale' : 'Did not reach far enough south',
     },
   ];
+  const checks = all.filter((c): c is GpxCheck => c !== null);
 
   return {
     points: pts.length,
@@ -162,6 +166,6 @@ export function checkPoints(pts: GpxPoint[]): GpxResult {
 }
 
 /** Parse GPX text and check it against the round. Throws GpxError if unreadable. */
-export function parseGpx(text: string): GpxResult {
-  return checkPoints(parsePoints(text));
+export function parseGpx(text: string, round: RoundId): GpxResult {
+  return checkPoints(parsePoints(text), round);
 }

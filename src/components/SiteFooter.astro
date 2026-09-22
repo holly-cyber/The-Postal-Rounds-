@@ -1,0 +1,41 @@
+---
+import { SITE } from '../lib/config.ts';
+---
+<footer>
+  <div class="wrap cols">
+    <div>
+      <h3>Birchwood Cafe</h3>
+      <p>
+        Start and finish of the round.<br />Birchwood House, Main Street, Shap CA10 3NJ<br />Usually open Tuesday to
+        Saturday, 9am to 4pm.
+      </p>
+      {SITE.instagram && <p><a href={SITE.instagram} rel="noopener">Birchwood Cafe on Instagram</a></p>}
+      <p>Questions about the round? <a href="/contact/">Get in touch</a> — please don’t call the café.</p>
+    </div>
+    <div>
+      <h3>Read and listen</h3>
+      <ul>
+        <li>Alan Cleaver, <em>The Postal Paths</em> (Monoray, 2025)</li>
+        <li>Alan Cleaver’s Hidden Cumbria route notes for the Shap postman’s path</li>
+        <li>Countrystride podcast #43, Shap and the Postman’s Path</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Walk responsibly</h3>
+      <p>
+        Much of the route crosses working farmland. Keep dogs under control near stock, use gates and stiles, and leave
+        no trace. <a href="/safety/">Safety and respect</a>.
+      </p>
+    </div>
+  </div>
+  <div class="wrap legal">
+    <p class="credit">
+      Historical material drawn from Alan Cleaver’s <em>The Postal Paths</em> and used with kind permission.{' · '}<a
+        href="/privacy/">Privacy</a>{' · '}<a href="/contact/">Contact</a>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .legal { margin-top: 2rem; }
+</style>

@@ -1,4 +1,4 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
 export function json(body: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
@@ -25,6 +25,8 @@ export function isAdmin(req: Request): boolean {
   return timingSafeEqual(digest(m[1].trim()), digest(expected));
 }
 
+/** Keyed hash of an IP for rate limiting, so stored values can't be reversed without the secret. */
 export function hashIp(ip: string): string {
-  return createHash('sha256').update(`shap-postal-round:${ip}`).digest('hex').slice(0, 32);
+  const key = process.env.ADMIN_TOKEN ?? 'shap-postal-round';
+  return createHmac('sha256', key).update(ip).digest('hex').slice(0, 32);
 }

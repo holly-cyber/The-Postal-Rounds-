@@ -1,0 +1,62 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Contact" description="Questions about the Shap postal round, press enquiries, or removing your round book entry.">
+  <main id="main">
+    <div class="wrap page-head">
+      <h1>Contact</h1>
+      <p class="lede">
+        Questions about the round, press enquiries, or want your round book entry removed? Messages go to the volunteer
+        who looks after this site, not to Birchwood Cafe.
+      </p>
+    </div>
+    <div class="wrap page-body">
+      <!-- Handled by Netlify Forms. Submissions appear in the Netlify dashboard and are emailed to the site organiser. -->
+      <form
+        id="contact"
+        class="contact-form"
+        name="contact"
+        method="POST"
+        action="/contact/thanks/"
+        data-netlify="true"
+        netlify-honeypot="bot-field"
+      >
+        <input type="hidden" name="form-name" value="contact" />
+        <p class="hp" aria-hidden="true">
+          <label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off" /></label>
+        </p>
+        <div class="field">
+          <label for="c-name">Your name</label>
+          <input id="c-name" name="name" type="text" autocomplete="name" required maxlength="80" />
+        </div>
+        <div class="field">
+          <label for="c-email">Email</label>
+          <input id="c-email" name="email" type="email" autocomplete="email" required maxlength="200" />
+        </div>
+        <div class="field">
+          <label for="c-topic">What’s it about?</label>
+          <select id="c-topic" name="topic">
+            <option>A question about the round</option>
+            <option>My round book entry</option>
+            <option>Press or media</option>
+            <option>Something else</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="c-message">Message</label>
+          <textarea id="c-message" name="message" required maxlength="3000"></textarea>
+        </div>
+        <button class="btn red" type="submit">Send message</button>
+      </form>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .contact-form { font-family: var(--sans); background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1.5rem; }
+  .contact-form label { display: block; font-weight: 700; margin-bottom: 0.3rem; }
+  .contact-form input:not([type='hidden']), .contact-form select, .contact-form textarea {
+    width: 100%; font: inherit; font-size: 1rem; padding: 0.6rem 0.7rem; border: 1.5px solid var(--line);
+    border-radius: 4px; background: var(--paper); color: var(--ink);
+  }
+</style>

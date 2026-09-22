@@ -1,4 +1,5 @@
 /** Shared shapes and helpers for round entries (browser + functions). */
+import type { RoundId } from './config.ts';
 import type { GpxCheck } from './gpx.ts';
 
 export type Mode = 'walk' | 'run';
@@ -6,6 +7,7 @@ export type Mode = 'walk' | 'run';
 /** What GET /api/rounds returns for each entry — nothing else leaves the server. */
 export interface PublicRound {
   name: string;
+  round: RoundId;
   mode: Mode;
   date: string;
   secs: number;
@@ -20,6 +22,8 @@ export interface PublicRound {
 export interface StoredRound extends PublicRound {
   id: string;
   createdAt: string;
+  /** When the entrant agreed to their name, date, time and note being shown publicly. */
+  consentedAt: string;
   verifiedAt: string | null;
   gpx: {
     points: number;
@@ -36,6 +40,7 @@ export interface StoredRound extends PublicRound {
 export function toPublic(r: StoredRound): PublicRound {
   return {
     name: r.name,
+    round: r.round ?? 'long',
     mode: r.mode,
     date: r.date,
     secs: r.secs,
@@ -71,12 +76,13 @@ export const isConfirmed = (r: Pick<PublicRound, 'gpxChecked' | 'verified'>) =>
 
 export type View = 'date' | 'run' | 'walk';
 
-export function sortForView<T extends PublicRound>(rows: T[], view: View): T[] {
+/** Rows for a leaderboard view. Fastest views are per round (long or short). */
+export function sortForView<T extends PublicRound>(rows: T[], view: View, round: RoundId = 'long'): T[] {
   if (view === 'date') {
     return [...rows].sort((a, b) => b.date.localeCompare(a.date));
   }
   return rows
-    .filter((r) => r.mode === view && r.secs > 0 && isConfirmed(r))
+    .filter((r) => r.mode === view && r.round === round && r.secs > 0 && isConfirmed(r))
     .sort((a, b) => a.secs - b.secs || a.date.localeCompare(b.date));
 }
 

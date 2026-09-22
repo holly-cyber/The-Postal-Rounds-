@@ -1,6 +1,6 @@
 /** Validates a POST /api/rounds form and turns it into a stored entry. */
 import { gunzipSync } from 'node:zlib';
-import { LIMITS } from '../lib/config.ts';
+import { LIMITS, ROUNDS, type RoundId } from '../lib/config.ts';
 import { GpxError, parseGpx, type GpxResult } from '../lib/gpx.ts';
 import { todayInShap, type Mode, type StoredRound } from '../lib/rounds.ts';
 
@@ -39,8 +39,13 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
   const name = clean(form.get('name'));
   if (name.length < 1 || name.length > LIMITS.nameMax) fail(`Name must be 1–${LIMITS.nameMax} characters.`);
 
+  const round = clean(form.get('round'));
+  if (!Object.hasOwn(ROUNDS, round)) fail('Choose the long or short round.');
+
   const mode = clean(form.get('mode'));
   if (mode !== 'walk' && mode !== 'run') fail('Choose walked or ran.');
+
+  if (clean(form.get('consent')) !== 'yes') fail('Please tick the box to agree to your round appearing in the round book.');
 
   const date = clean(form.get('date'));
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) fail('Add the date you completed the round.');
@@ -88,7 +93,7 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
     }
     if (raw.byteLength > LIMITS.gpxMaxBytes) fail('The GPX file is too large (10 MB maximum).');
     try {
-      gpxResult = parseGpx(new TextDecoder().decode(raw));
+      gpxResult = parseGpx(new TextDecoder().decode(raw), round as RoundId);
     } catch (e) {
       fail(e instanceof GpxError ? e.message : 'We couldn’t read that GPX file.');
     }
@@ -113,7 +118,9 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
   const entry: StoredRound = {
     id,
     createdAt: now.toISOString(),
+    consentedAt: now.toISOString(),
     name,
+    round: round as RoundId,
     mode: mode as Mode,
     date,
     secs,

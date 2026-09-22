@@ -1,0 +1,24 @@
+---
+title: Privacy
+description: What we keep when you log a round or get in touch, and how to have it removed.
+---
+
+## When you log a round
+
+We show your name (or nickname), round, walk or run, date, time, distance, activity link and note in the public round book. You agree to this when you tick the box on the form.
+
+Your GPX file and any photo are used only to check your round. They are never shown publicly, and only the site organiser can see them.
+
+To limit spam, we keep a scrambled (hashed) version of your internet address with the times of your recent entries. We don’t store the address itself, and it isn’t linked to your entry.
+
+## When you contact us
+
+Messages from the contact form go to the site organiser only, not to Birchwood Cafe. We use them to reply to you and nothing else.
+
+## Removing your entry
+
+Use the [contact form](/contact/) to ask for your round, GPX file or photo to be removed, and we’ll delete it.
+
+## Where your data lives
+
+The site is hosted by Netlify. Round book entries and uploaded files are stored with Netlify; contact messages are handled by Netlify Forms.

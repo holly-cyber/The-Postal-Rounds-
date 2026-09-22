@@ -1,19 +1,27 @@
 ---
 import '../styles/global.css';
+import '../styles/site.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { SITE } from '../lib/config.ts';
 
 interface Props {
-  title: string;
+  /** Page title; the site name is appended. Omit on the home page. */
+  title?: string;
   description?: string;
   noindex?: boolean;
+  /** No site header or footer (the admin page). */
+  bare?: boolean;
 }
-const { title, description = '', noindex = false } = Astro.props;
+const { title, description = '', noindex = false, bare = false } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} — ${SITE.strapline}`;
 ---
 <!doctype html>
 <html lang="en-GB">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>{title}</title>
+    <title>{fullTitle}</title>
     {description && <meta name="description" content={description} />}
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="theme-color" content="#2E4A2B" />
@@ -34,6 +42,8 @@ const { title, description = '', noindex = false } = Astro.props;
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
+    {!bare && <SiteHeader />}
     <slot />
+    {!bare && <SiteFooter />}
   </body>
 </html>

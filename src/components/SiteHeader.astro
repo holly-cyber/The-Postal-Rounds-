@@ -1,0 +1,25 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import { SITE } from '../lib/config.ts';
+
+const NAV = [
+  { href: '/story/', label: 'The story' },
+  { href: '/route/', label: 'The route' },
+  { href: '/safety/', label: 'Safety & respect' },
+  { href: '/log/', label: 'Log your round' },
+  { href: '/faq/', label: 'FAQ' },
+  { href: '/contact/', label: 'Contact' },
+];
+const here = Astro.url.pathname.replace(/\/?$/, '/');
+---
+<header class="site-head">
+  <div class="wrap bar">
+    <a class="brand" href="/"><span class="slot" aria-hidden="true"></span>{SITE.name}</a>
+    <nav aria-label="Main">
+      <ul>
+        {NAV.map((n) => <li><a href={n.href} aria-current={here === n.href ? 'page' : undefined}>{n.label}</a></li>)}
+      </ul>
+    </nav>
+    <ThemeToggle />
+  </div>
+</header>

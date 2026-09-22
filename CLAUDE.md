@@ -5,8 +5,8 @@ Public site for the last walked postal round in Shap, Cumbria, from Alan Cleaver
 Cafe (Main Street, Shap CA10 3NJ), upload a GPX file or other evidence, and appear in a
 dated round book (leaderboard).
 
-The design source of truth is the prototype `reference/shap-postal-round.html`
-(not yet committed). Port from it; don't redesign. Fonts Alegreya / Alegreya Sans;
+The design and copy source of truth is the prototype `reference/shap-postal-round.html`.
+`src/pages/index.astro` is a port of it; keep them in step and don't redesign. Fonts Alegreya / Alegreya Sans;
 palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`, paper `#EEF1E8`;
 light and dark themes.
 
@@ -21,7 +21,7 @@ light and dark themes.
 
 | What | Where |
 |---|---|
-| **All tunable constants** — Birchwood coordinates, check radii/thresholds, upload limits, rate limit, the 8 route stops (incl. sketch-map label placement) | `src/lib/config.ts` |
+| **All tunable constants** — Birchwood coordinates, check radii/thresholds, upload limits, rate limit, the 8 route stops (text + sketch-map positions), hero facts | `src/lib/config.ts` |
 | **GPX parser + the five checks** (shared by browser and server; DOM-free) | `src/lib/gpx.ts` |
 | Entry shapes, `toPublic()`, sorting for the three leaderboard views | `src/lib/rounds.ts` |
 | Server-side form validation (the check that counts) | `src/server/submission.ts` |
@@ -41,7 +41,7 @@ light and dark themes.
 
 **Request size:** Netlify functions accept ~6 MB per request. The browser gzips GPX files (server detects and unzips, 10 MB limit on the unzipped file) and resizes photos to 2048 px JPEG, so a normal submission is well under 1 MB.
 
-**Status labels:** gpxChecked → "GPX checked"; verified → "Verified"; neither → "Waiting for check". Fastest runs/walks show only gpxChecked or verified entries.
+**Evidence tags:** "Verified", "GPX checked", or "Waiting for check" when neither. Fastest runs/walks show only gpxChecked or verified entries with a time. Time is optional; if blank, the GPX elapsed time is used.
 
 ## Develop
 

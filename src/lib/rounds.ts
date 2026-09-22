@@ -48,6 +48,7 @@ export function toPublic(r: StoredRound): PublicRound {
 }
 
 export function formatDuration(secs: number): string {
+  if (!secs) return '–';
   const h = Math.floor(secs / 3600);
   const m = Math.round((secs % 3600) / 60);
   if (m === 60) return `${h + 1}h 00m`;
@@ -64,13 +65,6 @@ export function formatDate(iso: string): string {
   });
 }
 
-export function statusLabel(r: Pick<PublicRound, 'gpxChecked' | 'verified'>): string {
-  if (r.gpxChecked && r.verified) return 'GPX checked · Verified';
-  if (r.gpxChecked) return 'GPX checked';
-  if (r.verified) return 'Verified';
-  return 'Waiting for check';
-}
-
 /** Counts towards the fastest-time tables. */
 export const isConfirmed = (r: Pick<PublicRound, 'gpxChecked' | 'verified'>) =>
   r.gpxChecked || r.verified;
@@ -82,7 +76,7 @@ export function sortForView<T extends PublicRound>(rows: T[], view: View): T[] {
     return [...rows].sort((a, b) => b.date.localeCompare(a.date));
   }
   return rows
-    .filter((r) => r.mode === view && isConfirmed(r))
+    .filter((r) => r.mode === view && r.secs > 0 && isConfirmed(r))
     .sort((a, b) => a.secs - b.secs || a.date.localeCompare(b.date));
 }
 

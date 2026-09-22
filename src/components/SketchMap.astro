@@ -1,132 +1,72 @@
 ---
 /**
- * Hand-drawn style sketch of the loop, drawn from the STOPS in config.ts.
- * Deliberately not a real map: the caption says so.
+ * The hand-drawn sketch map from the prototype. Scenery and the route line are
+ * artwork; stop markers and labels come from STOPS in config.ts.
  */
-import { OS_MAP, STOPS } from '../lib/config.ts';
+import { STOPS } from '../lib/config.ts';
 
-const W = 640;
-const H = 520;
-const PAD_X = 150;
-const PAD_Y = 60;
-
-const lats = STOPS.map((s) => s.lat);
-const lons = STOPS.map((s) => s.lon);
-const minLat = Math.min(...lats);
-const maxLat = Math.max(...lats);
-const minLon = Math.min(...lons);
-const maxLon = Math.max(...lons);
-const kx = Math.cos(((minLat + maxLat) / 2) * (Math.PI / 180));
-const spanX = (maxLon - minLon) * kx;
-const spanY = maxLat - minLat;
-const scale = Math.min((W - 2 * PAD_X) / spanX, (H - 2 * PAD_Y) / spanY);
-const offX = (W - spanX * scale) / 2;
-const offY = (H - spanY * scale) / 2;
-
-const pts = STOPS.map((s) => ({
-  ...s,
-  x: offX + (s.lon - minLon) * kx * scale,
-  y: offY + (maxLat - s.lat) * scale,
-}));
-
-// Closed Catmull-Rom spline through the stops, as cubic Béziers.
-const n = pts.length;
-let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
-for (let i = 0; i < n; i++) {
-  const p0 = pts[(i - 1 + n) % n];
-  const p1 = pts[i];
-  const p2 = pts[(i + 1) % n];
-  const p3 = pts[(i + 2) % n];
-  const c1x = p1.x + (p2.x - p0.x) / 6;
-  const c1y = p1.y + (p2.y - p0.y) / 6;
-  const c2x = p2.x - (p3.x - p1.x) / 6;
-  const c2y = p2.y - (p3.y - p1.y) / 6;
-  d += ` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
-}
-
-// Label placement per stop (config `side`), defaulting to away from the centre.
-function labelAt(p: (typeof pts)[number]) {
-  const side = p.side ?? (p.x < W / 2 ? 'left' : 'right');
-  if (side === 'left') return { x: p.x - 22, y: p.y + 5, anchor: 'end' };
-  if (side === 'right') return { x: p.x + 22, y: p.y + 5, anchor: 'start' };
-  if (side === 'above') return { x: p.x, y: p.y - 22, anchor: 'middle' };
-  return { x: p.x, y: p.y + 32, anchor: 'middle' };
-}
+const marked = STOPS.filter((s) => s.map);
+const [home, ...rest] = marked;
 ---
-<figure class="sketch">
-  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="map-title map-desc">
-    <title id="map-title">Sketch map of the Shap postal round</title>
-    <desc id="map-desc">
-      A loop starting and finishing at Birchwood Cafe in Shap, heading west into Swindale, south to Wet
-      Sleddale and back. Stops in order: {STOPS.map((s) => `${s.n}. ${s.name}`).join(', ')}. Not to scale.
-    </desc>
-    <path class="route-shadow" d={d} />
-    <path class="route" d={d} />
-    {
-      pts.map((p) => {
-        const l = labelAt(p);
-        return (
-        <g class={p.n === 1 ? 'stop home' : 'stop'}>
-          <circle cx={p.x} cy={p.y} r={p.n === 1 ? 15 : 12} />
-          <text class="num" x={p.x} y={p.y + 5} text-anchor="middle">
-            {p.n}
-          </text>
-          <text class="name" x={l.x} y={l.y} text-anchor={l.anchor}>
-            {p.label ?? p.name}
-          </text>
-        </g>
-        );
-      })
-    }
-    <g class="compass" transform={`translate(${W - 44} 48)`}>
-      <path d="M0 -26 L8 6 L0 0 L-8 6 Z" />
-      <text x="0" y="24" text-anchor="middle">N</text>
+<div class="mapbox">
+  <svg viewBox="0 0 600 620" role="img" aria-labelledby="maptitle">
+    <title id="maptitle">
+      Sketch map of the Shap postal round, looping west from Shap through {rest.map((s) => s.map!.label).join(', ')}
+    </title>
+    <!-- fells -->
+    <path d="M0 330 C60 300 90 260 70 200 C50 140 10 120 0 110 Z" fill="var(--moss)" opacity=".18" />
+    <path d="M0 470 C40 440 80 470 130 430 C170 400 150 330 110 300 C80 380 30 390 0 400 Z" fill="var(--fell)" opacity=".16" />
+    <path d="M40 620 C60 560 120 580 170 590 C230 600 250 570 300 575 C360 580 380 620 380 620 Z" fill="var(--fell)" opacity=".14" />
+    <path d="M150 300 C200 280 230 330 200 380 C180 420 130 440 110 420 Z" fill="var(--moss)" opacity=".16" />
+    <!-- water -->
+    <path d="M20 450 C60 400 110 330 140 250 C160 190 200 110 250 40 L262 0" fill="none" stroke="var(--water)" stroke-width="3" />
+    <path d="M300 540 C310 450 320 330 330 250 C338 190 330 120 300 60 L285 0" fill="none" stroke="var(--water)" stroke-width="3" />
+    <ellipse cx="265" cy="535" rx="62" ry="13" fill="var(--water)" transform="rotate(-6 265 535)" />
+    <!-- A6 -->
+    <path d="M470 0 C475 80 485 150 492 230 C500 330 505 430 500 620" fill="none" stroke="var(--ink-soft)" stroke-width="4" opacity=".45" />
+    <text x="508" y="600" font-family="Alegreya Sans, sans-serif" font-size="15" fill="var(--ink-soft)">A6</text>
+    <!-- route -->
+    <path
+      d="M480 139 L466 60 C420 70 380 120 337 161 C300 180 270 205 240 217 C210 225 180 238 156 248 C135 290 118 330 108 362 C90 390 72 408 60 424 C75 460 90 490 102 506 C130 525 158 540 180 548 C230 540 280 525 330 517 C390 505 450 494 492 486 C510 420 520 360 520 300 C515 230 500 180 480 139"
+      fill="none"
+      stroke="var(--red)"
+      stroke-width="3.5"
+      stroke-dasharray="9 6"
+      stroke-linecap="round"
+    />
+    <!-- stops -->
+    <g font-family="Alegreya Sans, sans-serif" font-size="15" fill="var(--ink)">
+      {
+        home && (
+          <>
+            <g>
+              <rect x={home.map!.x - 11} y={home.map!.y - 12} width="22" height="24" rx="4" fill="var(--red)" />
+              <rect x={home.map!.x - 7} y={home.map!.y - 6} width="14" height="3" fill="#fff" />
+            </g>
+            <text x={home.map!.lx} y={home.map!.ly} font-weight="700">
+              {home.map!.label}
+            </text>
+          </>
+        )
+      }
+      {
+        rest.map((s) => (
+          <>
+            <circle cx={s.map!.x} cy={s.map!.y} r="6" fill="var(--paper)" stroke="var(--red)" stroke-width="3" />
+            <text x={s.map!.lx} y={s.map!.ly} font-weight={s.map!.bold ? 700 : undefined}>
+              {s.map!.label}
+            </text>
+          </>
+        ))
+      }
+      <text x="18" y="360" fill="var(--ink-soft)" font-style="italic">Swindale</text>
+      <text x="215" y="562" fill="var(--ink-soft)" font-style="italic" font-size="13">Wet Sleddale Reservoir</text>
+      <text x="336" y="95" fill="var(--ink-soft)" font-style="italic" font-size="13">River Lowther</text>
+    </g>
+    <g transform="translate(560 40)" font-family="Alegreya Sans, sans-serif" font-size="14" fill="var(--ink-soft)">
+      <path d="M0 18 L0 -12 M-6 -4 L0 -14 L6 -4" stroke="var(--ink-soft)" stroke-width="2" fill="none" />
+      <text x="-5" y="34">N</text>
     </g>
   </svg>
-  <figcaption>Not to scale — use {OS_MAP} and a compass.</figcaption>
-</figure>
-
-<style>
-  .sketch {
-    margin: 0;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 0.75rem;
-  }
-  svg { display: block; width: 100%; }
-  .route {
-    fill: none;
-    stroke: var(--red);
-    stroke-width: 3.5;
-    stroke-dasharray: 10 7;
-    stroke-linecap: round;
-  }
-  .route-shadow {
-    fill: none;
-    stroke: var(--accent-2);
-    stroke-opacity: 0.25;
-    stroke-width: 16;
-    stroke-linejoin: round;
-  }
-  .stop circle { fill: var(--accent); stroke: var(--surface); stroke-width: 3; }
-  .stop.home circle { fill: var(--red); }
-  .num { fill: var(--on-accent); font: 700 15px var(--sans); }
-  .home .num { fill: #fff; }
-  .name {
-    fill: var(--text);
-    font: 700 16px var(--sans);
-    paint-order: stroke;
-    stroke: var(--surface);
-    stroke-width: 5px;
-  }
-  .compass path { fill: var(--accent); }
-  .compass text { fill: var(--accent); font: 700 14px var(--sans); }
-  figcaption {
-    font-family: var(--serif);
-    font-style: italic;
-    color: var(--muted);
-    text-align: center;
-    padding-top: 0.5rem;
-  }
-</style>
+  <p class="mapnote">Sketch map, not to scale — use OS Explorer OL5 and a compass.</p>
+</div>

@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Shap Postal Round</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF1E8; --paper-2:#E3E8DA; --ink:#1C231B; --ink-soft:#4B5647;
+  --fell:#2E4A2B; --moss:#6F8B3F; --red:#C4241C; --line:#C9D1BD; --card:#F7F9F3;
+  --water:#9DB8C2;
+  --serif:"Alegreya",Georgia,"Times New Roman",serif;
+  --sans:"Alegreya Sans","Gill Sans","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#141A13; --paper-2:#1B2319; --ink:#E6EBDF; --ink-soft:#A9B4A3;
+    --fell:#8FB07E; --moss:#A6BF72; --red:#E0463C; --line:#2E3A2B; --card:#1A2118; --water:#3E5A64;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141A13; --paper-2:#1B2319; --ink:#E6EBDF; --ink-soft:#A9B4A3;
+  --fell:#8FB07E; --moss:#A6BF72; --red:#E0463C; --line:#2E3A2B; --card:#1A2118; --water:#3E5A64;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:1.125rem;line-height:1.6;-webkit-font-smoothing:antialiased}
+img,svg{max-width:100%}
+a{color:var(--fell);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 1.25rem}
+.measure{max-width:38rem}
+h1,h2,h3{font-weight:800;line-height:1.08;margin:0 0 .6em;letter-spacing:-.01em}
+h2{font-size:clamp(1.9rem,4vw,2.6rem)}
+h3{font-size:1.3rem;font-weight:700}
+p{margin:0 0 1em}
+section{padding:4.5rem 0;border-top:1px solid var(--line)}
+
+/* hero */
+.hero{padding:3.5rem 0 4rem;border-top:0;position:relative;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:2.5rem;align-items:end}
+.kicker{font-family:var(--sans);font-weight:500;color:var(--ink-soft);margin-bottom:1.5rem;display:flex;align-items:center;gap:.6rem}
+.slot{display:inline-block;width:2.2rem;height:.55rem;background:var(--red);border-radius:2px}
+.hero h1{font-size:clamp(2.8rem,8vw,5.6rem);color:var(--fell);margin-bottom:.35em}
+.hero .lede{font-size:1.3rem;color:var(--ink);max-width:34rem}
+.quote{border-left:4px solid var(--red);padding:.2rem 0 .2rem 1.1rem;margin:1.8rem 0 0;font-style:italic;font-size:1.35rem}
+.quote cite{display:block;font-style:normal;font-family:var(--sans);font-size:.95rem;color:var(--ink-soft);margin-top:.35rem}
+.facts{font-family:var(--sans);display:grid;grid-template-columns:auto 1fr;gap:.55rem 1.2rem;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:1.4rem 1.5rem}
+.facts dt{color:var(--ink-soft)} .facts dd{margin:0;font-weight:700}
+.actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:2rem}
+.btn{font-family:var(--sans);font-weight:700;font-size:1.05rem;border:2px solid var(--fell);background:var(--fell);color:var(--paper);padding:.7rem 1.25rem;border-radius:4px;text-decoration:none;cursor:pointer;display:inline-block}
+.btn.ghost{background:transparent;color:var(--fell)}
+.btn.red{background:var(--red);border-color:var(--red);color:#fff}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* book */
+.book{display:grid;grid-template-columns:1fr 1.4fr;gap:3rem;align-items:start}
+.book-card{background:var(--fell);color:#EEF1E8;padding:2rem;border-radius:4px;font-family:var(--sans)}
+.book-card strong{font-family:var(--serif);font-size:1.9rem;display:block;line-height:1.1;margin-bottom:.4rem;color:#fff}
+.book-card .author{margin-top:1.5rem;font-weight:700;letter-spacing:.02em}
+
+/* route */
+.route{display:grid;grid-template-columns:1.1fr 1fr;gap:2.5rem;align-items:start}
+.mapbox{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:.75rem;position:sticky;top:calc(1rem + env(safe-area-inset-top,0px))}
+.mapnote{font-family:var(--sans);font-size:.9rem;color:var(--ink-soft);margin:.5rem .25rem 0}
+ol.stops{list-style:none;padding:0;margin:0;counter-reset:s}
+ol.stops li{counter-increment:s;position:relative;padding:0 0 1.4rem 3.1rem;border-left:2px dashed var(--red);margin-left:1rem}
+ol.stops li:last-child{border-left-color:transparent}
+ol.stops li::before{content:counter(s);position:absolute;left:-1.05rem;top:-.1rem;width:2rem;height:2rem;border-radius:50%;background:var(--paper);border:2px solid var(--red);color:var(--red);font-family:var(--sans);font-weight:700;display:grid;place-items:center;font-size:.95rem}
+ol.stops h3{margin:0 0 .2rem;font-size:1.15rem}
+ol.stops p{margin:0;font-size:1.02rem;color:var(--ink-soft)}
+.safety{margin-top:2rem;background:var(--paper-2);border-radius:6px;padding:1.3rem 1.4rem;font-family:var(--sans);font-size:1rem}
+.safety strong{color:var(--red)}
+
+/* log */
+.log{display:grid;grid-template-columns:1fr 1.25fr;gap:3rem;align-items:start}
+form{font-family:var(--sans);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:1.5rem}
+.field{margin-bottom:1rem}
+label{display:block;font-weight:700;margin-bottom:.3rem}
+.hint{font-weight:400;color:var(--ink-soft);font-size:.92rem}
+input[type=text],input[type=date],input[type=url],select,textarea{width:100%;font:inherit;font-size:1rem;padding:.6rem .7rem;border:1.5px solid var(--line);border-radius:4px;background:var(--paper);color:var(--ink)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:4px;overflow:hidden}
+.seg label{flex:1;margin:0;text-align:center;padding:.55rem;cursor:pointer;font-weight:500}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg input:checked+span{color:var(--paper)}
+.seg label:has(input:checked){background:var(--fell);color:var(--paper)}
+.seg label:has(input:focus-visible){outline:3px solid var(--red);outline-offset:-3px}
+.time{display:flex;gap:.4rem;align-items:center}
+.time input{width:4.5rem;text-align:center}
+.drop{border:2px dashed var(--line);border-radius:6px;padding:1rem;text-align:center;background:var(--paper)}
+.drop input{max-width:100%}
+.gpxresult{margin-top:.7rem;font-size:.95rem;text-align:left}
+.gpxresult ul{margin:.3rem 0 0;padding-left:1.1rem}
+.ok{color:var(--moss);font-weight:700}.no{color:var(--red);font-weight:700}
+.msg{margin-top:.8rem;font-weight:500}
+.msg.err{color:var(--red)}
+
+/* board */
+.board-head{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between;margin-bottom:1rem;font-family:var(--sans)}
+.tabs{display:flex;gap:.3rem;flex-wrap:wrap}
+.tabs button{font:inherit;font-weight:500;border:1.5px solid var(--line);background:transparent;color:var(--ink);padding:.4rem .8rem;border-radius:999px;cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:1rem;min-width:520px}
+th,td{text-align:left;padding:.7rem .8rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;color:var(--ink-soft);font-size:.92rem}
+tr:last-child td{border-bottom:0}
+td.pos{font-family:var(--serif);font-weight:800;font-size:1.2rem;color:var(--fell);width:2.5rem}
+.who{font-weight:700}
+.sub{color:var(--ink-soft);font-size:.88rem}
+.tag{display:inline-block;font-size:.8rem;padding:.08rem .45rem;border-radius:3px;border:1px solid currentColor;margin:.15rem .25rem 0 0;white-space:nowrap}
+.tag.v{color:var(--moss)} .tag.g{color:var(--fell)} .tag.p{color:var(--ink-soft)}
+.empty{padding:2.5rem 1.5rem;text-align:center;font-family:var(--sans);color:var(--ink-soft)}
+.admin{font:inherit;font-size:.85rem;background:none;border:0;color:var(--fell);text-decoration:underline;cursor:pointer;padding:0;margin-right:.6rem}
+.admin.del{color:var(--red)}
+
+footer{padding:3rem 0 4rem;border-top:1px solid var(--line);font-family:var(--sans);font-size:.98rem;color:var(--ink-soft)}
+footer .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem}
+footer h3{color:var(--ink);font-size:1.1rem}
+footer ul{padding-left:1.1rem;margin:0}
+
+@media (max-width:820px){
+  .hero-grid,.book,.route,.log,footer .cols{grid-template-columns:1fr}
+  .mapbox{position:static}
+  section{padding:3.2rem 0}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="kicker"><span class="slot" aria-hidden="true"></span>Shap, Cumbria</div>
+      <h1>The last postal round in Shap</h1>
+      <p class="lede">Until 1976 a postman walked the post out of Shap every morning: over the fields to Shap Abbey, up to isolated Tailbert, down into Swindale and over the fell to Wet Sleddale. Now you can walk or run the round yourself.</p>
+      <blockquote class="quote">It broke my heart.
+        <cite>Stuart Lewis, the last postman to walk the round, on being given a van</cite>
+      </blockquote>
+      <div class="actions">
+        <a class="btn" href="#route">See the round</a>
+        <a class="btn red" href="#log">Log your round</a>
+      </div>
+    </div>
+    <dl class="facts" aria-label="Route at a glance">
+      <dt>Start and finish</dt><dd>Birchwood Cafe, Main Street, Shap</dd>
+      <dt>Distance</dt><dd>About 11 miles / 18 km</dd>
+      <dt>Time</dt><dd>4 to 5 hours walking</dd>
+      <dt>Terrain</dt><dd>Fields, lanes and open, pathless fell</dd>
+      <dt>Map</dt><dd>OS Explorer OL5</dd>
+      <dt>Last walked by post</dt><dd>1976</dd>
+    </dl>
+  </div>
+</header>
+
+<main>
+<section id="book">
+  <div class="wrap book">
+    <div class="book-card">
+      <strong>The Postal Paths</strong>
+      Rediscovering Britain’s forgotten trails and the people who walked them
+      <div class="author">Alan Cleaver</div>
+      <div>Monoray, 2025</div>
+    </div>
+    <div class="measure">
+      <h2>Where the story comes from</h2>
+      <p>Whitehaven author Alan Cleaver spent five years tracing the routes rural postmen and women walked, from the penny post of the 1840s until vans replaced them in the late 1960s and 1970s. His book follows those paths from the Outer Hebrides to the Cornish coast, and gathers the stories of the posties who walked them.</p>
+      <p>These were long days. Rounds of 10 to 20 miles were common, walked six days a week in every weather, often by the same person for most of their working life. Where the road took too long, postmen made their own shortcuts. Many are still marked on maps as postman’s paths.</p>
+      <p>Shap is one of the Cumbrian rounds in the book. Stuart Lewis walked its 15 miles until 1976, carrying a leather pouch to sell stamps and postal orders at the farms. Before him, in the 1950s, the round belonged to Jimmy Eland.</p>
+    </div>
+  </div>
+</section>
+
+<section id="route">
+  <div class="wrap">
+    <h2>The round</h2>
+    <p class="measure">A circular route out of Shap and back, following Alan Cleaver’s mapping of the round. Start and finish at Birchwood Cafe, run by the family of one of the last postmen to walk it.</p>
+    <div class="route">
+      <div class="mapbox">
+        <svg viewBox="0 0 600 620" role="img" aria-labelledby="maptitle">
+          <title id="maptitle">Sketch map of the Shap postal round, looping west from Shap through Shap Abbey, Tailbert, Swindale, Sleddale Hall and Thorney Bank</title>
+          <!-- fells -->
+          <path d="M0 330 C60 300 90 260 70 200 C50 140 10 120 0 110 Z" fill="var(--moss)" opacity=".18"/>
+          <path d="M0 470 C40 440 80 470 130 430 C170 400 150 330 110 300 C80 380 30 390 0 400 Z" fill="var(--fell)" opacity=".16"/>
+          <path d="M40 620 C60 560 120 580 170 590 C230 600 250 570 300 575 C360 580 380 620 380 620 Z" fill="var(--fell)" opacity=".14"/>
+          <path d="M150 300 C200 280 230 330 200 380 C180 420 130 440 110 420 Z" fill="var(--moss)" opacity=".16"/>
+          <!-- water -->
+          <path d="M20 450 C60 400 110 330 140 250 C160 190 200 110 250 40 L262 0" fill="none" stroke="var(--water)" stroke-width="3"/>
+          <path d="M300 540 C310 450 320 330 330 250 C338 190 330 120 300 60 L285 0" fill="none" stroke="var(--water)" stroke-width="3"/>
+          <ellipse cx="265" cy="535" rx="62" ry="13" fill="var(--water)" transform="rotate(-6 265 535)"/>
+          <!-- A6 -->
+          <path d="M470 0 C475 80 485 150 492 230 C500 330 505 430 500 620" fill="none" stroke="var(--ink-soft)" stroke-width="4" opacity=".45"/>
+          <text x="508" y="600" font-family="Alegreya Sans, sans-serif" font-size="15" fill="var(--ink-soft)">A6</text>
+          <!-- route -->
+          <path id="rt" d="M480 139 L466 60 C420 70 380 120 337 161 C300 180 270 205 240 217 C210 225 180 238 156 248 C135 290 118 330 108 362 C90 390 72 408 60 424 C75 460 90 490 102 506 C130 525 158 540 180 548 C230 540 280 525 330 517 C390 505 450 494 492 486 C510 420 520 360 520 300 C515 230 500 180 480 139" fill="none" stroke="var(--red)" stroke-width="3.5" stroke-dasharray="9 6" stroke-linecap="round"/>
+          <!-- stops -->
+          <g font-family="Alegreya Sans, sans-serif" font-size="15" fill="var(--ink)">
+            <g><rect x="470" y="127" width="22" height="24" rx="4" fill="var(--red)"/><rect x="474" y="133" width="14" height="3" fill="#fff"/></g>
+            <text x="390" y="128" font-weight="700">Birchwood Cafe</text>
+            <circle cx="337" cy="161" r="6" fill="var(--paper)" stroke="var(--red)" stroke-width="3"/><text x="345" y="185">Shap Abbey</text>
+            <circle cx="156" cy="248" r="6" fill="var(--paper)" stroke="var(--red)" stroke-width="3"/><text x="166" y="244">Tailbert</text>
+            <circle cx="60" cy="424" r="6" fill="var(--paper)" stroke="var(--red)" stroke-width="3"/><text x="70" y="420">Truss Gap</text>
+            <text x="18" y="360" fill="var(--ink-soft)" font-style="italic">Swindale</text>
+            <circle cx="102" cy="506" r="6" fill="var(--paper)" stroke="var(--red)" stroke-width="3"/><text x="112" y="500">Glede Howe</text>
+            <circle cx="180" cy="548" r="6" fill="var(--paper)" stroke="var(--red)" stroke-width="3"/><text x="120" y="580">Sleddale Hall</text>
+            <circle cx="330" cy="517" r="6" fill="var(--paper)" stroke="var(--red)" stroke-width="3"/><text x="338" y="506">Thorney Bank postbox</text>
+            <text x="215" y="562" fill="var(--ink-soft)" font-style="italic" font-size="13">Wet Sleddale Reservoir</text>
+            <text x="336" y="95" fill="var(--ink-soft)" font-style="italic" font-size="13">River Lowther</text>
+          </g>
+          <g transform="translate(560 40)" font-family="Alegreya Sans, sans-serif" font-size="14" fill="var(--ink-soft)"><path d="M0 18 L0 -12 M-6 -4 L0 -14 L6 -4" stroke="var(--ink-soft)" stroke-width="2" fill="none"/><text x="-5" y="34">N</text></g>
+        </svg>
+        <p class="mapnote">Sketch map, not to scale. Navigate with OS Explorer OL5 and a compass.</p>
+      </div>
+
+      <div>
+        <ol class="stops">
+          <li><h3>Birchwood Cafe</h3><p>Start on Main Street. Head north out of the village and take the lane west towards Shap Abbey.</p></li>
+          <li><h3>Shap Abbey</h3><p>Cross the Lowther by the wooden-sided bridge. From the abbey, take the footpath west over the fields, which can be very wet, until you meet the concrete water-board road.</p></li>
+          <li><h3>Tailbert</h3><p>Follow the road south, then west to the isolated farm at Tailbert. Take a bearing south-west and drop into Swindale.</p></li>
+          <li><h3>Truss Gap, Swindale</h3><p>Follow the valley road to Truss Gap Farm. The postman sometimes went on to Swindale Head and Mosedale Cottage when there was post for them.</p></li>
+          <li><h3>Over Glede Howe</h3><p>Cross Swindale Beck and climb the fell. This is the true postman’s path: his own shortcut, once marked with wooden staves to find the driest line, even in snow. The staves are long gone, so take a bearing.</p></li>
+          <li><h3>Sleddale Hall</h3><p>Drop south off the fell to the farmhouse made famous by the film <em>Withnail and I</em>.</p></li>
+          <li><h3>Thorney Bank postbox</h3><p>Follow the path east above Wet Sleddale to Thorney Bank and the Victorian postbox the postman emptied on his round.</p></li>
+          <li><h3>Back to Birchwood Cafe</h3><p>Take the road east to the A6 and turn north back into Shap. Finish where you started, then log your round.</p></li>
+        </ol>
+        <div class="safety"><strong>Before you go.</strong> This is a long, rough day with pathless, boggy sections. Mountain Rescue advise carrying a map and compass, and knowing how to use them, even if you have GPS. Check the forecast, tell someone your plan, and close every gate behind you.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="log">
+  <div class="wrap log">
+    <div class="measure">
+      <h2>Log your round</h2>
+      <p>Walked it or ran it? Add yourself to the round book. Upload the GPX file from your watch or phone and we check it starts and finishes in Shap and covers the whole loop.</p>
+      <p>No GPX? Add a link to your Strava, Garmin or Komoot activity instead, or a photo from the Thorney Bank postbox. The Birchwood team checks entries without a GPX by hand.</p>
+      <p class="hint">Your name, date and time appear on the public leaderboard. Your GPX file is used to check the route and is not shown to others.</p>
+    </div>
+
+    <form id="f" novalidate>
+      <div class="field">
+        <label for="name">Your name</label>
+        <input id="name" type="text" maxlength="40" autocomplete="name" required>
+      </div>
+      <div class="field">
+        <label id="modelbl">How did you do it?</label>
+        <div class="seg" role="radiogroup" aria-labelledby="modelbl">
+          <label><input type="radio" name="mode" value="walk" checked><span>Walked</span></label>
+          <label><input type="radio" name="mode" value="run"><span>Ran</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="gpx">GPX file <span class="hint">(recommended)</span></label>
+        <div class="drop">
+          <input id="gpx" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml">
+          <div class="gpxresult" id="gpxres" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="date">Date</label>
+          <input id="date" type="date" required>
+        </div>
+        <div class="field">
+          <label id="timelbl">Time taken</label>
+          <div class="time" role="group" aria-labelledby="timelbl">
+            <input id="hh" type="text" inputmode="numeric" maxlength="2" placeholder="h" aria-label="Hours">:
+            <input id="mm" type="text" inputmode="numeric" maxlength="2" placeholder="mm" aria-label="Minutes">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="link">Activity link <span class="hint">(optional)</span></label>
+        <input id="link" type="url" placeholder="https://www.strava.com/activities/…">
+      </div>
+      <div class="field" id="photofield" hidden>
+        <label for="photo">Photo evidence <span class="hint">(optional)</span></label>
+        <input id="photo" type="file" accept="image/jpeg,image/png,image/webp">
+      </div>
+      <div class="field">
+        <label for="note">A line for the round book <span class="hint">(optional)</span></label>
+        <textarea id="note" rows="2" maxlength="140" placeholder="Snow on Glede Howe, tea at Birchwood after"></textarea>
+      </div>
+      <button class="btn red" type="submit" id="submit">Add my round</button>
+      <div class="msg" id="msg" role="status" aria-live="polite"></div>
+    </form>
+  </div>
+</section>
+
+<section id="board">
+  <div class="wrap">
+    <h2>The round book</h2>
+    <div class="board-head">
+      <p style="margin:0" id="count">Everyone who has completed the Shap round, newest first.</p>
+      <div class="tabs" role="group" aria-label="Sort leaderboard">
+        <button type="button" data-view="date" aria-pressed="true">By date</button>
+        <button type="button" data-view="run" aria-pressed="false">Fastest runs</button>
+        <button type="button" data-view="walk" aria-pressed="false">Fastest walks</button>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Date</th><th scope="col">Time</th><th scope="col">Evidence</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="empty" id="empty">Loading the round book…</div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap cols">
+    <div>
+      <h3>Birchwood Cafe</h3>
+      <p>Birchwood House, Main Street, Shap CA10 3NJ<br>Tuesday to Saturday, 9am to 4pm<br>01931 749033</p>
+    </div>
+    <div>
+      <h3>Read and listen</h3>
+      <ul>
+        <li>Alan Cleaver, <em>The Postal Paths</em> (Monoray, 2025)</li>
+        <li>Alan Cleaver’s Hidden Cumbria route notes for the Shap postman’s path</li>
+        <li>Countrystride podcast #43, Shap and the Postman’s Path</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Walk responsibly</h3>
+      <p>Much of the route crosses working farmland. Keep dogs on leads near stock, use gates and stiles, and leave no trace.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // Birchwood Cafe (approximate) and loose route checks
+  var START = {lat:54.5315, lon:-2.6800};
+  var MIN_KM = 15;          // full loop is ~18 km
+  var WEST_LON = -2.735;    // must reach Swindale
+  var SOUTH_LAT = 54.500;   // must reach Wet Sleddale
+  var START_RADIUS_KM = 1.0;
+
+  var $ = function(id){return document.getElementById(id)};
+  var parsed = null, db = null, assets = null, user = null, canEdit = false, entries = [], view = "date";
+
+  var today = new Date().toISOString().slice(0,10);
+  $("date").max = today;
+
+  function hav(a,b){
+    var R=6371, r=Math.PI/180, dLat=(b.lat-a.lat)*r, dLon=(b.lon-a.lon)*r;
+    var x=Math.sin(dLat/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLon/2)**2;
+    return 2*R*Math.asin(Math.sqrt(x));
+  }
+  function fmt(sec){ if(!sec) return "–"; var h=Math.floor(sec/3600), m=Math.round((sec%3600)/60); if(m===60){h++;m=0} return h+"h "+String(m).padStart(2,"0")+"m"; }
+  function fmtDate(d){ try{ return new Date(d+"T12:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}) }catch(e){ return d } }
+
+  function parseGpx(text){
+    var doc = new DOMParser().parseFromString(text,"application/xml");
+    if (doc.getElementsByTagName("parsererror").length) throw new Error("That file isn’t a readable GPX file.");
+    var pts = Array.prototype.slice.call(doc.getElementsByTagName("trkpt"));
+    if (!pts.length) pts = Array.prototype.slice.call(doc.getElementsByTagName("rtept"));
+    if (pts.length < 10) throw new Error("The GPX file has no track points. Export the recorded activity, not a planned route.");
+    var list = pts.map(function(p){
+      var t = p.getElementsByTagName("time")[0];
+      return {lat:parseFloat(p.getAttribute("lat")), lon:parseFloat(p.getAttribute("lon")), t: t ? Date.parse(t.textContent) : NaN};
+    }).filter(function(p){return isFinite(p.lat)&&isFinite(p.lon)});
+    var km=0, minLon=180, minLat=90;
+    for (var i=1;i<list.length;i++){ km += hav(list[i-1],list[i]); }
+    list.forEach(function(p){ if(p.lon<minLon)minLon=p.lon; if(p.lat<minLat)minLat=p.lat; });
+    var first=list[0], last=list[list.length-1];
+    var secs = (isFinite(first.t)&&isFinite(last.t)) ? Math.round((last.t-first.t)/1000) : 0;
+    var checks = {
+      start: hav(first,START) <= START_RADIUS_KM,
+      finish: hav(last,START) <= START_RADIUS_KM,
+      distance: km >= MIN_KM,
+      swindale: minLon <= WEST_LON,
+      sleddale: minLat <= SOUTH_LAT
+    };
+    checks.all = checks.start && checks.finish && checks.distance && checks.swindale && checks.sleddale;
+    return {km: Math.round(km*10)/10, secs: secs, date: isFinite(first.t) ? new Date(first.t).toISOString().slice(0,10) : "", checks: checks};
+  }
+
+  function showGpx(r){
+    var box = $("gpxres"); box.textContent = "";
+    var head = document.createElement("div");
+    head.className = r.checks.all ? "ok" : "no";
+    head.textContent = r.checks.all ? "Route checked: this is the full Shap round." : "This track doesn’t look like the full round yet.";
+    box.appendChild(head);
+    var ul = document.createElement("ul");
+    [["Starts in Shap",r.checks.start],["Finishes in Shap",r.checks.finish],["Distance "+r.km+" km",r.checks.distance],["Reaches Swindale",r.checks.swindale],["Reaches Wet Sleddale",r.checks.sleddale]].forEach(function(c){
+      var li=document.createElement("li"); li.textContent=(c[1]?"✓ ":"✗ ")+c[0]; ul.appendChild(li);
+    });
+    box.appendChild(ul);
+    if (!r.checks.all){ var p=document.createElement("div"); p.className="hint"; p.textContent="You can still add your round. It will show as waiting for a check."; box.appendChild(p); }
+  }
+
+  $("gpx").addEventListener("change", function(e){
+    parsed = null; $("gpxres").textContent = "";
+    var f = e.target.files[0]; if(!f) return;
+    if (f.size > 20*1024*1024){ $("gpxres").textContent = "That file is over 20 MB. Export a GPX without extra sensor data."; return; }
+    f.text().then(function(t){
+      parsed = parseGpx(t); parsed.raw = t; showGpx(parsed);
+      if (parsed.date) $("date").value = parsed.date;
+      if (parsed.secs){ $("hh").value = Math.floor(parsed.secs/3600); $("mm").value = String(Math.round((parsed.secs%3600)/60)).padStart(2,"0"); }
+    }).catch(function(err){ $("gpxres").innerHTML=""; var d=document.createElement("div"); d.className="no"; d.textContent=err.message; $("gpxres").appendChild(d); });
+  });
+
+  function setMsg(t,err){ var m=$("msg"); m.textContent=t; m.className="msg"+(err?" err":""); }
+
+  $("f").addEventListener("submit", async function(e){
+    e.preventDefault();
+    var name = $("name").value.trim(), date = $("date").value;
+    var mode = document.querySelector("input[name=mode]:checked").value;
+    var h = parseInt($("hh").value,10)||0, m = parseInt($("mm").value,10)||0;
+    var secs = h*3600 + m*60;
+    var link = $("link").value.trim();
+    if (!name){ setMsg("Add your name so we can put you in the round book.",true); $("name").focus(); return; }
+    if (!date){ setMsg("Add the date you completed the round.",true); $("date").focus(); return; }
+    if (date > today){ setMsg("The date can’t be in the future.",true); $("date").focus(); return; }
+    if (m > 59){ setMsg("Minutes must be between 0 and 59.",true); $("mm").focus(); return; }
+    if (link && !/^https:\/\//i.test(link)){ setMsg("Activity links must start with https://",true); $("link").focus(); return; }
+    if (!parsed && !link && !($("photo").files||[]).length){ setMsg("Add a GPX file, an activity link or a photo so we can check your round.",true); return; }
+    if (!db){ setMsg("The round book can’t be saved from this view. Open the page in Claude to add your round.",true); return; }
+
+    $("submit").disabled = true; setMsg("Adding your round…");
+    try{
+      var entry = {
+        name: name, mode: mode, date: date, secs: secs || (parsed ? parsed.secs : 0),
+        km: parsed ? parsed.km : null, gpxChecked: !!(parsed && parsed.checks.all),
+        link: link || null, note: $("note").value.trim().slice(0,140) || null,
+        verified: false, createdAt: new Date().toISOString()
+      };
+      if (user){ try{ entry.uid = await user.id(); }catch(_){} }
+      if (assets && parsed){
+        try{ var up = await assets.upload(new Blob([parsed.raw],{type:"text/plain"}),{type:"text/plain"}); entry.gpxId = up.id; }catch(_){}
+      }
+      var pf = ($("photo").files||[])[0];
+      if (assets && pf){
+        try{ var upp = await assets.upload(pf); entry.photoId = upp.id; }catch(err){ if(err&&err.code==="too_large"){ throw {message:"That photo is over 20 MB."} } }
+      }
+      await db.collection("rounds").add(entry);
+      $("f").reset(); parsed=null; $("gpxres").textContent="";
+      setMsg(entry.gpxChecked ? "Your round is in the book. Well delivered." : "Your round is in the book. It will show as checked once the Birchwood team has looked at your evidence.");
+      document.getElementById("board").scrollIntoView();
+    }catch(err){
+      setMsg((err && err.code==="invalid_argument") ? "You don’t have permission to add to the round book from this link." : ((err&&err.message)||"Your round couldn’t be saved. Try again in a moment."), true);
+    }finally{ $("submit").disabled = false; }
+  });
+
+  document.querySelectorAll(".tabs button").forEach(function(b){
+    b.addEventListener("click", function(){
+      view = b.dataset.view;
+      document.querySelectorAll(".tabs button").forEach(function(x){ x.setAttribute("aria-pressed", String(x===b)); });
+      render();
+    });
+  });
+
+  function render(){
+    var rows = $("rows"); rows.textContent = "";
+    var list = entries.slice();
+    if (view === "date"){
+      list.sort(function(a,b){ return (b.date||"").localeCompare(a.date||"") || (b.createdAt||"").localeCompare(a.createdAt||""); });
+      $("count").textContent = list.length ? list.length + (list.length===1?" round":" rounds") + " completed, newest first." : "Everyone who has completed the Shap round, newest first.";
+    } else {
+      list = list.filter(function(e){ return e.mode===view && e.secs>0 && (e.gpxChecked||e.verified); });
+      list.sort(function(a,b){ return a.secs-b.secs || (a.date||"").localeCompare(b.date||""); });
+      $("count").textContent = "Fastest checked " + (view==="run"?"runs":"walks") + ". Only rounds with a checked GPX or a verified entry are ranked.";
+    }
+    $("empty").hidden = list.length > 0;
+    if (!list.length) $("empty").textContent = view==="date" ? "No rounds logged yet. Be the first name in the Shap round book." : "No checked " + (view==="run"?"runs":"walks") + " yet. Log yours with a GPX file to take the top spot.";
+    list.forEach(function(e,i){
+      var tr=document.createElement("tr");
+      var td=function(){var c=document.createElement("td");tr.appendChild(c);return c};
+      var p=td(); p.className="pos"; p.textContent=i+1;
+      var w=td(); var n=document.createElement("div"); n.className="who"; n.textContent=e.name||"Someone"; w.appendChild(n);
+      var s=document.createElement("div"); s.className="sub"; s.textContent=(e.mode==="run"?"Ran":"Walked")+(e.km?(", "+e.km+" km"):""); w.appendChild(s);
+      if (e.note){ var q=document.createElement("div"); q.className="sub"; q.style.fontStyle="italic"; q.textContent="“"+e.note+"”"; w.appendChild(q); }
+      td().textContent = fmtDate(e.date);
+      td().textContent = fmt(e.secs);
+      var ev=td();
+      var tag=function(t,c){var x=document.createElement("span");x.className="tag "+c;x.textContent=t;ev.appendChild(x)};
+      if (e.verified) tag("Verified","v");
+      if (e.gpxChecked) tag("GPX checked","g");
+      if (!e.verified && !e.gpxChecked) tag("Waiting for check","p");
+      if (e.link && /^https:\/\//i.test(e.link)){ var a=document.createElement("a"); a.href=e.link; a.target="_blank"; a.rel="noopener noreferrer"; a.textContent="Activity"; a.className="sub"; a.style.marginRight=".5rem"; ev.appendChild(document.createElement("br")); ev.appendChild(a); }
+      if (e.photoId && /^[a-f0-9]{32}$/i.test(e.photoId)){ var ph=document.createElement("a"); ph.href="/_blob/"+e.photoId; ph.target="_blank"; ph.textContent="Photo"; ph.className="sub"; ev.appendChild(ph); }
+      if (canEdit && db){
+        var bar=document.createElement("div");
+        var vb=document.createElement("button"); vb.type="button"; vb.className="admin"; vb.textContent=e.verified?"Unverify":"Verify";
+        vb.onclick=function(){ db.doc("rounds/"+e._id).update({verified:!e.verified}).catch(function(){}); };
+        var db2=document.createElement("button"); db2.type="button"; db2.className="admin del"; db2.textContent="Remove";
+        db2.onclick=function(){ if(confirm("Remove "+(e.name||"this entry")+" from the round book?")) db.doc("rounds/"+e._id).delete().catch(function(){}); };
+        bar.appendChild(vb); bar.appendChild(db2); ev.appendChild(bar);
+      }
+      rows.appendChild(tr);
+    });
+  }
+
+  (async function(){
+    if (!window.claude || !window.claude.use){ $("empty").textContent="Open this page in Claude to see and join the round book."; return; }
+    var got = await Promise.all([claude.use("db"), claude.use("assets"), claude.use("user")]);
+    db = got[0]; assets = got[1]; user = got[2];
+    if (assets) $("photofield").hidden = false;
+    if (user){ try{ canEdit = await user.canEdit(); }catch(_){} }
+    if (!db){ $("empty").textContent="The round book isn’t available in this view."; return; }
+    db.collection("rounds").orderBy("date","desc").limit(1000).onSnapshot(function(snap){
+      entries = snap.docs.map(function(d){ var x=Object.assign({},d.data()); x._id=d.id; return x; });
+      render();
+    }, function(){ $("empty").hidden=false; $("empty").textContent="The round book couldn’t load. Reload the page to try again."; });
+  })();
+})();
+</script>
+</body>
+</html>

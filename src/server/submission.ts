@@ -40,20 +40,21 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
   if (name.length < 1 || name.length > LIMITS.nameMax) fail(`Name must be 1–${LIMITS.nameMax} characters.`);
 
   const mode = clean(form.get('mode'));
-  if (mode !== 'walk' && mode !== 'run') fail('Choose walk or run.');
+  if (mode !== 'walk' && mode !== 'run') fail('Choose walked or ran.');
 
   const date = clean(form.get('date'));
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) fail('Enter the date of your round.');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) fail('Add the date you completed the round.');
   if (date > todayInShap(now)) fail('The date can’t be in the future.');
   if (date < LIMITS.earliestDate) fail('That date is too far back.');
 
+  // Time is optional. If left blank we fall back to the GPX's elapsed time (below).
   const hours = Number(clean(form.get('hours')) || '0');
   const minutes = Number(clean(form.get('minutes')) || '0');
-  if (!Number.isInteger(hours) || hours < 0 || !Number.isInteger(minutes) || minutes < 0 || minutes > 59) {
+  if (!Number.isInteger(hours) || hours < 0 || !Number.isInteger(minutes) || minutes < 0) {
     fail('Enter your time in whole hours and minutes.');
   }
-  const secs = hours * 3600 + minutes * 60;
-  if (secs < LIMITS.minSecs || secs > LIMITS.maxSecs) fail('That time doesn’t look right for the round.');
+  if (minutes > 59) fail('Minutes must be between 0 and 59.');
+  let secs = hours * 3600 + minutes * 60;
 
   const linkRaw = clean(form.get('link'));
   let link: string | null = null;
@@ -64,7 +65,7 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
     } catch {
       /* handled below */
     }
-    if (!url || url.protocol !== 'https:' || linkRaw.length > LIMITS.linkMax) fail('The link must be a full https:// address.');
+    if (!url || url.protocol !== 'https:' || linkRaw.length > LIMITS.linkMax) fail('Activity links must start with https://');
     link = url!.toString();
   }
 
@@ -104,7 +105,10 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
     photo = { bytes, type: type! };
   }
 
-  if (!gpxBytes && !link && !photo) fail('Add a GPX file, a link or a photo as evidence.');
+  if (!gpxBytes && !link && !photo) fail('Add a GPX file, an activity link or a photo so we can check your round.');
+
+  if (!secs && gpxResult?.elapsedSecs) secs = gpxResult.elapsedSecs;
+  if (secs && (secs < LIMITS.minSecs || secs > LIMITS.maxSecs)) fail('That time doesn’t look right for the round.');
 
   const entry: StoredRound = {
     id,

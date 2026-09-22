@@ -1,84 +1,85 @@
+/**
+ * Home page behaviour, ported from the prototype's inline script. Storage moved
+ * server-side: the round book comes from GET /api/rounds, entries go to POST /api/rounds.
+ */
 import { LIMITS } from '../lib/config.ts';
-import { GpxError, parseGpx, type GpxCheck } from '../lib/gpx.ts';
-import {
-  formatDate,
-  formatDuration,
-  isConfirmed,
-  sortForView,
-  statusLabel,
-  todayInShap,
-  type PublicRound,
-  type View,
-} from '../lib/rounds.ts';
+import { GpxError, parseGpx, type GpxResult } from '../lib/gpx.ts';
+import { formatDate, formatDuration, sortForView, todayInShap, type PublicRound, type View } from '../lib/rounds.ts';
 
-const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
-const esc = (s: string) =>
-  s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+let parsed: GpxResult | null = null;
+let entries: PublicRound[] = [];
+let view: View = 'date';
+
+const today = todayInShap();
+$<HTMLInputElement>('date').max = today;
 
 /* ---------- GPX instant feedback ---------- */
 
-function renderChecks(checks: GpxCheck[], km: number): string {
-  const passed = checks.every((c) => c.pass);
-  const items = checks
-    .map(
-      (c) =>
-        `<li class="${c.pass ? 'pass' : 'fail'}"><span aria-hidden="true">${c.pass ? '✓' : '✗'}</span> ` +
-        `<strong>${esc(c.label)}</strong> — ${esc(c.detail)}<span class="sr-only">${c.pass ? ' (passed)' : ' (not passed)'}</span></li>`,
-    )
-    .join('');
-  const head = passed
-    ? `<p class="verdict pass">Looks like the round — ${km.toFixed(1)} km. You'll show as <strong>GPX checked</strong>.</p>`
-    : `<p class="verdict fail">This track doesn't pass every check. You can still submit — it'll wait for a manual check.</p>`;
-  return `${head}<ul class="checks">${items}</ul>`;
+function showGpx(r: GpxResult) {
+  const box = $('gpxres');
+  box.textContent = '';
+  const head = document.createElement('div');
+  head.className = r.passed ? 'ok' : 'no';
+  head.textContent = r.passed ? 'Route checked: this is the full Shap round.' : 'This track doesn’t look like the full round yet.';
+  box.appendChild(head);
+  const ul = document.createElement('ul');
+  for (const c of r.checks) {
+    const li = document.createElement('li');
+    li.textContent = (c.pass ? '✓ ' : '✗ ') + c.label;
+    const sr = document.createElement('span');
+    sr.className = 'sr-only';
+    sr.textContent = c.pass ? ' (passed)' : ' (not passed)';
+    li.appendChild(sr);
+    ul.appendChild(li);
+  }
+  box.appendChild(ul);
+  if (!r.passed) {
+    const p = document.createElement('div');
+    p.className = 'hint';
+    p.textContent = 'You can still add your round. It will show as waiting for a check.';
+    box.appendChild(p);
+  }
 }
 
-const gpxInput = $<HTMLInputElement>('#f-gpx');
-const gpxOut = $('#gpx-result');
-gpxInput.addEventListener('change', async () => {
-  gpxOut.innerHTML = '';
-  const file = gpxInput.files?.[0];
-  if (!file) return;
-  if (file.size > LIMITS.gpxMaxBytes) {
-    gpxOut.innerHTML = `<p class="verdict fail">That file is over 10 MB.</p>`;
+function gpxError(message: string) {
+  const box = $('gpxres');
+  box.textContent = '';
+  const d = document.createElement('div');
+  d.className = 'no';
+  d.textContent = message;
+  box.appendChild(d);
+}
+
+$<HTMLInputElement>('gpx').addEventListener('change', async (e) => {
+  parsed = null;
+  $('gpxres').textContent = '';
+  const f = (e.target as HTMLInputElement).files?.[0];
+  if (!f) return;
+  if (f.size > LIMITS.gpxMaxBytes) {
+    gpxError('That file is over 10 MB. Export a GPX without extra sensor data.');
     return;
   }
   try {
-    const result = parseGpx(await file.text());
-    gpxOut.innerHTML = renderChecks(result.checks, result.km);
-    if (result.startDate) {
-      const date = $<HTMLInputElement>('#f-date');
-      if (!date.value && result.startDate <= todayInShap()) date.value = result.startDate;
+    parsed = parseGpx(await f.text());
+    showGpx(parsed);
+    if (parsed.startDate && parsed.startDate <= today) $<HTMLInputElement>('date').value = parsed.startDate;
+    if (parsed.elapsedSecs) {
+      const mins = Math.round(parsed.elapsedSecs / 60);
+      $<HTMLInputElement>('hh').value = String(Math.floor(mins / 60));
+      $<HTMLInputElement>('mm').value = String(mins % 60).padStart(2, '0');
     }
-    if (result.elapsedSecs) {
-      const h = $<HTMLInputElement>('#f-hours');
-      const m = $<HTMLInputElement>('#f-minutes');
-      if (!h.value && !m.value) {
-        const mins = Math.round(result.elapsedSecs / 60);
-        h.value = String(Math.floor(mins / 60));
-        m.value = String(mins % 60);
-      }
-    }
-  } catch (e) {
-    gpxOut.innerHTML = `<p class="verdict fail">${esc(e instanceof GpxError ? e.message : 'We couldn’t read that file.')}</p>`;
+  } catch (err) {
+    gpxError(err instanceof GpxError ? err.message : 'That file isn’t a readable GPX file.');
   }
 });
-
-/* ---------- Note counter, date max ---------- */
-
-const note = $<HTMLTextAreaElement>('#f-note');
-const noteCount = $('#note-count');
-note.addEventListener('input', () => {
-  noteCount.textContent = `${LIMITS.noteMax - note.value.length} characters left`;
-});
-$<HTMLInputElement>('#f-date').max = todayInShap();
 
 /* ---------- Upload preparation (stay under Netlify's request size limit) ---------- */
 
 async function gzip(file: File): Promise<Blob> {
   if (typeof CompressionStream === 'undefined') return file;
-  const stream = file.stream().pipeThrough(new CompressionStream('gzip'));
-  return new Response(stream).blob();
+  return new Response(file.stream().pipeThrough(new CompressionStream('gzip'))).blob();
 }
 
 async function shrinkPhoto(file: File): Promise<Blob> {
@@ -90,8 +91,7 @@ async function shrinkPhoto(file: File): Promise<Blob> {
     canvas.width = Math.round(bmp.width * scale);
     canvas.height = Math.round(bmp.height * scale);
     canvas.getContext('2d')!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
-    const out = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', 0.85));
-    return out ?? file;
+    return (await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', 0.85))) ?? file;
   } catch {
     return file;
   }
@@ -99,51 +99,46 @@ async function shrinkPhoto(file: File): Promise<Blob> {
 
 /* ---------- Submit ---------- */
 
-const form = $<HTMLFormElement>('#round-form');
-const status = $('#form-status');
-
-function showStatus(kind: 'ok' | 'err', html: string) {
-  status.className = `status ${kind}`;
-  status.innerHTML = html;
+function setMsg(t: string, err = false) {
+  const m = $('msg');
+  m.textContent = t;
+  m.className = 'msg' + (err ? ' err' : '');
 }
 
-function clientErrors(fd: FormData, gpx?: File, photo?: File): string | null {
-  const name = String(fd.get('name') ?? '').trim();
-  if (!name) return 'Please add your name.';
-  if (!fd.get('date')) return 'Please add the date of your round.';
-  if (String(fd.get('date')) > todayInShap()) return 'The date can’t be in the future.';
-  const secs = Number(fd.get('hours') || 0) * 3600 + Number(fd.get('minutes') || 0) * 60;
-  if (!secs) return 'Please add your time.';
-  const link = String(fd.get('link') ?? '').trim();
-  if (link && !link.startsWith('https://')) return 'The link must start with https://';
-  if (!gpx && !link && !photo) return 'Add a GPX file, a link or a photo as evidence.';
-  if (gpx && gpx.size > LIMITS.gpxMaxBytes) return 'The GPX file is over 10 MB.';
-  if (photo && photo.size > LIMITS.photoMaxBytes) return 'The photo is over 8 MB.';
-  if (photo && !(LIMITS.photoTypes as readonly string[]).includes(photo.type)) return 'Photos must be JPEG, PNG or WebP.';
-  return null;
-}
+const form = $<HTMLFormElement>('f');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const val = (id: string) => $<HTMLInputElement>(id).value.trim();
+  const name = val('name');
+  const date = val('date');
+  const link = val('link');
+  const m = parseInt(val('mm'), 10) || 0;
+  const gpxFile = $<HTMLInputElement>('gpx').files?.[0];
+  const photo = $<HTMLInputElement>('photo').files?.[0];
 
-form.addEventListener('submit', async (ev) => {
-  ev.preventDefault();
-  const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
-  const fd = new FormData(form);
-  const gpx = gpxInput.files?.[0];
-  const photo = $<HTMLInputElement>('#f-photo').files?.[0];
-  fd.delete('gpx');
-  fd.delete('photo');
-
-  const problem = clientErrors(fd, gpx, photo);
-  if (problem) {
-    showStatus('err', esc(problem));
-    return;
+  const focusErr = (msg: string, id?: string) => {
+    setMsg(msg, true);
+    if (id) $(id).focus();
+  };
+  if (!name) return focusErr('Add your name so we can put you in the round book.', 'name');
+  if (!date) return focusErr('Add the date you completed the round.', 'date');
+  if (date > todayInShap()) return focusErr('The date can’t be in the future.', 'date');
+  if (m > 59) return focusErr('Minutes must be between 0 and 59.', 'mm');
+  if (link && !/^https:\/\//i.test(link)) return focusErr('Activity links must start with https://', 'link');
+  if (!gpxFile && !link && !photo) return focusErr('Add a GPX file, an activity link or a photo so we can check your round.');
+  if (photo && photo.size > LIMITS.photoMaxBytes) return focusErr('That photo is over 8 MB.', 'photo');
+  if (photo && !(LIMITS.photoTypes as readonly string[]).includes(photo.type)) {
+    return focusErr('Photos must be JPEG, PNG or WebP.', 'photo');
   }
 
-  button.disabled = true;
-  showStatus('ok', 'Sending…');
+  const fd = new FormData(form); // name, mode, date, hours, minutes, link, note, website
+  const submit = $<HTMLButtonElement>('submit');
+  submit.disabled = true;
+  setMsg('Adding your round…');
   try {
     let size = 0;
-    if (gpx) {
-      const z = await gzip(gpx);
+    if (gpxFile) {
+      const z = await gzip(gpxFile);
       size += z.size;
       fd.append('gpx', z, 'round.gpx.gz');
     }
@@ -153,107 +148,123 @@ form.addEventListener('submit', async (ev) => {
       fd.append('photo', p, p === photo ? photo.name : 'photo.jpg');
     }
     if (size > LIMITS.uploadBudgetBytes) {
-      showStatus('err', 'Those files are too big to send together. Try a smaller photo, or just the GPX.');
+      setMsg('Those files are too big to send together. Try a smaller photo, or just the GPX.', true);
       return;
     }
 
     const res = await fetch('/api/rounds', { method: 'POST', body: fd });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) {
-      showStatus('err', esc(body.error ?? 'Something went wrong. Please try again.'));
+      setMsg(body.error ?? 'Your round couldn’t be saved. Try again in a moment.', true);
       return;
     }
     const entry = body.entry as PublicRound | undefined;
-    const msg = entry?.gpxChecked
-      ? 'You’re in the round book — <strong>GPX checked</strong>.'
-      : 'You’re in the round book. We’ll check your evidence soon — until then it shows as <strong>Waiting for check</strong>.';
-    showStatus('ok', `${msg} <a href="#roundbook">See the round book</a>.`);
     form.reset();
-    gpxOut.innerHTML = '';
-    noteCount.textContent = `${LIMITS.noteMax} characters left`;
-    await loadRounds();
+    parsed = null;
+    $('gpxres').textContent = '';
+    setMsg(
+      entry?.gpxChecked
+        ? 'Your round is in the book. Well delivered.'
+        : 'Your round is in the book. It will show as checked once the Birchwood team has looked at your evidence.',
+    );
+    await load();
+    $('board').scrollIntoView();
   } catch {
-    showStatus('err', 'We couldn’t reach the server. Check your connection and try again.');
+    setMsg('Your round couldn’t be saved. Try again in a moment.', true);
   } finally {
-    button.disabled = false;
+    submit.disabled = false;
   }
 });
 
 /* ---------- Round book ---------- */
 
-let rounds: PublicRound[] = [];
-let view: View = 'date';
-const rbBody = $('#rb-body');
-const rbNote = $('#rb-note');
-const panel = $('#rb-panel');
-
-function row(r: PublicRound, i: number): string {
-  const confirmed = isConfirmed(r);
-  const name = r.link
-    ? `<a href="${esc(r.link)}" rel="nofollow noopener ugc" target="_blank">${esc(r.name)}<span class="sr-only"> (opens activity link)</span></a>`
-    : esc(r.name);
-  return `<tr>
-    ${view === 'date' ? '' : `<td class="pos">${i + 1}</td>`}
-    <td><span class="who">${name}</span>${r.note ? `<span class="rb-note">${esc(r.note)}</span>` : ''}</td>
-    <td>${r.mode === 'run' ? 'Run' : 'Walk'}</td>
-    <td class="num">${formatDuration(r.secs)}</td>
-    <td>${formatDate(r.date)}</td>
-    <td><span class="pill ${confirmed ? 'ok' : 'wait'}">${statusLabel(r)}</span></td>
-  </tr>`;
-}
+const tabs = [...document.querySelectorAll<HTMLButtonElement>('.tabs button')];
+tabs.forEach((b) =>
+  b.addEventListener('click', () => {
+    view = b.dataset.view as View;
+    tabs.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    render();
+  }),
+);
 
 function render() {
-  const rows = sortForView(rounds, view);
-  rbNote.textContent =
-    view === 'date'
-      ? 'Everyone who has logged the round, newest first.'
-      : `Only rounds with a checked GPX or verified evidence count here.`;
-  if (!rows.length) {
-    rbBody.innerHTML =
-      view === 'date'
-        ? '<p>No rounds logged yet. Be the first!</p>'
-        : `<p>No checked ${view === 'run' ? 'runs' : 'walks'} yet.</p>`;
-    return;
+  const rows = $('rows');
+  rows.textContent = '';
+  const list = sortForView(entries, view);
+  if (view === 'date') {
+    $('count').textContent = list.length
+      ? `${list.length}${list.length === 1 ? ' round' : ' rounds'} completed, newest first.`
+      : 'Everyone who has completed the Shap round, newest first.';
+  } else {
+    $('count').textContent = `Fastest checked ${view === 'run' ? 'runs' : 'walks'}. Only rounds with a checked GPX or a verified entry are ranked.`;
   }
-  rbBody.innerHTML = `<div class="table-wrap"><table class="rb-table">
-    <caption class="sr-only">${view === 'date' ? 'Rounds by date' : view === 'run' ? 'Fastest runs' : 'Fastest walks'}</caption>
-    <thead><tr>${view === 'date' ? '' : '<th scope="col">#</th>'}<th scope="col">Name</th><th scope="col">Mode</th><th scope="col">Time</th><th scope="col">Date</th><th scope="col">Status</th></tr></thead>
-    <tbody>${rows.map(row).join('')}</tbody></table></div>`;
+  const empty = $('empty');
+  empty.hidden = list.length > 0;
+  if (!list.length) {
+    empty.textContent =
+      view === 'date'
+        ? 'No rounds logged yet. Be the first name in the Shap round book.'
+        : `No checked ${view === 'run' ? 'runs' : 'walks'} yet. Log yours with a GPX file to take the top spot.`;
+  }
+  list.forEach((e, i) => {
+    const tr = document.createElement('tr');
+    const td = () => tr.appendChild(document.createElement('td'));
+    const p = td();
+    p.className = 'pos';
+    p.textContent = String(i + 1);
+    const w = td();
+    const n = document.createElement('div');
+    n.className = 'who';
+    n.textContent = e.name || 'Someone';
+    w.appendChild(n);
+    const s = document.createElement('div');
+    s.className = 'sub';
+    s.textContent = (e.mode === 'run' ? 'Ran' : 'Walked') + (e.km ? `, ${e.km} km` : '');
+    w.appendChild(s);
+    if (e.note) {
+      const q = document.createElement('div');
+      q.className = 'sub';
+      q.style.fontStyle = 'italic';
+      q.textContent = `“${e.note}”`;
+      w.appendChild(q);
+    }
+    td().textContent = formatDate(e.date);
+    td().textContent = formatDuration(e.secs);
+    const ev = td();
+    const tag = (t: string, c: string) => {
+      const x = document.createElement('span');
+      x.className = `tag ${c}`;
+      x.textContent = t;
+      ev.appendChild(x);
+    };
+    if (e.verified) tag('Verified', 'v');
+    if (e.gpxChecked) tag('GPX checked', 'g');
+    if (!e.verified && !e.gpxChecked) tag('Waiting for check', 'p');
+    if (e.link && /^https:\/\//i.test(e.link)) {
+      const a = document.createElement('a');
+      a.href = e.link;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer nofollow ugc';
+      a.textContent = 'Activity';
+      a.className = 'sub';
+      ev.appendChild(document.createElement('br'));
+      ev.appendChild(a);
+    }
+    rows.appendChild(tr);
+  });
 }
 
-async function loadRounds() {
+async function load() {
   try {
     const res = await fetch('/api/rounds', { cache: 'no-store' });
     if (!res.ok) throw new Error();
-    rounds = (await res.json()).rounds as PublicRound[];
+    entries = (await res.json()).rounds as PublicRound[];
     render();
   } catch {
-    rbBody.innerHTML = '<p>The round book couldn’t be loaded just now.</p>';
+    const empty = $('empty');
+    empty.hidden = false;
+    empty.textContent = 'The round book couldn’t load. Reload the page to try again.';
   }
 }
 
-const tabs = [...document.querySelectorAll<HTMLButtonElement>('[role=tab]')];
-function select(tab: HTMLButtonElement, focus = false) {
-  for (const t of tabs) {
-    const on = t === tab;
-    t.setAttribute('aria-selected', String(on));
-    t.tabIndex = on ? 0 : -1;
-  }
-  panel.setAttribute('aria-labelledby', tab.id);
-  view = tab.dataset.view as View;
-  if (focus) tab.focus();
-  render();
-}
-tabs.forEach((t, i) => {
-  t.addEventListener('click', () => select(t));
-  t.addEventListener('keydown', (e) => {
-    const k = e.key;
-    if (k !== 'ArrowRight' && k !== 'ArrowLeft' && k !== 'Home' && k !== 'End') return;
-    e.preventDefault();
-    const next =
-      k === 'Home' ? 0 : k === 'End' ? tabs.length - 1 : (i + (k === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-    select(tabs[next], true);
-  });
-});
-
-loadRounds();
+load();

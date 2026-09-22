@@ -15,18 +15,18 @@ export interface LatLon {
 export const BIRCHWOOD: LatLon = { lat: 54.5315, lon: -2.68 };
 
 export const ROUND = {
-  /** Nominal loop length shown on the site. */
-  nominalKm: 18,
   /** A GPX must start this close to Birchwood. */
-  startRadiusKm: 1,
+  startRadiusKm: 1.0,
   /** …and finish this close to Birchwood. */
-  finishRadiusKm: 1,
-  /** Minimum recorded distance for a GPX to pass. */
+  finishRadiusKm: 1.0,
+  /** Minimum recorded distance for a GPX to pass (full loop is ~18 km). */
   minDistanceKm: 15,
   /** The track must reach west of this longitude (Swindale). */
   westOfLon: -2.735,
   /** The track must reach south of this latitude (Wet Sleddale). */
   southOfLat: 54.5,
+  /** Fewer points than this is a planned route, not a recorded activity. */
+  minPoints: 10,
 } as const;
 
 /** Form and upload limits. The server enforces these; the browser mirrors them. */
@@ -44,38 +44,78 @@ export const LIMITS = {
    * so the browser gzips the GPX and shrinks the photo to stay under this.
    */
   uploadBudgetBytes: 4 * 1024 * 1024,
-  /** Sanity bounds on the reported time. */
+  /** Sanity bounds on a reported time (a time is optional; 0 means none given). */
   minSecs: 45 * 60,
   maxSecs: 24 * 60 * 60,
   /** Earliest accepted round date. */
   earliestDate: '1950-01-01',
-  /** Rate limit: submissions per IP per window. */
+  /** Rate limit: accepted submissions per IP per window. */
   ratePerWindow: 5,
   rateWindowMs: 60 * 60 * 1000,
 } as const;
 
-export interface Stop extends LatLon {
-  n: number;
+export interface Stop {
+  /** Heading in the stops list. */
   name: string;
-  note: string;
-  /** Short label for the sketch map, and which side of the dot it sits. */
-  label?: string;
-  side?: 'left' | 'right' | 'above' | 'below';
+  /** Description in the stops list. Trusted HTML (it only comes from this file). */
+  html: string;
+  /**
+   * Where the stop sits on the sketch map (SVG units, 600 × 620 viewBox) and where its
+   * label goes. Birchwood is drawn as a postbox; the rest as circles. Omit `map` for
+   * stops that are not marked on the sketch.
+   */
+  map?: { x: number; y: number; label: string; lx: number; ly: number; bold?: boolean };
 }
 
-/**
- * The eight stops, in walking order. Coordinates are APPROXIMATE and the notes
- * are DRAFT — replace both with the prototype / book text and a real GPX.
- */
+/** The eight stops, in walking order, from Alan Cleaver's mapping of the round. */
 export const STOPS: Stop[] = [
-  { n: 1, name: 'Birchwood Cafe, Shap', lat: 54.5315, lon: -2.68, label: 'Birchwood Cafe', side: 'above', note: 'Start and finish. The sorting office end of the day — and a cup of tea.' },
-  { n: 2, name: 'Keld', lat: 54.5255, lon: -2.6935, side: 'below', note: 'The hamlet by the Lowther, with its little chapel.' },
-  { n: 3, name: 'Shap Abbey', lat: 54.5295, lon: -2.7045, side: 'above', note: 'The ruined abbey tower in the valley bottom.' },
-  { n: 4, name: 'Swindale Foot', lat: 54.521, lon: -2.728, side: 'left', note: 'Into Swindale along the beck.' },
-  { n: 5, name: 'Swindale', lat: 54.508, lon: -2.748, side: 'left', note: 'The furthest west the round goes.' },
-  { n: 6, name: 'Over to Wet Sleddale', lat: 54.498, lon: -2.738, label: 'Over the fell', side: 'left', note: 'The climb across the fell between the two valleys.' },
-  { n: 7, name: 'Wet Sleddale', lat: 54.494, lon: -2.72, side: 'below', note: 'Sleddale Hall and the reservoir — the southern end of the round.' },
-  { n: 8, name: 'Back to Shap', lat: 54.515, lon: -2.692, side: 'right', note: 'Down the lane and home along Main Street.' },
+  {
+    name: 'Birchwood Cafe',
+    html: 'Start on Main Street. Head north out of the village and take the lane west towards Shap Abbey.',
+    map: { x: 481, y: 139, label: 'Birchwood Cafe', lx: 390, ly: 128, bold: true },
+  },
+  {
+    name: 'Shap Abbey',
+    html: 'Cross the Lowther by the wooden-sided bridge. From the abbey, take the footpath west over the fields, which can be very wet, until you meet the concrete water-board road.',
+    map: { x: 337, y: 161, label: 'Shap Abbey', lx: 345, ly: 185 },
+  },
+  {
+    name: 'Tailbert',
+    html: 'Follow the road south, then west to the isolated farm at Tailbert. Take a bearing south-west and drop into Swindale.',
+    map: { x: 156, y: 248, label: 'Tailbert', lx: 166, ly: 244 },
+  },
+  {
+    name: 'Truss Gap, Swindale',
+    html: 'Follow the valley road to Truss Gap Farm. The postman sometimes went on to Swindale Head and Mosedale Cottage when there was post for them.',
+    map: { x: 60, y: 424, label: 'Truss Gap', lx: 70, ly: 420 },
+  },
+  {
+    name: 'Over Glede Howe',
+    html: 'Cross Swindale Beck and climb the fell. This is the true postman’s path: his own shortcut, once marked with wooden staves to find the driest line, even in snow. The staves are long gone, so take a bearing.',
+    map: { x: 102, y: 506, label: 'Glede Howe', lx: 112, ly: 500 },
+  },
+  {
+    name: 'Sleddale Hall',
+    html: 'Drop south off the fell to the farmhouse made famous by the film <em>Withnail and I</em>.',
+    map: { x: 180, y: 548, label: 'Sleddale Hall', lx: 120, ly: 580 },
+  },
+  {
+    name: 'Thorney Bank postbox',
+    html: 'Follow the path east above Wet Sleddale to Thorney Bank and the Victorian postbox the postman emptied on his round.',
+    map: { x: 330, y: 517, label: 'Thorney Bank postbox', lx: 338, ly: 506 },
+  },
+  {
+    name: 'Back to Birchwood Cafe',
+    html: 'Take the road east to the A6 and turn north back into Shap. Finish where you started, then log your round.',
+  },
 ];
 
-export const OS_MAP = 'OS Explorer OL5';
+/** "Route at a glance" facts in the hero. */
+export const FACTS: [string, string][] = [
+  ['Start and finish', 'Birchwood Cafe, Main Street, Shap'],
+  ['Distance', 'About 11 miles / 18 km'],
+  ['Time', '4 to 5 hours walking'],
+  ['Terrain', 'Fields, lanes and open, pathless fell'],
+  ['Map', 'OS Explorer OL5'],
+  ['Last walked by post', '1976'],
+];

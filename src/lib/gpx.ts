@@ -56,7 +56,7 @@ function attr(tag: string, name: string): string | null {
 
 /** Extract track points (falling back to route points) from GPX text. */
 export function parsePoints(text: string): GpxPoint[] {
-  if (!/<gpx[\s>]/i.test(text)) throw new GpxError('This does not look like a GPX file.');
+  if (!/<gpx[\s>]/i.test(text)) throw new GpxError('That file isn’t a readable GPX file.');
 
   const scan = (kind: 'trkpt' | 'rtept'): GpxPoint[] => {
     const out: GpxPoint[] = [];
@@ -84,8 +84,10 @@ export function parsePoints(text: string): GpxPoint[] {
   };
 
   let pts = scan('trkpt');
-  if (pts.length < 2) pts = scan('rtept');
-  if (pts.length < 2) throw new GpxError('No track found in this GPX file.');
+  if (!pts.length) pts = scan('rtept');
+  if (pts.length < ROUND.minPoints) {
+    throw new GpxError('The GPX file has no track points. Export the recorded activity, not a planned route.');
+  }
   return pts;
 }
 
@@ -115,21 +117,21 @@ export function checkPoints(pts: GpxPoint[]): GpxResult {
   const checks: GpxCheck[] = [
     {
       id: 'start',
-      label: `Starts within ${ROUND.startRadiusKm} km of Birchwood`,
+      label: 'Starts in Shap',
       pass: startKm <= ROUND.startRadiusKm,
-      detail: `Starts ${fmtKm(startKm)} away`,
+      detail: `Starts ${fmtKm(startKm)} from Birchwood (limit ${ROUND.startRadiusKm} km)`,
     },
     {
       id: 'finish',
-      label: `Finishes within ${ROUND.finishRadiusKm} km of Birchwood`,
+      label: 'Finishes in Shap',
       pass: finishKm <= ROUND.finishRadiusKm,
-      detail: `Finishes ${fmtKm(finishKm)} away`,
+      detail: `Finishes ${fmtKm(finishKm)} from Birchwood (limit ${ROUND.finishRadiusKm} km)`,
     },
     {
       id: 'distance',
-      label: `At least ${ROUND.minDistanceKm} km`,
+      label: `Distance ${(Math.round(km * 10) / 10).toFixed(1)} km`,
       pass: km >= ROUND.minDistanceKm,
-      detail: `${fmtKm(km)} recorded`,
+      detail: `Needs at least ${ROUND.minDistanceKm} km`,
     },
     {
       id: 'west',

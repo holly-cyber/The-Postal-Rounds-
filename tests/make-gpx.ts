@@ -3,12 +3,25 @@
  *   node --experimental-strip-types tests/make-gpx.ts   → writes tests/fixtures/*.gpx
  */
 import { writeFileSync } from 'node:fs';
-import { BIRCHWOOD, STOPS, type LatLon } from '../src/lib/config.ts';
+import { BIRCHWOOD, type LatLon } from '../src/lib/config.ts';
 import { haversineKm } from '../src/lib/gpx.ts';
 
-/** A loop through the stops, densified, with a gentle wiggle so it measures like a real walk. */
-export function roundTrack(wiggle = 0.0005): LatLon[] {
-  const ring = [...STOPS, STOPS[0]];
+/** Rough waypoints of the round (approximate, for tests only). */
+const WAYPOINTS: LatLon[] = [
+  BIRCHWOOD,
+  { lat: 54.537, lon: -2.684 }, // north out of the village
+  { lat: 54.529, lon: -2.705 }, // Shap Abbey
+  { lat: 54.519, lon: -2.733 }, // Tailbert
+  { lat: 54.508, lon: -2.757 }, // Truss Gap
+  { lat: 54.5, lon: -2.748 }, // Glede Howe
+  { lat: 54.492, lon: -2.737 }, // Sleddale Hall
+  { lat: 54.498, lon: -2.7 }, // Thorney Bank
+  { lat: 54.505, lon: -2.672 }, // A6
+];
+
+/** A loop through the waypoints, densified, with a gentle wiggle so it measures like a real walk. */
+export function roundTrack(wiggle = 0.0004): LatLon[] {
+  const ring = [...WAYPOINTS, WAYPOINTS[0]];
   const out: LatLon[] = [];
   for (let i = 0; i < ring.length - 1; i++) {
     const a = ring[i];
@@ -45,7 +58,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const full = roundTrack();
   writeFileSync(new URL('./fixtures/round-pass.gpx', import.meta.url), toGpx(full));
   // Turns back before Swindale and Wet Sleddale.
-  const short = full.filter((p) => p.lon > -2.71);
+  const short = full.filter((p) => p.lon > -2.71 && p.lat > 54.505);
   writeFileSync(new URL('./fixtures/round-short.gpx', import.meta.url), toGpx(short, undefined, 2 * 3600));
   console.log('Wrote tests/fixtures/round-pass.gpx and round-short.gpx');
 }

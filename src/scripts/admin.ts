@@ -1,5 +1,5 @@
 import type { StoredRound } from '../lib/rounds.ts';
-import { formatDate, formatDuration, statusLabel } from '../lib/rounds.ts';
+import { formatDate, formatDuration } from '../lib/rounds.ts';
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
 const esc = (s: string) =>
@@ -51,7 +51,7 @@ function entryHtml(r: StoredRound): string {
   return `<article class="card entry" data-id="${r.id}">
     <h2>${esc(r.name)}</h2>
     <p class="meta">${r.mode === 'run' ? 'Run' : 'Walk'} · ${formatDuration(r.secs)} · ${formatDate(r.date)}${r.km !== null ? ` · ${r.km} km` : ''} · submitted ${new Date(r.createdAt).toLocaleString('en-GB')}</p>
-    <p><span class="pill ${r.gpxChecked || r.verified ? 'ok' : 'wait'}">${statusLabel(r)}</span></p>
+    <p>${r.verified ? '<span class="tag v">Verified</span>' : ''}${r.gpxChecked ? '<span class="tag g">GPX checked</span>' : ''}${!r.verified && !r.gpxChecked ? '<span class="tag p">Waiting for check</span>' : ''}</p>
     ${r.link ? `<p>Link: <a href="${esc(r.link)}" target="_blank" rel="noopener noreferrer">${esc(r.link)}</a></p>` : ''}
     ${r.note ? `<p>Note: “${esc(r.note)}”</p>` : ''}
     ${checks}

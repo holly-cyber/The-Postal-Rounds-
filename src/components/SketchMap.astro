@@ -7,11 +7,22 @@ import { STOPS } from '../lib/config.ts';
 
 const marked = STOPS.filter((s) => s.map);
 const [home, ...rest] = marked;
+
+// The long round's extra loop to Mosedale, drawn from Truss Gap to Sleddale Hall via Mosedale.
+const at = (name: string) => STOPS.find((s) => s.name === name)?.map;
+const truss = at('Truss Gap');
+const mosedale = at('Mosedale Cottage');
+const sleddale = at('Sleddale Hall');
+const spur =
+  truss && mosedale && sleddale
+    ? `M${truss.x} ${truss.y} C${truss.x - 20} ${truss.y + 50} ${mosedale.x - 10} ${mosedale.y - 60} ${mosedale.x} ${mosedale.y} C${mosedale.x + 40} ${mosedale.y + 25} ${sleddale.x - 70} ${sleddale.y + 25} ${sleddale.x} ${sleddale.y}`
+    : null;
 ---
 <div class="mapbox">
   <svg viewBox="0 0 600 620" role="img" aria-labelledby="maptitle">
     <title id="maptitle">
-      Sketch map of the Shap postal round, looping west from Shap through {rest.map((s) => s.map!.label).join(', ')}
+      Sketch map of the Shap postal round, looping west from Shap through {rest.map((s) => s.map!.label).join(', ')}.
+      The long round adds a loop from Truss Gap to Mosedale Cottage before rejoining at Sleddale Hall.
     </title>
     <!-- fells -->
     <path d="M0 330 C60 300 90 260 70 200 C50 140 10 120 0 110 Z" fill="var(--moss)" opacity=".18" />
@@ -34,6 +45,7 @@ const [home, ...rest] = marked;
       stroke-dasharray="9 6"
       stroke-linecap="round"
     />
+    {spur && <path d={spur} fill="none" stroke="var(--fell)" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round" />}
     <!-- stops -->
     <g font-family="Alegreya Sans, sans-serif" font-size="15" fill="var(--ink)">
       {
@@ -43,7 +55,7 @@ const [home, ...rest] = marked;
               <rect x={home.map!.x - 11} y={home.map!.y - 12} width="22" height="24" rx="4" fill="var(--red)" />
               <rect x={home.map!.x - 7} y={home.map!.y - 6} width="14" height="3" fill="#fff" />
             </g>
-            <text x={home.map!.lx} y={home.map!.ly} font-weight="700">
+            <text x={home.map!.lx} y={home.map!.ly} font-weight="700" text-anchor={home.map!.anchor}>
               {home.map!.label}
             </text>
           </>
@@ -53,7 +65,7 @@ const [home, ...rest] = marked;
         rest.map((s) => (
           <>
             <circle cx={s.map!.x} cy={s.map!.y} r="6" fill="var(--paper)" stroke="var(--red)" stroke-width="3" />
-            <text x={s.map!.lx} y={s.map!.ly} font-weight={s.map!.bold ? 700 : undefined}>
+            <text x={s.map!.lx} y={s.map!.ly} font-weight={s.map!.bold ? 700 : undefined} text-anchor={s.map!.anchor}>
               {s.map!.label}
             </text>
           </>
@@ -68,5 +80,9 @@ const [home, ...rest] = marked;
       <text x="-5" y="34">N</text>
     </g>
   </svg>
+  <p class="mapnote maplegend">
+    <span><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" stroke="var(--red)" stroke-width="3" stroke-dasharray="7 5" stroke-linecap="round" /></svg>Both rounds (short round over Ralfland Fell)</span>
+    <span><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" stroke="var(--fell)" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round" /></svg>Long round: extra loop to Mosedale</span>
+  </p>
   <p class="mapnote">Sketch map, not to scale — use OS Explorer OL5 and a compass.</p>
 </div>

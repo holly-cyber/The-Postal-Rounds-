@@ -11,6 +11,14 @@ No. It’s a heritage round you can walk or run, in one go or in stages. Logging
 
 The long round is about 14.7 miles by GPS (often rounded to 15). The short “winter” round is about 10.3 miles.
 
+### What’s the difference between the rounds?
+
+They share the same line out to Truss Gap in Swindale and back from Sleddale Hall. The long round adds a loop up the valley to Mosedale Cottage, where a shepherd lived for six weeks a year. The short round cuts straight over Ralfland Fell, the postie’s shortcut.
+
+### How much climbing is there?
+
+About 600 metres on the long round.
+
 ### How long does it take?
 
 A steady run takes around 3 to 3½ hours. Walkers should allow a full day.
@@ -21,7 +29,7 @@ No. Any free tracking app works: Strava, Garmin Connect, OS Maps, Komoot or simi
 
 ### Where do I start?
 
-At Birchwood Cafe on Main Street, Shap. Please start and finish there, and support the café.
+At Birchwood Cafe on Main Street, Shap. Please start and finish there, and support the café. Park in the village.
 
 ### Is it waymarked?
 

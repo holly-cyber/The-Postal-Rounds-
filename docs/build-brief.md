@@ -45,6 +45,19 @@ Later (optional): sortable leaderboard, finishers' stories, printable "postal pa
 - Safety: café flyer wording; AdventureSmart's three questions verbatim; MWIS forecast; whistle/torch, six blasts or flashes repeated each minute; not an organised event. Liability line needs brief advice. `[RESEARCH]`
 - Respect: Countryside Code — Respect · Protect · Enjoy. `[RESEARCH]`
 
+## Route sources (added September 2026)
+
+Photos in `docs/research/`:
+
+- **Café's illustrated map, "The Postman's Route"** (hand-drawn watercolour, 9 numbered stops): 1 Birchwood Cafe (parking on the A6) → past the Goggleby Stone → 2 Shap Abbey → 3 Tailbert Farm (Keld signpost) → 4/5 Swindale Foot Farm and Truss Gap (Swindale Head nearby; numbering of 4 and 5 is hard to read in the photo) → 6 Mosedale Cottage bothy → 7 Sleddale Hall → Green Farm → 8 Thorney Bank Farm → 9 Stepps Hall → cross the river to the A6 → café. "Shorter route via Ralfland Fell" dotted from Truss Gap to Sleddale Hall. Scroll: **24 km, 600 metres of climb, OS map OL5 + compass.** Flyer text: "Until 1976 the local postman would deliver mail to the remote farms and homes around Shap on foot. A tough 15 miles, in all weather, six days a week. The Postman's Route is as challenging today, passing through some of Britain's most beautiful scenery and notable landmarks. If you wish to accept this challenge please ensure you leave early, be fit and well prepared for all eventualities. Good luck and enjoy this route that commemorates the posties who served their communities over the years." `[CONV]`
+- **Alan Cleaver's route sheet, "Shap Postal Path"** (start/finish Birchwood Cafe; 15 miles; four to five hours, "tough in places"; OS OL5). Steps: 1 road to Shap Abbey; 2 west out of the abbey across a boggy field to a tarmac road; 3 road to Tailbert Farm, through the farm to the deserted Tailbert Head; 4 down into Swindale, cross to the road, deliver along it, double back to Truss Gap, climb Gouther Crag onto Ralfland Fell, take a bearing over the fell to Wet Sleddale; 5 drop to Sleddale Hall (Uncle Monty's cottage, *Withnail & I*); 6 terrace path to Thorneybank and back to Shap. **Green additional route:** Mosedale Cottage (now a bothy), shepherd resident six weeks a year, "an additional three miles but worth the walk if you are fit enough!" Thanks to Stuart Lewis and Jean Scott-Smith for help plotting. Includes an OS map extract — **Ordnance Survey copyright, do not publish.** `[RESEARCH]`
+
+Reading of the two: long round = with the Mosedale loop (café map's 24 km ≈ the brief's 14.73 mi); short round = Ralfland Fell shortcut (≈ 10.3 mi by GPS). Cleaver's "15 miles" is the historic figure. Confirm against Jude's GPX.
+
+The café map photos have glare and are rotated: fine for reference, not for publishing. A flat scan is still needed if the café wants it on the site.
+
+Cleaver's sheet is titled **"Shap Postal Path"**, which supports that name.
+
 ## Naming
 
 Recommended: **The Shap Postal Round**. Strong alternative: **The Shap Postal Path**. Use "loneliest" with caution: it may deter solo walkers, especially women, and the documented "loneliest round in England" phrase comes from the *Post Office Magazine*, August 1936, about the Keld–Tan Hill postman in Yorkshire, not Shap. `[CONV]`/`[RESEARCH]`

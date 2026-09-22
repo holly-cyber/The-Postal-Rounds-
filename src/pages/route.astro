@@ -65,6 +65,11 @@ const rounds = Object.values(ROUNDS).map((r) => ({
 
       <section id="stops" aria-labelledby="stops-h">
         <h2 id="stops-h">The round, stop by stop</h2>
+        <p class="measure">
+          Both rounds follow the same line as far as Truss Gap in Swindale. The long round then loops up the valley to
+          Mosedale Cottage; the short round takes the postie’s shortcut over Ralfland Fell. They meet again at Sleddale
+          Hall.
+        </p>
         <div class="route">
           <SketchMap />
           <div>
@@ -72,7 +77,10 @@ const rounds = Object.values(ROUNDS).map((r) => ({
               {
                 STOPS.map((s) => (
                   <li>
-                    <h3>{s.name}</h3>
+                    <h3>
+                      {s.name}
+                      {s.onlyOn && <span class="onlyon">{s.onlyOn === 'long' ? 'Long round only' : 'Short round only'}</span>}
+                    </h3>
                     <p set:html={s.html} />
                   </li>
                 ))
@@ -96,6 +104,13 @@ const rounds = Object.values(ROUNDS).map((r) => ({
             going is easier, though colder and wetter.
           </p>
           <p>New to the round? Try the short round first, then come back for the long one.</p>
+          <p>
+            Good luck, and enjoy this route that commemorates the posties who served their communities over the years.
+          </p>
+          <p class="credit">
+            Route notes from Alan Cleaver, who thanks Stuart Lewis and Jean Scott-Smith for their help plotting the route,
+            and from Birchwood Cafe’s illustrated map, <em>The Postman’s Route</em>.
+          </p>
           <p><a class="btn red" href="/log/">Log your round</a></p>
         </div>
       </section>

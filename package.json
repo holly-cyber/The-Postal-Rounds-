@@ -1,0 +1,23 @@
+{
+  "name": "shap-postal-round",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "test": "node --test --experimental-strip-types tests/*.test.ts",
+    "fixtures": "node --experimental-strip-types tests/make-gpx.ts"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^10.7.13",
+    "@netlify/functions": "^6.0.0",
+    "astro": "^7.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^22.20.4",
+    "typescript": "^6.0.3"
+  }
+}

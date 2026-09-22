@@ -1,0 +1,62 @@
+---
+/** Not linked anywhere. Everything here is fetched with the admin bearer token. */
+import Base from '../layouts/Base.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+---
+<Base title="Round book admin" noindex>
+  <main id="main" class="wrap admin">
+    <div class="top">
+      <h1>Round book admin</h1>
+      <ThemeToggle />
+    </div>
+
+    <form id="login" class="card login">
+      <label for="token">Admin password</label>
+      <input id="token" type="password" autocomplete="current-password" required />
+      <button class="btn" type="submit">Sign in</button>
+      <p id="login-status" role="status" aria-live="polite"></p>
+    </form>
+
+    <div id="panel" hidden>
+      <div class="controls">
+        <label class="show-all"><input type="checkbox" id="show-all" /> Show verified and GPX-checked entries too</label>
+        <button class="btn small ghost" id="refresh" type="button">Refresh</button>
+        <button class="btn small ghost" id="logout" type="button">Sign out</button>
+      </div>
+      <p id="summary" role="status" aria-live="polite"></p>
+      <div id="list"></div>
+    </div>
+  </main>
+
+  <script>
+    import '../scripts/admin.ts';
+  </script>
+</Base>
+
+<style>
+  .admin { padding-top: 2rem; padding-bottom: 4rem; }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .login { display: grid; gap: 0.6rem; max-width: 24rem; }
+  .login input {
+    font: inherit;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    border: 1.5px solid var(--line);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 44px;
+  }
+  label { font-weight: 700; }
+  .controls { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-bottom: 1rem; }
+  .show-all { font-weight: 500; display: inline-flex; gap: 0.4rem; align-items: center; margin-right: auto; }
+</style>
+
+<style is:global>
+  .entry { display: grid; gap: 0.5rem; margin-bottom: 1rem; }
+  .entry h2 { font-size: 1.4rem; margin: 0; }
+  .entry .meta { color: var(--muted); margin: 0; }
+  .entry .buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .entry .danger { border-color: var(--red); color: var(--red); background: transparent; }
+  .entry .danger:hover { background: var(--red); color: #fff; }
+  .entry .photo { max-width: 100%; max-height: 420px; border-radius: 8px; }
+</style>

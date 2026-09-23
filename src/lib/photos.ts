@@ -55,7 +55,7 @@ export const GALLERY: Photo[] = [
   { src: mosedaleGroup, alt: 'Four runners stand outside a small white cottage on the open fell.', caption: 'Mosedale Cottage, now a bothy' },
   { src: snowyTrack, alt: 'A walker follows a snowy track between stone walls into a white valley.', caption: 'The winter round' },
   { src: reservoir, alt: 'Brown autumn fellside falling away to a blue reservoir far below.', caption: 'Above Wet Sleddale' },
-  { src: posties, alt: 'Two women in postie caps deliver letters at the doorway of a ruined stone building.', caption: 'Special delivery', focus: '50% 22%' },
+  { src: posties, alt: 'Two women in postie caps deliver letters at the doorway of a ruined stone building.', caption: 'Special delivery', focus: '50% 47%' },
 ];
 
 /** One photo per stop on the route page, keyed by the stop name in config.ts. */

@@ -10,9 +10,9 @@ The big ones: zero admin for the café (contact routes to Holly, never the café
 café owner not named; "postie" in general copy, "postman" only for Stuart Lewis; always credit
 Alan Cleaver; don't publish anything marked `[UNVERIFIED]` there.
 
-Visual design comes from the prototype `reference/shap-postal-round.html` — don't redesign.
-Fonts Alegreya / Alegreya Sans; palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`,
-paper `#EEF1E8`; light and dark themes.
+Visual design grew from the prototype `reference/shap-postal-round.html`. Current look (Holly's call,
+Sept 2026): white page, self-hosted Inter (text) and Inter Tight (headings) via @fontsource-variable;
+palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`; light and dark themes.
 
 ## Stack
 

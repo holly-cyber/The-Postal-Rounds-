@@ -1,17 +1,18 @@
-/* Ported from reference/shap-postal-round.html. Tokens first, then shared base styles. */
+/* Palette from reference/shap-postal-round.html on a white page; Inter / Inter Tight type. Tokens first, then base styles. */
 :root {
-  --paper: #eef1e8;
-  --paper-2: #e3e8da;
-  --ink: #1c231b;
-  --ink-soft: #4b5647;
+  --paper: #ffffff;
+  --paper-2: #f2f5ee;
+  --ink: #1a2019;
+  --ink-soft: #4f5a4b;
   --fell: #2e4a2b;
   --moss: #6f8b3f;
   --red: #c4241c;
-  --line: #c9d1bd;
-  --card: #f7f9f3;
+  --line: #dfe5d8;
+  --card: #f7f9f5;
   --water: #9db8c2;
-  --serif: 'Alegreya', Georgia, 'Times New Roman', serif;
-  --sans: 'Alegreya Sans', 'Gill Sans', 'Segoe UI', system-ui, sans-serif;
+  /* Display (headings) and text faces. `--serif` is the historical name for the display face. */
+  --serif: 'Inter Tight Variable', 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -53,9 +54,9 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--serif);
-  font-size: 1.125rem;
-  line-height: 1.6;
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
 img, svg { max-width: 100%; }
@@ -66,9 +67,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .wrap { max-width: 1080px; margin: 0 auto; padding: 0 1.25rem; }
 .measure { max-width: 38rem; }
-h1, h2, h3 { font-weight: 800; line-height: 1.08; margin: 0 0 0.6em; letter-spacing: -0.01em; }
-h2 { font-size: clamp(1.9rem, 4vw, 2.6rem); }
-h3 { font-size: 1.3rem; font-weight: 700; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 800; line-height: 1.1; margin: 0 0 0.6em; letter-spacing: -0.015em; }
+h2 { font-size: clamp(1.9rem, 4vw, 2.6rem); font-weight: 700; letter-spacing: -0.01em; word-spacing: 0.04em; }
+h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.01em; }
 p { margin: 0 0 1em; }
 section { padding: 4.5rem 0; border-top: 1px solid var(--line); }
 

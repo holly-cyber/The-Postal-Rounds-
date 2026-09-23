@@ -4,7 +4,7 @@
  */
 import { BIRCHWOOD, LIMITS, ROUNDS, type RoundId } from '../lib/config.ts';
 import { GpxError, checkPoints, parsePoints, type GpxPoint, type GpxResult } from '../lib/gpx.ts';
-import { formatDate, formatDuration, todayInShap, type PublicRound } from '../lib/rounds.ts';
+import { formatDate, formatDuration, todayInShap, type Mode, type PublicRound } from '../lib/rounds.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -136,19 +136,77 @@ function gpxError(message: string) {
   box.appendChild(d);
 }
 
-/** Re-check the chosen GPX against the chosen round. Returns the result, or null. */
+/** Walk or run, from the activity type in the GPX if it has one, otherwise from the average pace. */
+function guessMode(text: string, r: GpxResult): Mode | null {
+  const type = text.match(/<type>\s*([^<]{1,40}?)\s*<\/type>/i)?.[1].toLowerCase() ?? '';
+  if (/run|trail|jog/.test(type)) return 'run';
+  if (/walk|hik|trek/.test(type)) return 'walk';
+  if (!r.elapsedSecs || !r.km) return null;
+  // Round runners average 6–8 km/h including stops; walkers 3–4.5 km/h.
+  return r.km / (r.elapsedSecs / 3600) >= 5.5 ? 'run' : 'walk';
+}
+
+function setRadio(name: string, value: string) {
+  const input = document.querySelector<HTMLInputElement>(`input[name=${name}][value=${value}]`);
+  if (input) input.checked = true;
+}
+
+/** Briefly highlight a field we filled in, so people can see what changed. */
+function flash(el: Element | null) {
+  if (!el) return;
+  el.classList.remove('filled');
+  void (el as HTMLElement).offsetWidth;
+  el.classList.add('filled');
+}
+
+/** Re-check the chosen GPX against the chosen round. On a new file, also fill in the form from it. */
 function checkGpx(prefill: boolean): GpxResult | null {
   if (gpxText === null) return null;
   try {
-    if (prefill) gpxPoints = parsePoints(gpxText);
-    const parsed = checkPoints(gpxPoints, chosenRound());
-    showGpx(parsed);
-    if (!prefill) return parsed;
-    if (parsed.startDate && parsed.startDate <= today) $<HTMLInputElement>('date').value = parsed.startDate;
+    if (!prefill) {
+      const parsed = checkPoints(gpxPoints, chosenRound());
+      showGpx(parsed);
+      return parsed;
+    }
+    gpxPoints = parsePoints(gpxText);
+
+    // Which round? Pick the one the track passes; the long round wins if both do.
+    const long = checkPoints(gpxPoints, 'long');
+    const short = checkPoints(gpxPoints, 'short');
+    const round: RoundId = long.passed ? 'long' : short.passed ? 'short' : chosenRound();
+    const filled: string[] = [];
+    if (long.passed || short.passed) {
+      setRadio('round', round);
+      flash(document.querySelector('[aria-labelledby=roundlbl]'));
+      filled.push(ROUNDS[round].name.replace(/^The /, 'the '));
+    }
+    const parsed = round === 'long' ? long : round === 'short' ? short : checkPoints(gpxPoints, round);
+
+    const mode = guessMode(gpxText, parsed);
+    if (mode) {
+      setRadio('mode', mode);
+      flash(document.querySelector('[aria-labelledby=modelbl]'));
+      filled.push(mode === 'run' ? 'ran' : 'walked');
+    }
+    if (parsed.startDate && parsed.startDate <= today) {
+      $<HTMLInputElement>('date').value = parsed.startDate;
+      flash($('date'));
+      filled.push(formatDate(parsed.startDate));
+    }
     if (parsed.elapsedSecs) {
       const mins = Math.round(parsed.elapsedSecs / 60);
       $<HTMLInputElement>('hh').value = String(Math.floor(mins / 60));
       $<HTMLInputElement>('mm').value = String(mins % 60).padStart(2, '0');
+      flash(document.querySelector('.time'));
+      filled.push(formatDuration(parsed.elapsedSecs));
+    }
+
+    showGpx(parsed);
+    if (filled.length) {
+      const note = document.createElement('p');
+      note.className = 'gpx-filled';
+      note.textContent = `Filled in from your GPX: ${filled.join(', ')}. Check it’s right and change anything that isn’t.`;
+      $('gpxres').querySelector('.gpx-card')?.appendChild(note);
     }
     return parsed;
   } catch (err) {

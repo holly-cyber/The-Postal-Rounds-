@@ -309,6 +309,11 @@ const today = todayInShap();
   .frank strong { font-size: 0.85rem; letter-spacing: 0.06em; margin: 0.15rem 0; }
   @keyframes thunk { from { opacity: 0; transform: rotate(-14deg) scale(2.2); } to { opacity: 0.85; transform: rotate(-14deg) scale(1); } }
 
+  .gpx-filled { margin: 0.8rem 0 0; padding: 0.6rem 0.8rem; border-radius: 8px; background: var(--paper); font-size: 0.92rem; color: var(--ink); max-width: calc(100% - 100px); }
+  /* Fields filled in from the GPX glow briefly. */
+  .filled { animation: filled 1.8s ease-out; border-radius: 6px; }
+  @keyframes filled { 0%, 30% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--moss) 70%, transparent); } 100% { box-shadow: 0 0 0 3px transparent; } }
+
   /* Photo preview, pinned like a snapshot */
   .snap { margin: 0.8rem 0 0; display: inline-block; background: #fff; padding: 6px 6px 18px; box-shadow: 0 6px 16px rgba(20, 30, 18, 0.18); transform: rotate(-2deg); border-radius: 2px; }
   .snap[hidden] { display: none; }
@@ -352,7 +357,7 @@ const today = todayInShap();
     .postbox, .postbox-letter, .postbox-slot { transition: none; }
     .postbox.dropped .postbox-letter, .posted-letter { animation: none; opacity: 0; }
     .gpx-track .trace { animation: none; stroke-dashoffset: 0; }
-    .deliveries li, .frank, .pillar, .posted-frank { animation: none; opacity: 1; }
+    .deliveries li, .frank, .pillar, .posted-frank, .filled { animation: none; opacity: 1; }
     .frank { opacity: 0.85; }
   }
 </style>

@@ -204,8 +204,9 @@ const stats: [string, string][] = [
   /* Phones: photo on top with the title over the sky, the panel below it so the runner stays in view. */
   @media (max-width: 720px) {
     .hero-photo { display: grid; grid-template-rows: auto auto; min-height: 0; }
-    .hero-photo :global(picture) { position: relative; grid-area: 1 / 1; height: 78svh; min-height: 460px; }
-    .hero-photo :global(.hero-bg) { position: absolute; object-position: 26% 50% !important; }
+    .hero-photo :global(picture) { position: relative; grid-area: 1 / 1; height: 78svh; min-height: 460px; overflow: hidden; }
+    /* Zoom from the top edge so the runner sits lower, her head just below the strapline. */
+    .hero-photo :global(.hero-bg) { position: absolute; object-position: 26% 50% !important; animation: none; transform: scale(1.24); transform-origin: 24% 0; }
     .hero-shade { grid-area: 1 / 1; position: relative; inset: auto; height: 100%;
       background: linear-gradient(180deg, rgba(14, 24, 13, 0.8) 0%, rgba(14, 24, 13, 0.55) 36%, rgba(14, 24, 13, 0) 60%, rgba(14, 24, 13, 0) 70%, rgba(14, 24, 13, 0.6) 100%); }
     .hero-inner { display: contents; }

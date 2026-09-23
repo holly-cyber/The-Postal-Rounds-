@@ -207,12 +207,13 @@ const stats: [string, string][] = [
     .hero-photo :global(picture) { position: relative; grid-area: 1 / 1; height: 78svh; min-height: 460px; }
     .hero-photo :global(.hero-bg) { position: absolute; object-position: 26% 50% !important; }
     .hero-shade { grid-area: 1 / 1; position: relative; inset: auto; height: 100%;
-      background: linear-gradient(180deg, rgba(14, 24, 13, 0.7) 0%, rgba(14, 24, 13, 0.1) 40%, rgba(14, 24, 13, 0) 60%, rgba(14, 24, 13, 0.6) 100%); }
+      background: linear-gradient(180deg, rgba(14, 24, 13, 0.82) 0%, rgba(14, 24, 13, 0.55) 30%, rgba(14, 24, 13, 0) 55%, rgba(14, 24, 13, 0) 70%, rgba(14, 24, 13, 0.6) 100%); }
     .hero-inner { display: contents; }
     .hero-top { grid-area: 1 / 1; align-self: start; text-align: left; padding: 1.5rem 16px 0; }
-    .hero-kicker { justify-content: flex-start; }
-    h1 { margin-left: 0; }
-    .hero-strap { font-size: 1.15rem; }
+    .hero-kicker { justify-content: flex-start; font-size: 0.7rem; letter-spacing: 0.1em; margin-bottom: 0.6rem; }
+    .hero-kicker .slot { width: 1.4rem; height: 0.4rem; }
+    h1 { margin-left: 0; max-width: none; font-size: clamp(2.4rem, 11.5vw, 3.4rem); line-height: 0.98; letter-spacing: -0.025em; }
+    .hero-strap { font-size: 1.05rem; font-weight: 600; color: #fff; margin-top: 0.7rem; padding-left: 0.7rem; border-left: 3px solid #e0463c; line-height: 1.35; text-wrap: balance; text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7); }
     .hero-panel { grid-area: 2 / 1; max-width: none; margin: -2.5rem 12px 1.5rem; padding: 1.1rem 1.1rem 1rem;
       background: rgba(22, 34, 21, 0.92); }
     .hero-stats { grid-template-columns: repeat(2, 1fr); row-gap: 0.8rem; }

@@ -2,9 +2,9 @@
  * Post your round page: instant GPX feedback and sending the entry to POST /api/rounds.
  * The round book itself lives on /round-book/ (src/scripts/roundbook.ts).
  */
-import { LIMITS, ROUNDS, type RoundId } from '../lib/config.ts';
-import { GpxError, parseGpx, type GpxResult } from '../lib/gpx.ts';
-import { todayInShap, type PublicRound } from '../lib/rounds.ts';
+import { BIRCHWOOD, LIMITS, ROUNDS, type RoundId } from '../lib/config.ts';
+import { GpxError, checkPoints, parsePoints, type GpxPoint, type GpxResult } from '../lib/gpx.ts';
+import { formatDate, formatDuration, todayInShap, type PublicRound } from '../lib/rounds.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -18,31 +18,113 @@ $<HTMLInputElement>('date').max = today;
 
 /* ---------- GPX instant feedback ---------- */
 
+const SVG = 'http://www.w3.org/2000/svg';
+let gpxPoints: GpxPoint[] = [];
+
+function svgEl<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string>) {
+  const e = document.createElementNS(SVG, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
+}
+
+/** Draw the track as a little map, with Birchwood Cafe marked. Stays on the device. */
+function drawTrack(pts: GpxPoint[]): SVGSVGElement | null {
+  if (pts.length < 2) return null;
+  const step = Math.max(1, Math.ceil(pts.length / 600));
+  const sample = pts.filter((_, i) => i % step === 0 || i === pts.length - 1);
+  const all = [...sample, BIRCHWOOD];
+  const k = Math.cos((BIRCHWOOD.lat * Math.PI) / 180);
+  const xs = all.map((p) => p.lon * k);
+  const ys = all.map((p) => -p.lat);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const W = 320;
+  const H = 200;
+  const pad = 14;
+  const scale = Math.min((W - 2 * pad) / (x1 - x0 || 1), (H - 2 * pad) / (y1 - y0 || 1));
+  const ox = (W - (x1 - x0) * scale) / 2;
+  const oy = (H - (y1 - y0) * scale) / 2;
+  const at = (p: { lat: number; lon: number }) =>
+    [ox + (p.lon * k - x0) * scale, oy + (-p.lat - y0) * scale].map((n) => n.toFixed(1));
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, class: 'gpx-track', role: 'img', 'aria-label': 'Your route, drawn from your GPX file' });
+  svg.appendChild(svgEl('polyline', { class: 'trace', pathLength: '1', points: sample.map((p) => at(p).join(',')).join(' ') }));
+  const [hx, hy] = at(BIRCHWOOD);
+  svg.appendChild(svgEl('circle', { class: 'home', cx: hx, cy: hy, r: '5' }));
+  const label = svgEl('text', { class: 'home-label', x: String(+hx + 9), y: String(+hy + 4) });
+  label.textContent = 'Birchwood Cafe';
+  svg.appendChild(label);
+  return svg;
+}
+
+function stat(value: string, unit: string) {
+  const d = document.createElement('div');
+  const b = document.createElement('b');
+  b.textContent = value;
+  const s = document.createElement('span');
+  s.textContent = unit;
+  d.append(b, s);
+  return d;
+}
+
 function showGpx(r: GpxResult) {
   const box = $('gpxres');
   box.textContent = '';
-  const head = document.createElement('div');
-  head.className = r.passed ? 'ok' : 'no';
+  const card = document.createElement('div');
+  card.className = `gpx-card ${r.passed ? 'ok' : 'no'}`;
+
+  const map = drawTrack(gpxPoints);
+  if (map) card.appendChild(map);
+
+  const stats = document.createElement('div');
+  stats.className = 'gpx-stats';
+  stats.appendChild(stat(r.km.toFixed(1), 'km'));
+  if (r.elapsedSecs) stats.appendChild(stat(formatDuration(r.elapsedSecs), 'time'));
+  if (r.startDate) stats.appendChild(stat(formatDate(r.startDate), 'date'));
+  card.appendChild(stats);
+
+  const head = document.createElement('p');
+  head.className = 'gpx-head';
   const name = ROUNDS[chosenRound()].name.replace(/^The /, 'the ');
   head.textContent = r.passed ? `Route checked: this is ${name}.` : `This track doesn’t look like ${name} yet.`;
-  box.appendChild(head);
+  card.appendChild(head);
+
   const ul = document.createElement('ul');
-  for (const c of r.checks) {
+  ul.className = 'deliveries';
+  r.checks.forEach((c, i) => {
     const li = document.createElement('li');
-    li.textContent = (c.pass ? '✓ ' : '✗ ') + c.label;
+    li.className = c.pass ? 'pass' : 'fail';
+    li.style.setProperty('--i', String(i));
+    const mark = document.createElement('span');
+    mark.className = 'mark';
+    mark.setAttribute('aria-hidden', 'true');
+    mark.textContent = c.pass ? '✓' : '✗';
     const sr = document.createElement('span');
     sr.className = 'sr-only';
     sr.textContent = c.pass ? ' (passed)' : ' (not passed)';
-    li.appendChild(sr);
+    li.append(mark, c.label, sr);
     ul.appendChild(li);
-  }
-  box.appendChild(ul);
-  if (!r.passed) {
-    const p = document.createElement('div');
+  });
+  card.appendChild(ul);
+
+  if (r.passed) {
+    const frank = document.createElement('div');
+    frank.className = 'frank';
+    frank.setAttribute('aria-hidden', 'true');
+    frank.style.setProperty('--n', String(r.checks.length));
+    const round = chosenRound() === 'long' ? 'LONG ROUND' : 'SHORT ROUND';
+    for (const [tag, t] of [['span', 'SHAP'], ['strong', 'CHECKED'], ['span', round]] as const) {
+      const e = document.createElement(tag);
+      e.textContent = t;
+      frank.appendChild(e);
+    }
+    card.appendChild(frank);
+  } else {
+    const p = document.createElement('p');
     p.className = 'hint';
-    p.textContent = 'You can still add your round. It will show as waiting for a check.';
-    box.appendChild(p);
+    p.style.margin = '0.6rem 0 0';
+    p.textContent = 'You can still post your round. It will show as waiting for a check.';
+    card.appendChild(p);
   }
+  box.appendChild(card);
 }
 
 function gpxError(message: string) {
@@ -58,7 +140,8 @@ function gpxError(message: string) {
 function checkGpx(prefill: boolean): GpxResult | null {
   if (gpxText === null) return null;
   try {
-    const parsed = parseGpx(gpxText, chosenRound());
+    if (prefill) gpxPoints = parsePoints(gpxText);
+    const parsed = checkPoints(gpxPoints, chosenRound());
     showGpx(parsed);
     if (!prefill) return parsed;
     if (parsed.startDate && parsed.startDate <= today) $<HTMLInputElement>('date').value = parsed.startDate;
@@ -74,10 +157,28 @@ function checkGpx(prefill: boolean): GpxResult | null {
   }
 }
 
+/* The postbox: lift on drag-over, swallow the letter when a file goes in. */
+const postbox = $('postbox');
+const setPostbox = (file?: File) => {
+  postbox.classList.toggle('has-file', !!file);
+  $('gpx-title').textContent = file ? file.name : 'Drop your GPX in the postbox';
+  $('gpx-help').textContent = file ? 'In the post. Tap to choose a different file.' : 'or tap to choose a file. We’ll check it on the spot.';
+  if (file) {
+    postbox.classList.remove('dropped');
+    void postbox.offsetWidth; // restart the animation
+    postbox.classList.add('dropped');
+  }
+};
+postbox.addEventListener('dragenter', () => postbox.classList.add('over'));
+postbox.addEventListener('dragover', () => postbox.classList.add('over'));
+for (const ev of ['dragleave', 'drop']) postbox.addEventListener(ev, () => postbox.classList.remove('over'));
+
 $<HTMLInputElement>('gpx').addEventListener('change', async (e) => {
   gpxText = null;
+  gpxPoints = [];
   $('gpxres').textContent = '';
   const f = (e.target as HTMLInputElement).files?.[0];
+  setPostbox(f);
   if (!f) return;
   if (f.size > LIMITS.gpxMaxBytes) {
     gpxError('That file is over 10 MB. Export a GPX without extra sensor data.');
@@ -90,6 +191,16 @@ $<HTMLInputElement>('gpx').addEventListener('change', async (e) => {
 document.querySelectorAll<HTMLInputElement>('input[name=round]').forEach((r) =>
   r.addEventListener('change', () => checkGpx(false)),
 );
+
+/* Photo: show it as a little snapshot. */
+let snapUrl: string | null = null;
+$<HTMLInputElement>('photo').addEventListener('change', (e) => {
+  const f = (e.target as HTMLInputElement).files?.[0];
+  if (snapUrl) URL.revokeObjectURL(snapUrl);
+  snapUrl = f && f.type.startsWith('image/') ? URL.createObjectURL(f) : null;
+  $('snap').hidden = !snapUrl;
+  if (snapUrl) $<HTMLImageElement>('snap-img').src = snapUrl;
+});
 
 /* ---------- Upload preparation (stay under Netlify's request size limit) ---------- */
 
@@ -154,6 +265,7 @@ form.addEventListener('submit', async (e) => {
   const submit = $<HTMLButtonElement>('submit');
   submit.disabled = true;
   setMsg('Posting your round…');
+  submit.textContent = 'Posting…';
   try {
     let size = 0;
     if (gpxFile) {
@@ -178,21 +290,46 @@ form.addEventListener('submit', async (e) => {
       return;
     }
     const entry = body.entry as PublicRound | undefined;
-    form.reset();
-    gpxText = null;
-    $('gpxres').textContent = '';
-    setMsg(
-      entry?.gpxChecked
-        ? 'Posted and delivered. Your round is in the book.'
-        : 'Posted. Your round is in the book and will show as checked once we’ve looked at your evidence.',
-    );
-    const a = document.createElement('a');
-    a.href = '/round-book/';
-    a.textContent = 'See the round book';
-    $('msg').append(' ', a);
+    showPosted(entry, name);
   } catch {
     setMsg('Your round couldn’t be posted. Try again in a moment.', true);
   } finally {
     submit.disabled = false;
+    submit.textContent = 'Post my round';
   }
+});
+
+/* ---------- Posted and delivered ---------- */
+
+function showPosted(entry: PublicRound | undefined, name: string) {
+  const round = entry?.round ?? chosenRound();
+  const mode = entry?.mode ?? 'walk';
+  const checked = !!(entry?.gpxChecked || entry?.verified);
+  const how = `${mode === 'run' ? 'ran' : 'walked'} ${ROUNDS[round].name.replace(/^The /, 'the ')}`;
+  const time = entry?.secs ? ` in ${formatDuration(entry.secs)}` : '';
+  $('posted-text').textContent = checked
+    ? `Well delivered, ${name}. You ${how}${time}, and your GPX is checked, so you’re on the leaderboard.`
+    : `Well delivered, ${name}. You ${how}${time}. You’re in the book now and will show as checked once we’ve looked at your evidence.`;
+  $<HTMLAnchorElement>('posted-link').href = checked ? `/round-book/?round=${round}&mode=${mode}#board` : '/round-book/#everyone';
+  $('posted-year').textContent = String(new Date().getFullYear());
+
+  form.reset();
+  gpxText = null;
+  gpxPoints = [];
+  $('gpxres').textContent = '';
+  setPostbox();
+  $('snap').hidden = true;
+  setMsg('');
+  form.hidden = true;
+  const panel = $('posted');
+  panel.hidden = false;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  panel.focus({ preventScroll: true });
+}
+
+$('post-another').addEventListener('click', () => {
+  $('posted').hidden = true;
+  form.hidden = false;
+  $<HTMLInputElement>('date').value = '';
+  $<HTMLInputElement>('name').focus();
 });

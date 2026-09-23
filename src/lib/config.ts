@@ -22,6 +22,8 @@ export const SITE = {
   instagramHandle: '@birchwoodcafeshap',
   /** Hashtag we invite people to use when they share their round. */
   hashtag: '#ThePostmansChallenge',
+  /** Where to buy Alan Cleaver's The Postal Paths. Leave empty to hide the buy buttons. */
+  bookUrl: 'https://amzn.eu/d/09Do8TS7',
   /** Finisher pins: set to true once pins are stocked at the café. */
   pinsAvailable: false,
 } as const;

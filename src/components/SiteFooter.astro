@@ -15,7 +15,10 @@ import { SITE } from '../lib/config.ts';
     <div>
       <h3>Read and listen</h3>
       <ul>
-        <li>Alan Cleaver, <em>The Postal Paths</em> (Monoray, 2025)</li>
+        <li>
+          Alan Cleaver, <em>The Postal Paths</em> (Monoray, 2025)
+          {SITE.bookUrl && <>{' · '}<a href={SITE.bookUrl} target="_blank" rel="noopener">Buy the book</a></>}
+        </li>
         <li>Alan Cleaver’s Hidden Cumbria route notes for the Shap postman’s path</li>
         <li>Countrystride podcast #43, Shap and the Postman’s Path</li>
       </ul>

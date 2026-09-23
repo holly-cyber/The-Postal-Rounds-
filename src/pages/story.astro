@@ -10,6 +10,7 @@ import Base from '../layouts/Base.astro';
 import PageBanner from '../components/PageBanner.astro';
 import Photo from '../components/Photo.astro';
 import Postmark from '../components/Postmark.astro';
+import { SITE } from '../lib/config.ts';
 import { CAFE_PHOTO, STORY_PHOTOS, STORY_QUOTE_PHOTO } from '../lib/photos.ts';
 
 const entry = await getEntry('pages', 'story');
@@ -179,11 +180,23 @@ const q = STORY_QUOTE_PHOTO;
               <h3>The Postal Paths</h3>
               <p>Rediscovering Britain’s forgotten trails and the people who walked them</p>
               <p class="book-author">Alan Cleaver</p>
+              {SITE.bookUrl && (
+                <a class="btn red book-buy" href={SITE.bookUrl} target="_blank" rel="noopener">
+                  Buy the book<span class="sr-only"> (opens Amazon in a new tab)</span>
+                </a>
+              )}
             </div>
             <div class="ch-text">
               <p class="label-kicker on-dark">Chapter four</p>
               <h2 id="ch4" set:html={book.title} />
               <div class="book-prose" set:html={book.html} />
+              {SITE.bookUrl && (
+                <p class="book-cta">
+                  <a class="btn red" href={SITE.bookUrl} target="_blank" rel="noopener">
+                    Buy The Postal Paths<span class="sr-only"> (opens Amazon in a new tab)</span>
+                  </a>
+                </p>
+              )}
             </div>
           </div>
         </section>
@@ -283,6 +296,8 @@ const q = STORY_QUOTE_PHOTO;
   :global(.book-stamp .postmark) { width: 90px; height: 90px; color: #c4241c; opacity: 0.8; transform: rotate(-14deg); }
   .ch-book h2 { color: #fff; font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; }
   .book-prose :global(p) { font-size: 1.05rem; }
+  .book-buy { margin-top: 1.2rem; }
+  .book-cta { margin: 1.5rem 0 0; }
   .book-prose :global(.credit) { color: #b9c4b1; font-size: 0.9rem; }
 
   /* Closing call to action */

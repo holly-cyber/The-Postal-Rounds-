@@ -1,0 +1,30 @@
+---
+/** A responsive, optimised photo (AVIF/WebP) with an optional caption. */
+import { Picture } from 'astro:assets';
+import type { Photo } from '../lib/photos.ts';
+
+interface Props {
+  photo: Photo;
+  /** The `sizes` attribute: how wide the photo displays. */
+  sizes?: string;
+  widths?: number[];
+  caption?: boolean;
+  eager?: boolean;
+  class?: string;
+}
+const { photo, sizes = '(min-width: 1080px) 540px, 100vw', widths = [400, 700, 1000, 1400], caption = true, eager = false, class: cls } = Astro.props;
+const usable = widths.filter((w) => w <= photo.src.width);
+---
+<figure class:list={['photo', cls]}>
+  <Picture
+    src={photo.src}
+    alt={photo.alt}
+    formats={['avif', 'webp']}
+    widths={usable.length ? usable : [photo.src.width]}
+    sizes={sizes}
+    loading={eager ? 'eager' : 'lazy'}
+    fetchpriority={eager ? 'high' : undefined}
+    style={photo.focus ? `object-position:${photo.focus}` : undefined}
+  />
+  {caption && photo.caption && <figcaption>{photo.caption}</figcaption>}
+</figure>

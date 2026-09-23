@@ -2,9 +2,12 @@
 /** Renders one of the editable pages in src/content/pages/. */
 import { getEntry, render } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import PageBanner from './PageBanner.astro';
+import type { PAGE_PHOTOS } from '../lib/photos.ts';
 
 interface Props {
   id: string;
+  banner?: keyof typeof PAGE_PHOTOS;
 }
 const entry = await getEntry('pages', Astro.props.id);
 if (!entry) throw new Error(`Missing src/content/pages/${Astro.props.id}.md`);
@@ -12,6 +15,7 @@ const { Content } = await render(entry);
 ---
 <Base title={entry.data.title} description={entry.data.description}>
   <main id="main">
+    {Astro.props.banner && <PageBanner page={Astro.props.banner} />}
     <div class="wrap page-head">
       <h1>{entry.data.title}</h1>
       {entry.data.lede && <p class="lede">{entry.data.lede}</p>}

@@ -1,0 +1,22 @@
+---
+/** A wide photo band under the header on inner pages. Decorative: the page title follows it. */
+import { Picture } from 'astro:assets';
+import { PAGE_PHOTOS } from '../lib/photos.ts';
+
+interface Props {
+  page: keyof typeof PAGE_PHOTOS;
+}
+const photo = PAGE_PHOTOS[Astro.props.page];
+---
+<div class="page-banner">
+  <Picture
+    src={photo.src}
+    alt={photo.alt}
+    formats={['avif', 'webp']}
+    widths={[640, 1000, 1400, photo.src.width].filter((w, i, a) => w <= photo.src.width && a.indexOf(w) === i)}
+    sizes="100vw"
+    loading="eager"
+    fetchpriority="high"
+    style={`object-position:${photo.focus}`}
+  />
+</div>

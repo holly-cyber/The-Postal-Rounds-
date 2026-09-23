@@ -35,6 +35,8 @@ paper `#EEF1E8`; light and dark themes.
 | Pages: home, story, route, safety, log (form + round book), FAQ, contact (Netlify Forms), privacy, admin | `src/pages/` |
 | Browser logic (instant GPX feedback, upload, round book; admin) | `src/scripts/log.ts`, `src/scripts/admin.ts` |
 | Sketch map (drawn from `STOPS`) | `src/components/SketchMap.astro` |
+| **Photos**: originals in `src/assets/photos/` (never `public/` — Astro optimises imported photos to AVIF/WebP). Which photo goes where, alt text, captions, crop focus | `src/lib/photos.ts` |
+| Home hero | `src/components/Hero.astro` |
 
 ## API
 

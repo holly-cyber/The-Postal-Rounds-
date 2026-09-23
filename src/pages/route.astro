@@ -3,6 +3,9 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import Base from '../layouts/Base.astro';
 import SketchMap from '../components/SketchMap.astro';
+import PageBanner from '../components/PageBanner.astro';
+import Photo from '../components/Photo.astro';
+import { STOP_PHOTOS } from '../lib/photos.ts';
 import { NOTICES, ROUNDS, STOPS } from '../lib/config.ts';
 
 // A download button appears only once the GPX file has been added to public/gpx/.
@@ -16,6 +19,7 @@ const rounds = Object.values(ROUNDS).map((r) => ({
   description="The long and short Shap postal rounds from Birchwood Cafe: distances, stops, GPX downloads and current notices."
 >
   <main id="main">
+    <PageBanner page="route" />
     <div class="wrap page-head">
       <h1>The route</h1>
       <p class="lede">
@@ -82,6 +86,7 @@ const rounds = Object.values(ROUNDS).map((r) => ({
                       {s.onlyOn && <span class="onlyon">{s.onlyOn === 'long' ? 'Long round only' : 'Short round only'}</span>}
                     </h3>
                     <p set:html={s.html} />
+                    {STOP_PHOTOS[s.name] && <Photo photo={STOP_PHOTOS[s.name]} sizes="(min-width: 1080px) 416px, 90vw" widths={[400, 800]} />}
                   </li>
                 ))
               }

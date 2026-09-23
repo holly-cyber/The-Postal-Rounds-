@@ -1,0 +1,223 @@
+---
+/** Full-bleed photo hero for the home page. */
+import { Picture } from 'astro:assets';
+import { HERO, PHOTO_CREDIT } from '../lib/photos.ts';
+import { ROUNDS, SITE } from '../lib/config.ts';
+
+const stats: [string, string][] = [
+  [`${Math.round(ROUNDS.long.km)} km`, 'the long round'],
+  [`${Math.round(ROUNDS.short.km)} km`, 'the short round'],
+  ['600 m', 'of climb'],
+  ['1976', 'last walked by post'],
+];
+---
+<section class="hero-photo" aria-labelledby="hero-title">
+  <Picture
+    src={HERO.src}
+    alt={HERO.alt}
+    formats={['avif', 'webp']}
+    widths={[640, 960, 1280, HERO.src.width]}
+    sizes="100vw"
+    loading="eager"
+    fetchpriority="high"
+    class="hero-bg"
+    style={`object-position:${HERO.focus}`}
+  />
+  <div class="hero-shade" aria-hidden="true"></div>
+
+  <div class="wrap hero-inner">
+    <div class="hero-top">
+      <p class="hero-kicker"><span class="slot" aria-hidden="true"></span>Shap, Cumbria · The Far Eastern Fells</p>
+      <h1 id="hero-title">{SITE.name}</h1>
+      <p class="hero-strap">{SITE.strapline}</p>
+    </div>
+
+    <div class="hero-panel">
+      <p class="hero-lede">
+        Until 1976 a postman walked the post out of Shap every morning, over the fells to the remote farms of Swindale
+        and Wet Sleddale. Now you can walk or run the round yourself.
+      </p>
+      <div class="hero-actions">
+        <a class="btn red" href="/route/">Explore the route</a>
+        <a class="btn hero-ghost" href="/log/">Log your round</a>
+      </div>
+      <dl class="hero-stats">
+        {
+          stats.map(([n, l]) => (
+            <div>
+              <dt>{l}</dt>
+              <dd>{n}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+
+  <a class="hero-cue" href="#intro" aria-label="Scroll to the story">
+    <span aria-hidden="true">↓</span>
+  </a>
+  {PHOTO_CREDIT && <p class="hero-credit">Photo: {PHOTO_CREDIT}</p>}
+</section>
+
+<style>
+  .hero-photo {
+    position: relative;
+    min-height: clamp(620px, 88svh, 920px);
+    display: flex;
+    overflow: hidden;
+    border: 0;
+    padding: 0;
+    color: #fff;
+    background: #2e4a2b;
+    isolation: isolate;
+  }
+  .hero-photo :global(picture),
+  .hero-photo :global(.hero-bg) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+  }
+  .hero-photo :global(.hero-bg) {
+    object-fit: cover;
+    animation: drift 32s ease-in-out infinite alternate;
+    transform-origin: 30% 55%;
+  }
+  @keyframes drift {
+    from { transform: scale(1.02); }
+    to { transform: scale(1.1) translate(-1%, -0.5%); }
+  }
+  .hero-shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(ellipse 60% 55% at 85% 20%, rgba(14, 24, 13, 0.45), rgba(14, 24, 13, 0) 70%),
+      linear-gradient(180deg, rgba(14, 24, 13, 0.55) 0%, rgba(14, 24, 13, 0.12) 38%, rgba(14, 24, 13, 0) 55%),
+      linear-gradient(0deg, rgba(14, 24, 13, 0.78) 0%, rgba(14, 24, 13, 0.35) 30%, rgba(14, 24, 13, 0) 55%);
+  }
+  .hero-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    text-align: right;
+    gap: 2rem;
+    width: 100%;
+    padding-top: clamp(1.8rem, 5vw, 3.5rem);
+    padding-bottom: clamp(3.5rem, 6vw, 4.5rem);
+  }
+  .hero-kicker {
+    font-family: var(--sans);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.8rem;
+    justify-content: flex-end;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+  }
+  .hero-kicker .slot { background: #e0463c; }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: clamp(3.2rem, 11vw, 8.5rem);
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin: 0;
+    text-shadow: 0 2px 30px rgba(0, 0, 0, 0.35);
+    max-width: 11ch;
+    margin-left: auto;
+  }
+  .hero-strap {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(1.4rem, 3.4vw, 2.3rem);
+    color: #ffd9d4;
+    margin: 0.6rem 0 0;
+    text-shadow: 0 1px 14px rgba(0, 0, 0, 0.55);
+  }
+  .hero-panel {
+    text-align: left;
+    max-width: 30rem;
+    background: rgba(18, 28, 17, 0.55);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    padding: 1.4rem 1.5rem 1.2rem;
+  }
+  .hero-lede { font-size: 1.15rem; line-height: 1.5; margin: 0 0 1.1rem; color: #f3f5ef; }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.2rem; }
+  .hero-ghost { background: transparent; border-color: #fff; color: #fff; }
+  .hero-ghost:hover { background: #fff; color: #2e4a2b; }
+  .hero-photo :global(a:focus-visible) { outline-color: #fff; }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin: 0;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-family: var(--sans);
+  }
+  .hero-stats div { display: flex; flex-direction: column; }
+  .hero-stats dd { order: -1; }
+  .hero-stats dd { margin: 0; font-family: var(--serif); font-weight: 800; font-size: 1.45rem; line-height: 1.1; }
+  .hero-stats dt { font-size: 0.8rem; color: #d5dccd; line-height: 1.25; }
+  .hero-cue {
+    position: absolute;
+    left: 50%;
+    bottom: 0.9rem;
+    transform: translateX(-50%);
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.4rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.6);
+    animation: bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob {
+    50% { transform: translate(-50%, 5px); }
+  }
+  .hero-credit {
+    position: absolute;
+    right: 0.8rem;
+    bottom: 0.4rem;
+    margin: 0;
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.75);
+  }
+  /* Phones: photo on top with the title over the sky, the panel below it so the runner stays in view. */
+  @media (max-width: 720px) {
+    .hero-photo { display: grid; grid-template-rows: auto auto; min-height: 0; }
+    .hero-photo :global(picture) { position: relative; grid-area: 1 / 1; height: 78svh; min-height: 460px; }
+    .hero-photo :global(.hero-bg) { position: absolute; object-position: 26% 50% !important; }
+    .hero-shade { grid-area: 1 / 1; position: relative; inset: auto; height: 100%;
+      background: linear-gradient(180deg, rgba(14, 24, 13, 0.7) 0%, rgba(14, 24, 13, 0.1) 40%, rgba(14, 24, 13, 0) 60%, rgba(14, 24, 13, 0.6) 100%); }
+    .hero-inner { display: contents; }
+    .hero-top { grid-area: 1 / 1; align-self: start; text-align: left; padding: 1.5rem 16px 0; }
+    .hero-kicker { justify-content: flex-start; }
+    h1 { margin-left: 0; }
+    .hero-panel { grid-area: 2 / 1; max-width: none; margin: -2.5rem 12px 1.5rem; padding: 1.1rem 1.1rem 1rem;
+      background: rgba(22, 34, 21, 0.92); }
+    .hero-stats { grid-template-columns: repeat(2, 1fr); row-gap: 0.8rem; }
+    .hero-cue { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-photo :global(.hero-bg), .hero-cue { animation: none; }
+  }
+</style>

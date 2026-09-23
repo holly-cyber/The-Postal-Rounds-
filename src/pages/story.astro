@@ -1,7 +1,12 @@
 ---
 import ContentPage from '../components/ContentPage.astro';
+import Photo from '../components/Photo.astro';
+import { STORY_PHOTOS } from '../lib/photos.ts';
 ---
-<ContentPage id="story">
+<ContentPage id="story" banner="story">
+  <div class="photo-pair">
+    {STORY_PHOTOS.map((p) => <Photo photo={p} sizes="(min-width: 800px) 520px, 100vw" />)}
+  </div>
   <div class="book" style="margin-top:3rem">
     <div class="book-card">
       <strong>The Postal Paths</strong>

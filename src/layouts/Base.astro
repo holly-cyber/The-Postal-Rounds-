@@ -4,6 +4,8 @@ import '../styles/site.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { SITE } from '../lib/config.ts';
+import { getImage } from 'astro:assets';
+import { HERO } from '../lib/photos.ts';
 
 interface Props {
   /** Page title; the site name is appended. Omit on the home page. */
@@ -14,6 +16,9 @@ interface Props {
   bare?: boolean;
 }
 const { title, description = '', noindex = false, bare = false } = Astro.props;
+// Social share image: the hero, cropped to 1200 × 630.
+const og = await getImage({ src: HERO.src, width: 1200, height: 630, fit: 'cover', position: 'left', format: 'jpg' });
+const ogUrl = Astro.site ? new URL(og.src, Astro.site).href : og.src;
 const fullTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} — ${SITE.strapline}`;
 ---
 <!doctype html>
@@ -24,6 +29,12 @@ const fullTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} — ${SITE.
     <title>{fullTitle}</title>
     {description && <meta name="description" content={description} />}
     {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta property="og:title" content={fullTitle} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content={ogUrl} />
+    <meta property="og:image:alt" content={HERO.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#2E4A2B" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />

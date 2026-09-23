@@ -1,31 +1,28 @@
 ---
-/** Home page. Visual design ported from reference/shap-postal-round.html; content per docs/build-brief.md. */
+/** Home page. Visual language from reference/shap-postal-round.html; content per docs/build-brief.md. */
 import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Photo from '../components/Photo.astro';
 import { FACTS, ROUNDS, SITE } from '../lib/config.ts';
+import { GALLERY } from '../lib/photos.ts';
 ---
 <Base
   description="Walk or run the old Shap postman's round: a heritage route through Swindale and Wet Sleddale on the eastern edge of the Lake District, starting and finishing at Birchwood Cafe."
 >
   <main id="main">
-    <div class="hero">
-      <div class="wrap hero-grid">
+    <Hero />
+
+    <section id="intro" aria-labelledby="intro-h">
+      <div class="wrap intro">
         <div>
-          <div class="kicker"><span class="slot" aria-hidden="true"></span>Shap, Cumbria</div>
-          <h1>{SITE.name}</h1>
-          <p class="strap">{SITE.strapline}</p>
-          <p class="lede">
-            Until 1976 a postman walked the post out of Shap every morning: over the fields to Shap Abbey, up to isolated
-            Tailbert, down into Swindale and over the fell to Wet Sleddale. Now you can walk or run the round yourself.
-          </p>
-          <p>{SITE.placement}</p>
-          <blockquote class="quote">
-            It broke my heart.
-            <cite>Stuart Lewis, the last postman to walk the round, on being given a van</cite>
+          <h2 id="intro-h">A round the post walked for a century</h2>
+          <p class="lede">{SITE.placement}</p>
+          <blockquote class="quote big">
+            “It broke my heart. I loved the walk and went out in all weathers. There wasn’t a day when we didn’t complete
+            the round even in mist, snow and ice.”
+            <cite>Stuart Lewis, the last postman to walk the round, on being given a van in 1976</cite>
           </blockquote>
-          <div class="actions">
-            <a class="btn" href="/route/">The route</a>
-            <a class="btn red" href="/log/">Log your round</a>
-          </div>
+          <p><a href="/story/">Read the story of the round →</a></p>
         </div>
         <dl class="facts" aria-label="Route at a glance">
           {
@@ -38,7 +35,7 @@ import { FACTS, ROUNDS, SITE } from '../lib/config.ts';
           }
         </dl>
       </div>
-    </div>
+    </section>
 
     <section aria-labelledby="why-h">
       <div class="wrap book">
@@ -50,15 +47,24 @@ import { FACTS, ROUNDS, SITE } from '../lib/config.ts';
         <div class="measure">
           <h2 id="why-h">Two rounds, one start</h2>
           <p>
-            <strong>{ROUNDS.long.name}</strong> is about {ROUNDS.long.miles} miles with 600 metres of climb, the
-            full round including the shepherd’s cottage at Mosedale. <strong>{ROUNDS.short.name}</strong> is about {ROUNDS.short.miles} miles, taking the postie’s
-            shortcut over Ralfland Fell and leaving out the loop to Mosedale.
+            <strong>{ROUNDS.long.name}</strong> is about {ROUNDS.long.miles} miles with 600 metres of climb, the full round
+            including the shepherd’s cottage at Mosedale. <strong>{ROUNDS.short.name}</strong> is about{' '}
+            {ROUNDS.short.miles} miles, taking the postie’s shortcut over Ralfland Fell.
           </p>
           <p>
             It isn’t a race. Walk it or run it, in one go or in stages. If you’d like to, add your name to the round book
             when you’re back.
           </p>
-          <p><a href="/story/">Read the story of the round</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="gallery-section" aria-labelledby="gallery-h">
+      <div class="wrap">
+        <h2 id="gallery-h">The round in pictures</h2>
+        <p class="measure">Frosty abbey mornings, Swindale’s waterfalls, snow on the old tracks and long summer evenings on the fell.</p>
+        <div class="gallery">
+          {GALLERY.map((p, i) => <Photo photo={p} class={`g${i}`} sizes="(min-width: 900px) 33vw, (min-width: 560px) 50vw, 100vw" />)}
         </div>
       </div>
     </section>
@@ -87,3 +93,12 @@ import { FACTS, ROUNDS, SITE } from '../lib/config.ts';
     </section>
   </main>
 </Base>
+
+<style>
+  .intro { display: grid; grid-template-columns: 1.1fr 1fr; gap: 3rem; align-items: start; }
+  .intro h2 { color: var(--fell); }
+  .quote.big { font-size: 1.3rem; margin: 1.6rem 0; }
+  @media (max-width: 820px) {
+    .intro { grid-template-columns: 1fr; gap: 2rem; }
+  }
+</style>

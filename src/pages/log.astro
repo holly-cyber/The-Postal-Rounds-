@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import PageBanner from '../components/PageBanner.astro';
 import { LIMITS, SITE } from '../lib/config.ts';
 import { todayInShap } from '../lib/rounds.ts';
 
@@ -10,6 +11,7 @@ const today = todayInShap();
   description="Add your walk or run of the Shap postal round to the round book, and see who else has done it."
 >
   <main id="main">
+    <PageBanner page="log" />
     <div class="wrap page-head">
       <h1>Log your round</h1>
       <p class="lede">Walked it or ran it? Put your name in the round book.</p>

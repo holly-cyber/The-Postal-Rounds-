@@ -243,7 +243,8 @@ ol.stops .photo img { aspect-ratio: 4 / 3; }
 }
 .intro-lede { font-size: 1.15rem; color: #d7dfcf; max-width: 34rem; }
 
-.bigquote { position: relative; margin: 2.4rem 0 2rem; padding-left: 0.2rem; }
+.intro-bridge { margin: 1.4rem 0 0; font-size: 1.15rem; color: #fff; font-weight: 600; max-width: 34rem; }
+.bigquote { position: relative; margin: 2rem 0 2rem; padding-left: 0.2rem; }
 .qmark {
   display: block;
   width: clamp(3rem, 5vw, 3.8rem);

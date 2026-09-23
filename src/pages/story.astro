@@ -1,22 +1,37 @@
 ---
 import ContentPage from '../components/ContentPage.astro';
 import Photo from '../components/Photo.astro';
+import Postmark from '../components/Postmark.astro';
 import { STORY_PHOTOS } from '../lib/photos.ts';
 ---
-<ContentPage id="story" banner="story">
+<ContentPage id="story" kicker="The story" banner="story">
   <div class="photo-pair">
     {STORY_PHOTOS.map((p) => <Photo photo={p} sizes="(min-width: 800px) 520px, 100vw" />)}
   </div>
-  <div class="book" style="margin-top:3rem">
-    <div class="book-card">
-      <strong>The Postal Paths</strong>
-      Rediscovering Britain’s forgotten trails and the people who walked them
-      <div class="author">Alan Cleaver</div>
-      <div>Monoray, 2025</div>
+  <section slot="after" class="band-fell tight story-cta" aria-labelledby="book-h">
+    <div class="wrap story-cta-grid">
+      <div class="stamp tilt book-stamp">
+        <Postmark line="MONORAY" year="2025" />
+        <p class="stamp-label">Read the book</p>
+        <h3 id="book-h">The Postal Paths</h3>
+        <p>Rediscovering Britain’s forgotten trails and the people who walked them</p>
+        <p class="book-author">Alan Cleaver</p>
+      </div>
+      <div>
+        <p class="label-kicker on-dark">Your turn</p>
+        <h2>Follow in the postie’s footsteps</h2>
+        <p>Two rounds from Birchwood Cafe, in Jude’s words, stop by stop.</p>
+        <p><a class="btn red" href="/route/">See the route</a></p>
+      </div>
     </div>
-    <div>
-      <p>Ready to follow in the postie’s footsteps?</p>
-      <p><a class="btn" href="/route/">See the route</a></p>
-    </div>
-  </div>
+  </section>
 </ContentPage>
+
+<style>
+  .story-cta { margin-top: 3.5rem; }
+  .story-cta-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: clamp(2rem, 6vw, 5rem); align-items: center; }
+  .book-stamp h3 { font-size: 2rem; font-weight: 800; color: var(--fell); margin: 0 0 0.5rem; max-width: 70%; }
+  .book-stamp .book-author { font-weight: 800; color: #1a2019; margin: 1rem 0 0; }
+  :global(.book-stamp .postmark) { width: 90px; height: 90px; color: #c4241c; opacity: 0.8; transform: rotate(-14deg); }
+  @media (max-width: 800px) { .story-cta-grid { grid-template-columns: 1fr; } .book-stamp.tilt { transform: none; } }
+</style>

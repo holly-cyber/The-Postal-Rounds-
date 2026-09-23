@@ -5,6 +5,7 @@ import Base from '../layouts/Base.astro';
 import SketchMap from '../components/SketchMap.astro';
 import PageBanner from '../components/PageBanner.astro';
 import Photo from '../components/Photo.astro';
+import Postmark from '../components/Postmark.astro';
 import { STOP_PHOTOS } from '../lib/photos.ts';
 import { NOTICES, ROUNDS, STOPS } from '../lib/config.ts';
 
@@ -19,43 +20,54 @@ const rounds = Object.values(ROUNDS).map((r) => ({
   description="The long and short Shap postal rounds from Birchwood Cafe: distances, stops, GPX downloads and current notices."
 >
   <main id="main">
-    <PageBanner page="route" />
-    <div class="wrap page-head">
-      <h1>The route</h1>
-      <p class="lede">
-        Tougher than it looks. Three remote Lake District valleys, out of Shap and back, following the round the postman
-        walked until 1976. Start and finish at Birchwood Cafe, run by the family of the last postman to walk it.
-      </p>
-    </div>
+    <PageBanner
+      page="route"
+      title="The route"
+      kicker="The route"
+      lede="Tougher than it looks. Three remote Lake District valleys, out of Shap and back, following the round the postman walked until 1976. Start and finish at Birchwood Cafe, run by the family of the last postman to walk it."
+    />
 
-    <div class="wrap page-body">
-      <div class="cards">
-        {
-          rounds.map((r) => (
-            <div class="card">
-              <h3>{r.name}</h3>
-              <p class="dist">
-                About {r.miles} miles / {r.km} km
-              </p>
-              <p>{r.summary}</p>
-              {r.hasGpx ? (
-                <p>
-                  <a class="btn small" href={`/gpx/${r.gpxFile}`} download>
+    <section class="band-fell tight rounds-band" aria-labelledby="rounds-h">
+      <div class="wrap">
+        <p class="label-kicker on-dark">Choose your round</p>
+        <h2 id="rounds-h">Two rounds, one start</h2>
+        <div class="round-stamps">
+          {
+            rounds.map((r, i) => (
+              <div class:list={['stamp', 'round-stamp', i % 2 ? 'tilt-l' : 'tilt']}>
+                {i === 0 && <Postmark line="LONG ROUND" year={`${Math.round(r.km)} KM`} />}
+                <p class="stamp-label">{r.id === 'long' ? 'The full round' : 'Winter or first-timer'}</p>
+                <h3>{r.name}</h3>
+                <dl class="tiles">
+                  <div>
+                    <dt>miles</dt>
+                    <dd>{r.miles}</dd>
+                  </div>
+                  <div>
+                    <dt>kilometres</dt>
+                    <dd>{r.km}</dd>
+                  </div>
+                </dl>
+                <p class="round-summary">{r.summary}</p>
+                {r.hasGpx ? (
+                  <a class="btn red" href={`/gpx/${r.gpxFile}`} download>
                     Download GPX
                   </a>
-                </p>
-              ) : (
-                <p class="hint">GPX download coming soon.</p>
-              )}
-            </div>
-          ))
-        }
+                ) : (
+                  <p class="soon">GPX download coming soon</p>
+                )}
+              </div>
+            ))
+          }
+        </div>
+        <p class="rounds-note">
+          Distances are by GPS. Please follow the route and stay on public footpaths: the GPX is a guide, not a licence to
+          cross private land. The round isn’t waymarked, so carry OS Explorer OL5 and a compass.
+        </p>
       </div>
-      <p class="hint" style="margin-top:1rem">
-        Distances are by GPS. Please follow this route and stay on public footpaths: the GPX is a guide, not a licence
-        to cross private land. The round isn’t waymarked, so carry OS Explorer OL5 and a compass.
-      </p>
+    </section>
 
+    <div class="wrap page-body">
       {
         NOTICES.length > 0 && (
           <section class="notices" aria-labelledby="notices-h">
@@ -132,6 +144,18 @@ const rounds = Object.values(ROUNDS).map((r) => ({
 </Base>
 
 <style>
+  .round-stamps { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3rem); margin: 2rem 0 1.5rem; }
+  .round-stamp { max-width: none; }
+  .round-stamp h3 { color: var(--fell); font-size: 1.6rem; font-weight: 800; margin: 0 0 1.2rem; max-width: 70%; }
+  .round-stamp .round-summary { color: #3c4639 !important; margin-bottom: 1.3rem; }
+  .round-stamp .soon { color: #6f8b3f !important; font-weight: 700; }
+  .round-stamp .postmark { width: 96px; height: 96px; color: #c4241c; opacity: 0.85; transform: rotate(-14deg); }
+  .tilt-l { transform: rotate(-1.2deg); }
+  .rounds-note { font-size: 0.95rem; max-width: 46rem; }
+  @media (max-width: 800px) {
+    .round-stamps { grid-template-columns: 1fr; }
+    .round-stamp.tilt, .round-stamp.tilt-l { transform: none; }
+  }
   .guide-by { color: var(--ink-soft); margin-top: -0.4rem; }
   .signoff { margin: 2rem 0 1.5rem; padding: 1.4rem 1.6rem; background: var(--paper-2); border-left: 5px solid var(--red); border-radius: 6px; }
   .signoff p { font-family: var(--serif); font-weight: 600; font-size: 1.2rem; line-height: 1.45; margin: 0; }

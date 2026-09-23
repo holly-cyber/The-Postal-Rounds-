@@ -1,0 +1,22 @@
+---
+/** A red franking postmark: "SHAP · WESTMORLAND · CUMBRIA", with a centre line and year. */
+interface Props {
+  line?: string;
+  year?: string;
+  class?: string;
+}
+const { line = 'LAST ROUND', year = '1976', class: cls } = Astro.props;
+const id = `pm-${Math.random().toString(36).slice(2, 8)}`;
+---
+<svg class:list={['postmark', cls]} viewBox="0 0 120 120" aria-hidden="true">
+  <defs>
+    <path id={id} d="M60 60 m-44 0 a44 44 0 1 1 88 0 a44 44 0 1 1 -88 0" />
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="2.5" />
+  <circle cx="60" cy="60" r="33" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text font-size="11" font-weight="700" letter-spacing="2.2" fill="currentColor">
+    <textPath href={`#${id}`}>SHAP · WESTMORLAND · CUMBRIA ·</textPath>
+  </text>
+  <text x="60" y="57" text-anchor="middle" font-size="9" font-weight="700" fill="currentColor">{line}</text>
+  <text x="60" y="73" text-anchor="middle" font-size="17" font-weight="800" fill="currentColor">{year}</text>
+</svg>

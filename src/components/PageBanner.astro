@@ -1,22 +1,40 @@
 ---
-/** A wide photo band under the header on inner pages. Decorative: the page title follows it. */
+/**
+ * Inner-page header in the home page's style: the page title set over a photo (or over the
+ * fell-green band when there's no photo), with a small red kicker and a lede.
+ */
 import { Picture } from 'astro:assets';
 import { PAGE_PHOTOS } from '../lib/photos.ts';
 
 interface Props {
-  page: keyof typeof PAGE_PHOTOS;
+  page?: keyof typeof PAGE_PHOTOS;
+  title: string;
+  kicker?: string;
+  lede?: string;
 }
-const photo = PAGE_PHOTOS[Astro.props.page];
+const { page, title, kicker, lede } = Astro.props;
+const photo = page ? PAGE_PHOTOS[page] : undefined;
 ---
-<div class="page-banner">
-  <Picture
-    src={photo.src}
-    alt={photo.alt}
-    formats={['avif', 'webp']}
-    widths={[640, 1000, 1400, photo.src.width].filter((w, i, a) => w <= photo.src.width && a.indexOf(w) === i)}
-    sizes="100vw"
-    loading="eager"
-    fetchpriority="high"
-    style={`object-position:${photo.focus}`}
-  />
-</div>
+<header class:list={['page-hero', { 'no-photo': !photo }]}>
+  {
+    photo && (
+      <Picture
+        src={photo.src}
+        alt={photo.alt}
+        formats={['avif', 'webp']}
+        widths={[640, 1000, 1400, photo.src.width].filter((w, i, a) => w <= photo.src.width && a.indexOf(w) === i)}
+        sizes="100vw"
+        loading="eager"
+        fetchpriority="high"
+        class="page-hero-bg"
+        style={`object-position:${photo.focus}`}
+      />
+    )
+  }
+  <div class="wrap page-hero-inner">
+    {kicker && <p class="label-kicker on-dark">{kicker}</p>}
+    <h1>{title}</h1>
+    {lede && <p class="page-hero-lede">{lede}</p>}
+    <slot />
+  </div>
+</header>

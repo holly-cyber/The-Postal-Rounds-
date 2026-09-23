@@ -1,18 +1,17 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageBanner from '../components/PageBanner.astro';
+import Postmark from '../components/Postmark.astro';
 ---
 <Base title="Contact" description="Questions about the Shap postal round, press enquiries, or removing your round book entry.">
   <main id="main">
-    <PageBanner page="contact" />
-    <div class="wrap page-head">
-      <h1>Contact</h1>
-      <p class="lede">
-        Questions about the round, press enquiries, or want your round book entry removed? Messages go to the volunteer
-        who looks after this site, not to Birchwood Cafe.
-      </p>
-    </div>
-    <div class="wrap page-body">
+    <PageBanner
+      page="contact"
+      title="Contact"
+      kicker="Get in touch"
+      lede="Questions about the round, press enquiries, or want your round book entry removed? Messages go to the volunteer who looks after this site, not to Birchwood Cafe."
+    />
+    <div class="wrap page-body contact-grid">
       <!-- Handled by Netlify Forms. Submissions appear in the Netlify dashboard and are emailed to the site organiser. -->
       <form
         id="contact"
@@ -50,11 +49,26 @@ import PageBanner from '../components/PageBanner.astro';
         </div>
         <button class="btn red" type="submit">Send message</button>
       </form>
+      <aside class="stamp tilt contact-stamp" aria-labelledby="who-h">
+        <Postmark line="REPLY BY" year="EMAIL" />
+        <p class="stamp-label">Who reads this</p>
+        <h3 id="who-h">Straight to the organiser</h3>
+        <p>
+          Your message goes to the volunteer who looks after the Postman’s Challenge, not to Birchwood Cafe. Please don’t
+          call the café with route questions.
+        </p>
+        <p>Want your round book entry, GPX or photo removed? Choose “My round book entry” and tell us your name and date.</p>
+      </aside>
     </div>
   </main>
 </Base>
 
 <style>
+  .contact-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: clamp(2rem, 5vw, 4rem); align-items: start; padding-bottom: 4rem; }
+  .contact-form { max-width: none !important; box-shadow: 0 18px 44px rgba(20, 30, 18, 0.1); border-radius: 12px !important; }
+  .contact-stamp h3 { color: var(--fell); font-weight: 800; font-size: 1.5rem; max-width: 70%; }
+  :global(.contact-stamp .postmark) { width: 90px; height: 90px; color: #c4241c; opacity: 0.8; transform: rotate(-14deg); }
+  @media (max-width: 820px) { .contact-grid { grid-template-columns: 1fr; } .contact-stamp.tilt { transform: none; } }
   .contact-form { font-family: var(--sans); background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1.5rem; }
   .contact-form label { display: block; font-weight: 700; margin-bottom: 0.3rem; }
   .contact-form input:not([type='hidden']), .contact-form select, .contact-form textarea {

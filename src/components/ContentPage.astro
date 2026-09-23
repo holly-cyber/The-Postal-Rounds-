@@ -8,6 +8,7 @@ import type { PAGE_PHOTOS } from '../lib/photos.ts';
 interface Props {
   id: string;
   banner?: keyof typeof PAGE_PHOTOS;
+  kicker?: string;
 }
 const entry = await getEntry('pages', Astro.props.id);
 if (!entry) throw new Error(`Missing src/content/pages/${Astro.props.id}.md`);
@@ -15,16 +16,13 @@ const { Content } = await render(entry);
 ---
 <Base title={entry.data.title} description={entry.data.description}>
   <main id="main">
-    {Astro.props.banner && <PageBanner page={Astro.props.banner} />}
-    <div class="wrap page-head">
-      <h1>{entry.data.title}</h1>
-      {entry.data.lede && <p class="lede">{entry.data.lede}</p>}
-      <slot name="after-head" />
-    </div>
+    <PageBanner page={Astro.props.banner} title={entry.data.title} lede={entry.data.lede} kicker={Astro.props.kicker} />
+    <slot name="band" />
     <div class="wrap page-body">
       <slot name="before" />
       <div class="prose"><Content /></div>
       <slot />
     </div>
+    <slot name="after" />
   </main>
 </Base>

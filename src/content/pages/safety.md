@@ -6,13 +6,7 @@ lede: Until 1976, the local postman delivered mail to the remote farms and homes
 
 ## Before you go
 
-The round is low-level, but it is rough, boggy and often pathless, and it isn’t waymarked. It isn’t for complete beginners. AdventureSmart UK suggests asking yourself three questions before any day out:
-
-- **Do I have the right gear?**
-- **Do I know what the weather will be like?**
-- **Am I confident I have the knowledge and skills for the day?**
-
-If the answer to any of them is no, save the round for another day.
+The round is low-level, but it is rough, boggy and often pathless, and it isn’t waymarked. It isn’t for complete beginners. Ask yourself AdventureSmart UK’s three questions above, and if the answer to any of them is no, save the round for another day.
 
 ## What to take
 

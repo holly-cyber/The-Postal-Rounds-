@@ -8,17 +8,16 @@ export type Mode = 'walk' | 'run';
 export type Sex = 'F' | 'M';
 export const SEX_LABELS: Record<Sex, string> = { F: 'Female', M: 'Male' };
 
-/** Optional age group, by age on the day of the round. */
+/** Optional age group, by age on the day of the round, in 5-year bands. */
 export const AGE_GROUPS = [
   ['U20', 'Under 20'],
-  ['20-39', '20–39'],
-  ['40-49', '40–49'],
-  ['50-59', '50–59'],
-  ['60-69', '60–69'],
-  ['70+', '70 and over'],
+  ...[20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75].map((a) => [`${a}-${a + 4}`, `${a}–${a + 4}`] as const),
+  ['80+', '80 and over'],
 ] as const;
 export type AgeGroup = (typeof AGE_GROUPS)[number][0];
 export const AGE_LABELS = Object.fromEntries(AGE_GROUPS) as Record<AgeGroup, string>;
+/** Label for an age group; unknown (older) values show as-is. */
+const ageLabel = (a: string) => (AGE_LABELS as Record<string, string>)[a] ?? a;
 export const isAgeGroup = (v: string): v is AgeGroup => AGE_GROUPS.some(([k]) => k === v);
 
 /** What GET /api/rounds returns for each entry — nothing else leaves the server. */
@@ -119,7 +118,7 @@ export function todayInShap(now = new Date()): string {
 
 /** Short category label for the round book, e.g. "Female 40–49", "Male", "40–49". */
 export function categoryLabel(r: Pick<PublicRound, 'sex' | 'ageGroup'>): string {
-  return [r.sex ? SEX_LABELS[r.sex] : '', r.ageGroup ? AGE_LABELS[r.ageGroup] : ''].filter(Boolean).join(' ');
+  return [r.sex ? SEX_LABELS[r.sex] : '', r.ageGroup ? ageLabel(r.ageGroup) : ''].filter(Boolean).join(' ');
 }
 
 export interface BoardFilter {

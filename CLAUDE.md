@@ -41,7 +41,7 @@ palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`; light and dark
 ## API
 
 - `GET /api/rounds` — public fields only: name, round, mode, sex, ageGroup, date, secs, km, gpxChecked, verified, link, note. Never ids, IPs or file keys.
-- `POST /api/rounds` — multipart. Requires `round` (long|short) and `consent=yes`; optional `sex` (F|M) and `ageGroup` (U20, 20-39, 40-49, 50-59, 60-69, 70+). Validates everything, re-runs the GPX checks server-side (never trusts the client), stores JSON in the `rounds` store and files in `evidence` (`<id>/gpx`, `<id>/photo`). Honeypot field `website`. Rate limit: 5 accepted submissions per IP per hour (IP HMAC-hashed with ADMIN_TOKEN in the `ratelimit` store; IPs are never stored in entries).
+- `POST /api/rounds` — multipart. Requires `round` (long|short) and `consent=yes`; optional `sex` (F|M) and `ageGroup` (5-year bands: U20, 20-24 … 75-79, 80+). Validates everything, re-runs the GPX checks server-side (never trusts the client), stores JSON in the `rounds` store and files in `evidence` (`<id>/gpx`, `<id>/photo`). Honeypot field `website`. Rate limit: 5 accepted submissions per IP per hour (IP HMAC-hashed with ADMIN_TOKEN in the `ratelimit` store; IPs are never stored in entries).
 - `PATCH /api/rounds/:id` `{ "verified": bool }` and `DELETE /api/rounds/:id` — `Authorization: Bearer $ADMIN_TOKEN`.
 - `GET /api/admin/rounds`, `GET /api/admin/evidence/:id/:kind` — admin only. GPX files and photos are never publicly served.
 

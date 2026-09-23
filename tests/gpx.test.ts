@@ -169,24 +169,24 @@ test('server: category and age group are optional and validated', async () => {
   assert.equal(none.sex, null);
   assert.equal(none.ageGroup, null);
   f.set('sex', 'F');
-  f.set('ageGroup', '40-49');
+  f.set('ageGroup', '40-44');
   const some = (await prepare(f, 'x', now)).entry;
   assert.equal(some.sex, 'F');
-  assert.equal(some.ageGroup, '40-49');
-  assert.equal(categoryLabel(some), 'Female 40–49');
+  assert.equal(some.ageGroup, '40-44');
+  assert.equal(categoryLabel(some), 'Female 40–44');
   f.set('sex', 'X');
   await assert.rejects(prepare(f, 'x', now), /female, male/);
   f.set('sex', 'M');
-  f.set('ageGroup', '30');
+  f.set('ageGroup', '40-49');
   await assert.rejects(prepare(f, 'x', now), /age group/);
 });
 
 test('leaderboard filters by round, mode, category and age, fastest first', () => {
   const base: PublicRound = { name: '', round: 'long', mode: 'run', sex: null, ageGroup: null, date: '2026-09-01', secs: 0, km: 23.7, gpxChecked: true, verified: false, link: null, note: null };
   const rows: PublicRound[] = [
-    { ...base, name: 'A', secs: 4 * 3600, sex: 'F', ageGroup: '40-49' },
-    { ...base, name: 'B', secs: 3 * 3600, sex: 'M', ageGroup: '20-39' },
-    { ...base, name: 'C', secs: 3.5 * 3600, sex: 'F', ageGroup: '20-39' },
+    { ...base, name: 'A', secs: 4 * 3600, sex: 'F', ageGroup: '40-44' },
+    { ...base, name: 'B', secs: 3 * 3600, sex: 'M', ageGroup: '25-29' },
+    { ...base, name: 'C', secs: 3.5 * 3600, sex: 'F', ageGroup: '25-29' },
     { ...base, name: 'D', secs: 2 * 3600, gpxChecked: false },
     { ...base, name: 'E', secs: 3 * 3600, mode: 'walk', sex: 'F' },
     { ...base, name: 'F', secs: 1 * 3600, round: 'short' },
@@ -195,7 +195,14 @@ test('leaderboard filters by round, mode, category and age, fastest first', () =
   const names = (f: Parameters<typeof leaderboard>[1]) => leaderboard(rows, f).map((r) => r.name);
   assert.deepEqual(names({ round: 'long', mode: 'run', sex: 'all', age: 'all' }), ['B', 'G', 'C', 'A']);
   assert.deepEqual(names({ round: 'long', mode: 'run', sex: 'F', age: 'all' }), ['C', 'A']);
-  assert.deepEqual(names({ round: 'long', mode: 'run', sex: 'all', age: '20-39' }), ['B', 'C']);
+  assert.deepEqual(names({ round: 'long', mode: 'run', sex: 'all', age: '25-29' }), ['B', 'C']);
   assert.deepEqual(names({ round: 'long', mode: 'walk', sex: 'F', age: 'all' }), ['E']);
   assert.deepEqual(names({ round: 'short', mode: 'run', sex: 'all', age: 'all' }), ['F']);
+});
+
+test('age groups are 5-year bands from under 20 to 80 and over', async () => {
+  const { AGE_GROUPS } = await import('../src/lib/rounds.ts');
+  assert.equal(AGE_GROUPS.length, 14);
+  assert.deepEqual(AGE_GROUPS.slice(0, 3).map(([k]) => k), ['U20', '20-24', '25-29']);
+  assert.deepEqual(AGE_GROUPS.at(-1), ['80+', '80 and over']);
 });

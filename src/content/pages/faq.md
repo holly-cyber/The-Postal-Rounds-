@@ -53,7 +53,7 @@ It’s well suited to winter and days of poor visibility, when the high fells ar
 
 ### How do I get a finisher’s pin?
 
-In person at Birchwood Cafe, with your finisher photo. See [Log your round](/log/).
+In person at Birchwood Cafe, with your finisher photo. See [Post your round](/post/).
 
 ### Who do I ask about the round?
 

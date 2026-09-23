@@ -1,5 +1,5 @@
 /**
- * Log your round page: instant GPX feedback and sending the entry to POST /api/rounds.
+ * Post your round page: instant GPX feedback and sending the entry to POST /api/rounds.
  * The round book itself lives on /round-book/ (src/scripts/roundbook.ts).
  */
 import { LIMITS, ROUNDS, type RoundId } from '../lib/config.ts';
@@ -153,7 +153,7 @@ form.addEventListener('submit', async (e) => {
   const fd = new FormData(form); // name, mode, date, hours, minutes, link, note, website
   const submit = $<HTMLButtonElement>('submit');
   submit.disabled = true;
-  setMsg('Adding your round…');
+  setMsg('Posting your round…');
   try {
     let size = 0;
     if (gpxFile) {
@@ -174,7 +174,7 @@ form.addEventListener('submit', async (e) => {
     const res = await fetch('/api/rounds', { method: 'POST', body: fd });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) {
-      setMsg(body.error ?? 'Your round couldn’t be saved. Try again in a moment.', true);
+      setMsg(body.error ?? 'Your round couldn’t be posted. Try again in a moment.', true);
       return;
     }
     const entry = body.entry as PublicRound | undefined;
@@ -183,15 +183,15 @@ form.addEventListener('submit', async (e) => {
     $('gpxres').textContent = '';
     setMsg(
       entry?.gpxChecked
-        ? 'Your round is in the book. Well delivered.'
-        : 'Your round is in the book. It will show as checked once we’ve looked at your evidence.',
+        ? 'Posted and delivered. Your round is in the book.'
+        : 'Posted. Your round is in the book and will show as checked once we’ve looked at your evidence.',
     );
     const a = document.createElement('a');
     a.href = '/round-book/';
     a.textContent = 'See the round book';
     $('msg').append(' ', a);
   } catch {
-    setMsg('Your round couldn’t be saved. Try again in a moment.', true);
+    setMsg('Your round couldn’t be posted. Try again in a moment.', true);
   } finally {
     submit.disabled = false;
   }

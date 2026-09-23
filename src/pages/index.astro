@@ -4,6 +4,7 @@ import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
 import IntroBand from '../components/IntroBand.astro';
 import StacyStory from '../components/StacyStory.astro';
+import PostYourRound from '../components/PostYourRound.astro';
 import InstagramStrip from '../components/InstagramStrip.astro';
 import Photo from '../components/Photo.astro';
 import { ROUNDS } from '../lib/config.ts';
@@ -61,6 +62,8 @@ import { GALLERY } from '../lib/photos.ts';
       </div>
     </section>
 
+    <PostYourRound />
+
     <section aria-labelledby="plan-h">
       <div class="wrap">
         <h2 id="plan-h">Plan your round</h2>
@@ -77,7 +80,7 @@ import { GALLERY } from '../lib/photos.ts';
           </a>
           <a class="card" href="/round-book/">
             <h3>The round book</h3>
-            <p>Fastest times overall, by category and by age group. Done it? Log your round with any free GPS app.</p>
+            <p>Fastest times overall, by category and by age group. Done it? Post your round and take your place.</p>
             <p class="more">See the leaderboard →</p>
           </a>
         </div>

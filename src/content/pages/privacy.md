@@ -1,9 +1,9 @@
 ---
 title: Privacy
-description: What we keep when you log a round or get in touch, and how to have it removed.
+description: What we keep when you post a round or get in touch, and how to have it removed.
 ---
 
-## When you log a round
+## When you post a round
 
 We show your name (or nickname), round, walk or run, date, time, distance, activity link and note in the public round book, plus your category (female or male) and age group if you choose to give them. Both are optional. You agree to this when you tick the box on the form.
 

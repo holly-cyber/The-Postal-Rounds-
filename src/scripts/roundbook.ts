@@ -133,7 +133,7 @@ function renderRecords() {
       card.appendChild(el('p', 'record-when', formatDate(best.date)));
     } else {
       card.appendChild(el('p', 'record-time', 'Up for grabs'));
-      card.appendChild(el('p', 'record-when', 'Log a checked round to set the first time.'));
+      card.appendChild(el('p', 'record-when', 'Post a checked round to set the first time.'));
     }
     box.appendChild(card);
   }
@@ -158,7 +158,7 @@ function renderBoard() {
   const empty = $('board-empty');
   empty.hidden = list.length > 0;
   if (!list.length) {
-    empty.textContent = `No checked ${filter.mode === 'run' ? 'runs' : 'walks'} here yet. Log yours with a GPX file to take the top spot.`;
+    empty.textContent = `No checked ${filter.mode === 'run' ? 'runs' : 'walks'} here yet. Post yours with a GPX file to take the top spot.`;
   }
   list.forEach((r, i) => {
     const tr = el('tr', i < 3 ? `top${i + 1}` : '');
@@ -184,11 +184,11 @@ function renderEveryone() {
   rows.textContent = '';
   const list = sortForView(entries, 'date');
   $('everyone-count').textContent = list.length
-    ? `${list.length} ${list.length === 1 ? 'round' : 'rounds'} logged so far.`
+    ? `${list.length} ${list.length === 1 ? 'round' : 'rounds'} posted so far.`
     : '';
   const empty = $('everyone-empty');
   empty.hidden = list.length > 0;
-  if (!list.length) empty.textContent = 'No rounds logged yet. Be the first name in the book.';
+  if (!list.length) empty.textContent = 'No rounds posted yet. Be the first name in the book.';
   for (const r of list) {
     const tr = el('tr');
     tr.append(

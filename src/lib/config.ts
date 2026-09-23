@@ -185,7 +185,7 @@ export const STOPS: Stop[] = [
   },
   {
     name: 'Stepps Hall and home',
-    html: 'Only one more letter to drop off now. Keeping the river on your right-hand side, cross the concrete road and follow the river until you reach your final delivery: Stepps Hall. Cross the river at the stepping stones <strong>(if the river is in spate they may be uncrossable: follow the road from Thorney Bank to the A6 instead)</strong> and continue up the lane or across the fields to the A6. Turn left and head north back to Birchwood Café. Take a note of your time and log your round. It’s now time to sit down, relax and replenish.',
+    html: 'Only one more letter to drop off now. Keeping the river on your right-hand side, cross the concrete road and follow the river until you reach your final delivery: Stepps Hall. Cross the river at the stepping stones <strong>(if the river is in spate they may be uncrossable: follow the road from Thorney Bank to the A6 instead)</strong> and continue up the lane or across the fields to the A6. Turn left and head north back to Birchwood Café. Take a note of your time and post your round. It’s now time to sit down, relax and replenish.',
     map: { x: 440, y: 496, label: 'Stepps Hall', lx: 400, ly: 478 },
   },
 ];

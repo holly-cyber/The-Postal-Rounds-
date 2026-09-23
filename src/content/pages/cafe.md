@@ -18,7 +18,7 @@ The post office is still part of the furniture. Look out for an original post of
 
 - **Before you go:** fill your water bottles and buy your pre-run sustenance over the old post office counter.
 - **Start the clock:** check your time against the old post office clock.
-- **When you’re back:** sit down, relax and replenish with homemade lunches and cakes. Then log your round.
+- **When you’re back:** sit down, relax and replenish with homemade lunches and cakes. Then post your round.
 - **Read the book:** Alan Cleaver’s *The Postal Paths* is available at the café.
 
 ## Visiting

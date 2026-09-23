@@ -28,3 +28,9 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Frame-Options = "DENY"
+
+# The entry form moved from /log/ to /post/ ("post your round").
+[[redirects]]
+  from = "/log/*"
+  to = "/post/"
+  status = 301

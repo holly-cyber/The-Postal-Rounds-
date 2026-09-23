@@ -136,14 +136,30 @@ function gpxError(message: string) {
   box.appendChild(d);
 }
 
-/** Walk or run, from the activity type in the GPX if it has one, otherwise from the average pace. */
+/**
+ * Walk or run. Apps label it in different places: <type> (Strava, Garmin), <os:activity> (OS Maps),
+ * <sport>/<activity> (others), or the activity name ("Morning Run", "Afternoon Hike").
+ * Strava's older numeric types: 9 = run, 10 = walk, 4 = hike. Falls back to average pace.
+ */
 function guessMode(text: string, r: GpxResult): Mode | null {
-  const type = text.match(/<type>\s*([^<]{1,40}?)\s*<\/type>/i)?.[1].toLowerCase() ?? '';
-  if (/run|trail|jog/.test(type)) return 'run';
-  if (/walk|hik|trek/.test(type)) return 'walk';
+  const grab = (re: RegExp) => [...text.matchAll(re)].map((m) => m[1].toLowerCase()).join(' | ');
+  const types = grab(/<(?:[\w-]+:)?(?:type|activity|sport|activitytype)>\s*([^<]{1,40}?)\s*</gi);
+  const names = grab(/<(?:[\w-]+:)?name>\s*([^<]{1,80}?)\s*</gi);
+  if (/run|jog|^9$|\| 9\b/.test(types)) return 'run';
+  if (/walk|hik|trek|^(10|4)$|\| (10|4)\b/.test(types)) return 'walk';
+  if (/\brun\b|\brunning\b|\bjog/.test(names)) return 'run';
+  if (/\bwalk|\bhike|\bhiking|\btrek|\bramble/.test(names)) return 'walk';
   if (!r.elapsedSecs || !r.km) return null;
   // Round runners average 6–8 km/h including stops; walkers 3–4.5 km/h.
   return r.km / (r.elapsedSecs / 3600) >= 5.5 ? 'run' : 'walk';
+}
+
+/** Date from the file's metadata, for GPX files without timed track points. */
+function metadataDate(text: string): string | null {
+  const t = text.match(/<metadata>[\s\S]*?<time>\s*([^<]+?)\s*<\/time>/i)?.[1];
+  const ms = t ? Date.parse(t) : NaN;
+  if (!Number.isFinite(ms)) return null;
+  return new Date(ms).toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
 }
 
 function setRadio(name: string, value: string) {
@@ -173,9 +189,12 @@ function checkGpx(prefill: boolean): GpxResult | null {
     // Which round? Pick the one the track passes; the long round wins if both do.
     const long = checkPoints(gpxPoints, 'long');
     const short = checkPoints(gpxPoints, 'short');
-    const round: RoundId = long.passed ? 'long' : short.passed ? 'short' : chosenRound();
+    // If neither passes, go by distance: nearer to 23.7 km is the long round, nearer to 16.6 km the short.
+    const byDistance: RoundId =
+      Math.abs(long.km - ROUNDS.long.km) <= Math.abs(long.km - ROUNDS.short.km) ? 'long' : 'short';
+    const round: RoundId = long.passed ? 'long' : short.passed ? 'short' : long.km >= 8 ? byDistance : chosenRound();
     const filled: string[] = [];
-    if (long.passed || short.passed) {
+    if (long.passed || short.passed || long.km >= 8) {
       setRadio('round', round);
       flash(document.querySelector('[aria-labelledby=roundlbl]'));
       filled.push(ROUNDS[round].name.replace(/^The /, 'the '));
@@ -188,10 +207,11 @@ function checkGpx(prefill: boolean): GpxResult | null {
       flash(document.querySelector('[aria-labelledby=modelbl]'));
       filled.push(mode === 'run' ? 'ran' : 'walked');
     }
-    if (parsed.startDate && parsed.startDate <= today) {
-      $<HTMLInputElement>('date').value = parsed.startDate;
+    const date = parsed.startDate ?? metadataDate(gpxText);
+    if (date && date <= today) {
+      $<HTMLInputElement>('date').value = date;
       flash($('date'));
-      filled.push(formatDate(parsed.startDate));
+      filled.push(formatDate(date));
     }
     if (parsed.elapsedSecs) {
       const mins = Math.round(parsed.elapsedSecs / 60);
@@ -202,10 +222,23 @@ function checkGpx(prefill: boolean): GpxResult | null {
     }
 
     showGpx(parsed);
-    if (filled.length) {
+    const missing: string[] = [];
+    if (!mode) missing.push('whether you walked or ran');
+    if (!date) missing.push('the date');
+    if (!parsed.elapsedSecs) missing.push('your time');
+    let msg = filled.length
+      ? `Filled in from your GPX: ${filled.join(', ')}. Check it’s right and change anything that isn’t.`
+      : '';
+    if (missing.length) {
+      const list = missing.length > 1 ? `${missing.slice(0, -1).join(', ')} and ${missing.at(-1)}` : missing[0];
+      msg += `${msg ? ' ' : ''}${
+        parsed.elapsedSecs ? '' : 'This GPX has no timings in it, so it may be a planned route rather than your recorded activity. '
+      }Please add ${list} yourself.`;
+    }
+    if (msg) {
       const note = document.createElement('p');
       note.className = 'gpx-filled';
-      note.textContent = `Filled in from your GPX: ${filled.join(', ')}. Check it’s right and change anything that isn’t.`;
+      note.textContent = msg;
       $('gpxres').querySelector('.gpx-card')?.appendChild(note);
     }
     return parsed;

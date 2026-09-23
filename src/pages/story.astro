@@ -1,37 +1,308 @@
 ---
-import ContentPage from '../components/ContentPage.astro';
+/**
+ * The story, as a magazine-style long read. Text still lives in src/content/pages/story.md:
+ * each "## Heading" there becomes one chapter here, matched by its heading text.
+ * The quote inside "The last walking postman" is lifted out into the full-width photo band.
+ */
+import { getEntry } from 'astro:content';
+import { Picture } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import PageBanner from '../components/PageBanner.astro';
 import Photo from '../components/Photo.astro';
 import Postmark from '../components/Postmark.astro';
-import { STORY_PHOTOS } from '../lib/photos.ts';
+import { CAFE_PHOTO, STORY_PHOTOS, STORY_QUOTE_PHOTO } from '../lib/photos.ts';
+
+const entry = await getEntry('pages', 'story');
+if (!entry?.rendered?.html) throw new Error('Missing src/content/pages/story.md');
+
+// Split the rendered page into chapters at each <h2>.
+const chapters = entry.rendered.html
+  .split(/(?=<h2[\s>])/)
+  .filter((c) => c.startsWith('<h2'))
+  .map((c) => {
+    const m = c.match(/^<h2[^>]*>([\s\S]*?)<\/h2>/);
+    return { title: m ? m[1] : '', html: m ? c.slice(m[0].length) : c };
+  });
+const find = (start: string) => chapters.find((c) => c.title.replace(/<[^>]+>/g, '').startsWith(start));
+const postman = find('The last walking postman');
+const cafe = find('Why the round starts');
+const onTheGo = find('Keeping the round');
+const book = find('The Postal Paths');
+const known = new Set([postman, cafe, onTheGo, book]);
+const others = chapters.filter((c) => !known.has(c));
+
+// Lift the Stuart Lewis quote out of the first chapter.
+const quoteMatch = postman?.html.match(/<blockquote>([\s\S]*?)<\/blockquote>/);
+const quoteHtml = quoteMatch?.[1] ?? '';
+const postmanHtml = postman ? postman.html.replace(quoteMatch?.[0] ?? '', '') : '';
+
+const facts: [string, string][] = [
+  ['15', 'miles a day'],
+  ['6', 'days a week'],
+  ['+3', 'miles to Mosedale'],
+  ['1976', 'the last walked round'],
+];
+const timeline: [string, string][] = [
+  ['Victorian era', 'The penny post arrives. Across rural Britain, posties walk their rounds on foot.'],
+  ['1950s', 'Jimmy Eland walks the Shap round.'],
+  ['June 1976', 'Stuart Lewis is told he’ll be given a van. The walked round ends.'],
+  ['2025', 'Alan Cleaver tells the story in The Postal Paths.'],
+  ['Today', 'Shap’s fell runners keep the round on the go. Now it’s your turn.'],
+];
+const q = STORY_QUOTE_PHOTO;
 ---
-<ContentPage id="story" kicker="The story" banner="story">
-  <div class="photo-pair">
-    {STORY_PHOTOS.map((p) => <Photo photo={p} sizes="(min-width: 800px) 520px, 100vw" />)}
-  </div>
-  <section slot="after" class="band-fell tight story-cta" aria-labelledby="book-h">
-    <div class="wrap story-cta-grid">
-      <div class="stamp tilt book-stamp">
-        <Postmark line="MONORAY" year="2025" />
-        <p class="stamp-label">Read the book</p>
-        <h3 id="book-h">The Postal Paths</h3>
-        <p>Rediscovering Britain’s forgotten trails and the people who walked them</p>
-        <p class="book-author">Alan Cleaver</p>
+<Base title={entry.data.title} description={entry.data.description}>
+  <main id="main">
+    <PageBanner page="story" title={entry.data.title} lede={entry.data.lede} kicker="The story" />
+
+    {
+      postman && (
+        <section class="ch ch-one" aria-labelledby="ch1">
+          <div class="wrap ch-one-grid">
+            <div class="ch-text">
+              <p class="label-kicker">Chapter one</p>
+              <h2 id="ch1" set:html={postman.title} />
+              <div class="prose dropcap" set:html={postmanHtml} />
+            </div>
+            <aside class="stamp tilt round-facts" aria-label="The round at a glance">
+              <Postmark line="LAST ROUND" year="1976" />
+              <p class="stamp-label">The postie’s round</p>
+              <dl class="tiles">
+                {
+                  facts.map(([n, l]) => (
+                    <div>
+                      <dt>{l}</dt>
+                      <dd>{n}</dd>
+                    </div>
+                  ))
+                }
+              </dl>
+              <p class="facts-note">Out past Shap Abbey into Swindale, over Ralfland Fell and home through Wet Sleddale, with a leather pouch of stamps and postal orders.</p>
+            </aside>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      quoteHtml && (
+        <section class="quote-band" aria-label="Stuart Lewis on losing the walk">
+          <Picture
+            src={q.src}
+            alt=""
+            formats={['avif', 'webp']}
+            widths={[640, 1000, 1400, q.src.width].filter((w, i, a) => w <= q.src.width && a.indexOf(w) === i)}
+            sizes="100vw"
+            class="quote-bg"
+            style={`object-position:${q.focus}`}
+          />
+          <div class="wrap quote-inner">
+            <figure class="big-q">
+              <svg class="q-mark" viewBox="0 0 64 44" aria-hidden="true">
+                <g fill="currentColor">
+                  <circle cx="12" cy="32" r="12" />
+                  <path d="M0.6 30C-0.4 15 7 4 22 0l1.6 4.4C14 8 10.5 15 12 22Z" />
+                  <circle cx="46" cy="32" r="12" />
+                  <path d="M34.6 30C33.6 15 41 4 56 0l1.6 4.4C48 8 44.5 15 46 22Z" />
+                </g>
+              </svg>
+              <blockquote set:html={quoteHtml} />
+              <figcaption>
+                <strong>Stuart Lewis</strong>
+                <span>The last postman to walk the round, on being given a van in June 1976</span>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+      )
+    }
+
+    <section class="timeline-band" aria-labelledby="tl-h">
+      <div class="wrap">
+        <p class="label-kicker">Down the years</p>
+        <h2 id="tl-h">The round through time</h2>
+        <ol class="timeline">
+          {
+            timeline.map(([when, what]) => (
+              <li>
+                <span class="tl-dot" aria-hidden="true" />
+                <p class="tl-when">{when}</p>
+                <p class="tl-what">{what}</p>
+              </li>
+            ))
+          }
+        </ol>
       </div>
-      <div>
-        <p class="label-kicker on-dark">Your turn</p>
-        <h2>Follow in the postie’s footsteps</h2>
-        <p>Two rounds from Birchwood Cafe, in Jude’s words, stop by stop.</p>
-        <p><a class="btn red" href="/route/">See the route</a></p>
+    </section>
+
+    {
+      cafe && (
+        <section class="ch ch-split" aria-labelledby="ch2">
+          <div class="wrap split">
+            <Photo photo={CAFE_PHOTO} class="split-photo" sizes="(min-width: 900px) 560px, 100vw" />
+            <div class="ch-text">
+              <p class="label-kicker">Chapter two</p>
+              <h2 id="ch2" set:html={cafe.title} />
+              <div class="prose" set:html={cafe.html} />
+              <a class="ch-link" href="/birchwood-cafe/">About the café <span aria-hidden="true">→</span></a>
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      onTheGo && (
+        <section class="ch ch-split flip" aria-labelledby="ch3">
+          <div class="wrap split">
+            <div class="ch-text">
+              <p class="label-kicker">Chapter three</p>
+              <h2 id="ch3" set:html={onTheGo.title} />
+              <div class="prose" set:html={onTheGo.html} />
+              <a class="ch-link" href="/route/">Jude’s route guide <span aria-hidden="true">→</span></a>
+            </div>
+            <div class="collage">
+              {STORY_PHOTOS.map((p, i) => <Photo photo={p} class={`col-${i}`} sizes="(min-width: 900px) 360px, 80vw" />)}
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      book && (
+        <section class="band-fell ch-book" aria-labelledby="ch4">
+          <div class="wrap book-grid">
+            <div class="stamp tilt book-stamp">
+              <Postmark line="MONORAY" year="2025" />
+              <p class="stamp-label">Read the book</p>
+              <h3>The Postal Paths</h3>
+              <p>Rediscovering Britain’s forgotten trails and the people who walked them</p>
+              <p class="book-author">Alan Cleaver</p>
+            </div>
+            <div class="ch-text">
+              <p class="label-kicker on-dark">Chapter four</p>
+              <h2 id="ch4" set:html={book.title} />
+              <div class="book-prose" set:html={book.html} />
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      others.map((c) => (
+        <section class="ch">
+          <div class="wrap">
+            <h2 set:html={c.title} />
+            <div class="prose" set:html={c.html} />
+          </div>
+        </section>
+      ))
+    }
+
+    <section class="story-cta" aria-labelledby="cta-h">
+      <div class="wrap cta-inner">
+        <div>
+          <p class="label-kicker">Your turn</p>
+          <h2 id="cta-h">Follow in the postie’s footsteps</h2>
+          <p>Two rounds from Birchwood Cafe, in Jude’s words, stop by stop.</p>
+        </div>
+        <p class="cta-actions">
+          <a class="btn red" href="/route/">See the route</a>
+          <a class="btn ghost" href="/post/">Post your round</a>
+        </p>
       </div>
-    </div>
-  </section>
-</ContentPage>
+    </section>
+  </main>
+</Base>
 
 <style>
-  .story-cta { margin-top: 3.5rem; }
-  .story-cta-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: clamp(2rem, 6vw, 5rem); align-items: center; }
+  .ch { border-top: 0; padding: clamp(3.5rem, 7vw, 6rem) 0; }
+  .ch h2 { color: var(--fell); font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; line-height: 1.05; }
+  .ch-text :global(.prose) { max-width: none; }
+  .ch-text :global(.prose p) { font-size: 1.08rem; }
+
+  /* Chapter one: text and a stamp of round facts */
+  .ch-one-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: clamp(2rem, 6vw, 5rem); align-items: start; }
+  .dropcap :global(p:first-child::first-letter) {
+    float: left;
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: 4.6rem;
+    line-height: 0.85;
+    margin: 0.35rem 0.6rem 0 0;
+    color: var(--red);
+  }
+  .round-facts { position: sticky; top: 2rem; max-width: none; }
+  .round-facts .tiles { margin-top: 1rem; }
+  .round-facts .facts-note { font-size: 0.95rem; color: #3c4639; margin: 1rem 0 0; }
+
+  /* Full-bleed quote over the winter photo */
+  .quote-band { position: relative; isolation: isolate; border-top: 0; min-height: clamp(420px, 70vh, 640px); display: flex; align-items: center; padding: clamp(4rem, 8vw, 6rem) 0; overflow: hidden; }
+  .quote-band :global(.quote-bg) { position: absolute; inset: 0; z-index: -2; }
+  .quote-band :global(.quote-bg img) { width: 100%; height: 100%; object-fit: cover; }
+  .quote-band::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(14, 24, 13, 0.88) 0%, rgba(14, 24, 13, 0.6) 55%, rgba(14, 24, 13, 0.25) 100%); }
+  .big-q { margin: 0; max-width: 46rem; color: #fff; }
+  .q-mark { display: block; width: clamp(3.2rem, 6vw, 4.5rem); height: auto; color: #e0463c; margin-bottom: 1.2rem; }
+  .big-q blockquote { margin: 0; }
+  .big-q blockquote :global(p) { font-family: var(--serif); font-weight: 700; font-size: clamp(1.7rem, 3.6vw, 2.8rem); line-height: 1.2; letter-spacing: -0.015em; color: #fff; margin: 0; }
+  .big-q figcaption { display: flex; flex-direction: column; margin-top: 1.5rem; }
+  .big-q figcaption strong { font-size: 1.1rem; }
+  .big-q figcaption span { color: #cfd8c7; }
+
+  /* Timeline */
+  .timeline-band { border-top: 0; background: var(--paper-2); padding: clamp(3.5rem, 7vw, 5rem) 0; }
+  .timeline-band h2 { color: var(--fell); }
+  .timeline { list-style: none; margin: 2.2rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.2rem; position: relative; }
+  .timeline::before { content: ''; position: absolute; left: 0; right: 0; top: 0.55rem; border-top: 2px dashed var(--red); }
+  .timeline li { position: relative; padding-top: 2rem; }
+  .tl-dot { position: absolute; top: 0; left: 0; width: 1.2rem; height: 1.2rem; border-radius: 50%; background: var(--paper-2); border: 3px solid var(--red); }
+  .timeline li:last-child .tl-dot { background: var(--red); }
+  .tl-when { font-family: var(--serif); font-weight: 800; font-size: 1.3rem; color: var(--fell); margin: 0 0 0.3rem; }
+  .tl-what { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+  /* Photo and text chapters */
+  .split { display: grid; grid-template-columns: 1fr 1.1fr; gap: clamp(2rem, 6vw, 5rem); align-items: center; }
+  .flip .split { grid-template-columns: 1.1fr 1fr; }
+  .split :global(.split-photo img) { aspect-ratio: 4 / 5; object-fit: cover; border-radius: 14px; box-shadow: 0 24px 50px rgba(20, 30, 18, 0.18); }
+  .ch-link { display: inline-block; margin-top: 0.4rem; color: var(--fell); font-weight: 700; text-decoration: none; border-bottom: 2px solid var(--red); padding-bottom: 2px; }
+  .ch-link:hover { color: var(--red); }
+  .collage { position: relative; min-height: 500px; }
+  .collage :global(figure) { position: absolute; width: 66%; margin: 0; }
+  .collage :global(img) { aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; box-shadow: 0 20px 44px rgba(20, 30, 18, 0.2); }
+  .collage :global(.col-0) { top: 0; left: 0; transform: rotate(-2deg); }
+  .collage :global(.col-1) { bottom: 0; right: 0; transform: rotate(2deg); z-index: 1; }
+  .collage :global(.col-1 img) { border: 6px solid var(--paper); }
+
+  /* The book */
+  .book-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: clamp(2rem, 6vw, 5rem); align-items: center; }
+  .book-stamp { max-width: 420px; }
   .book-stamp h3 { font-size: 2rem; font-weight: 800; color: var(--fell); margin: 0 0 0.5rem; max-width: 70%; }
   .book-stamp .book-author { font-weight: 800; color: #1a2019; margin: 1rem 0 0; }
   :global(.book-stamp .postmark) { width: 90px; height: 90px; color: #c4241c; opacity: 0.8; transform: rotate(-14deg); }
-  @media (max-width: 800px) { .story-cta-grid { grid-template-columns: 1fr; } .book-stamp.tilt { transform: none; } }
+  .ch-book h2 { color: #fff; font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; }
+  .book-prose :global(p) { font-size: 1.05rem; }
+  .book-prose :global(.credit) { color: #b9c4b1; font-size: 0.9rem; }
+
+  /* Closing call to action */
+  .story-cta { border-top: 0; padding: clamp(3rem, 6vw, 4.5rem) 0; }
+  .cta-inner { display: flex; flex-wrap: wrap; gap: 1.5rem 3rem; align-items: center; justify-content: space-between; }
+  .cta-inner h2 { color: var(--fell); margin-bottom: 0.3em; }
+  .cta-inner p { margin: 0; }
+  .cta-actions { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+
+  @media (max-width: 1000px) {
+    .timeline { grid-template-columns: 1fr; gap: 1.4rem; }
+    .timeline::before { left: 0.55rem; right: auto; top: 0; bottom: 0; border-top: 0; border-left: 2px dashed var(--red); }
+    .timeline li { padding: 0 0 0 2.2rem; }
+  }
+  @media (max-width: 900px) {
+    .ch-one-grid, .split, .flip .split, .book-grid { grid-template-columns: 1fr; }
+    .round-facts { position: static; }
+    .round-facts.tilt, .book-stamp.tilt { transform: none; }
+    .split :global(.split-photo img) { aspect-ratio: 4 / 3; }
+    .collage { min-height: 0; display: grid; gap: 1rem; }
+    .collage :global(figure) { position: static; width: 100%; transform: none !important; }
+  }
 </style>

@@ -100,6 +100,13 @@ export const PAGE_PHOTOS = {
   contact: { src: farmhouseSnow, alt: 'A stone farmhouse beneath a snow-dusted fell.', focus: '50% 40%' },
 } satisfies Record<string, Photo>;
 
+/** Behind the Stuart Lewis quote on the story page: "mist, snow and ice". */
+export const STORY_QUOTE_PHOTO: Photo = {
+  src: snowyTrack,
+  alt: 'A walker follows a snowy track between stone walls into a white valley.',
+  focus: '50% 55%',
+};
+
 export const STORY_PHOTOS: Photo[] = [
   { src: bothyInside, alt: 'Runners inside a whitewashed bothy with a table and an old range.', caption: 'Inside Mosedale bothy' },
   { src: waterfallRunner, alt: 'A runner climbs beside a rocky waterfall.', caption: 'Swindale’s waterfalls' },

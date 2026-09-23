@@ -432,7 +432,7 @@ ol.stops p { color: var(--ink); font-size: 1rem; line-height: 1.65; }
 .prose blockquote {
   position: relative;
   border-left: 0;
-  margin: 2.8rem 0 2rem;
+  margin: 2rem 0;
   padding: 0 0 0 0.2rem;
   font-family: var(--serif);
   font-style: normal;
@@ -441,7 +441,14 @@ ol.stops p { color: var(--ink); font-size: 1rem; line-height: 1.65; }
   line-height: 1.4;
   color: var(--fell);
 }
-.prose blockquote::before { content: '“'; position: absolute; top: -2.6rem; left: -0.4rem; font-size: 6.5rem; font-weight: 800; color: var(--red); line-height: 1; }
+.prose blockquote::before {
+  content: '';
+  display: block;
+  width: 3rem;
+  height: 2.1rem;
+  margin-bottom: 0.8rem;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 44'%3E%3Cg fill='%23c4241c'%3E%3Ccircle cx='12' cy='32' r='12'/%3E%3Cpath d='M0.6 30C-0.4 15 7 4 22 0l1.6 4.4C14 8 10.5 15 12 22Z'/%3E%3Ccircle cx='46' cy='32' r='12'/%3E%3Cpath d='M34.6 30C33.6 15 41 4 56 0l1.6 4.4C48 8 44.5 15 46 22Z'/%3E%3C/g%3E%3C/svg%3E") no-repeat left top / contain;
+}
 .prose ul { list-style: none; padding: 0; }
 .prose ul li { position: relative; padding: 0.8rem 1rem 0.8rem 2.8rem; background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 0.6rem; }
 .prose ul li::before { content: '✓'; position: absolute; left: 0.9rem; top: 0.8rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--fell); color: #fff; font-size: 0.75rem; font-weight: 800; display: grid; place-items: center; }

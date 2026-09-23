@@ -17,8 +17,11 @@ export const SITE = {
   strapline: 'Take on the last post round in Shap, Cumbria',
   placement:
     'A low-level heritage round through the quiet Far Eastern Fells of the Lake District, starting and finishing at Birchwood Cafe in Shap.',
-  /** Café Instagram URL. Leave empty to hide the link. */
-  instagram: '',
+  /** Café Instagram. Leave the URL empty to hide Instagram links and sections. */
+  instagram: 'https://www.instagram.com/birchwoodcafeshap/',
+  instagramHandle: '@birchwoodcafeshap',
+  /** Hashtag we invite people to use when they share their round. */
+  hashtag: '#ThePostmansChallenge',
   /** Finisher pins: set to true once pins are stocked at the café. */
   pinsAvailable: false,
 } as const;

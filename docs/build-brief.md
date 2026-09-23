@@ -66,6 +66,9 @@ Cleaver's sheet is titled **"Shap Postal Path"**, which supports that name.
 - **Name: "The Postman's Challenge"**, byline "Take on the last post round in Shap, Cumbria" (Holly, Sept 2026). "Loneliest" dropped.
 - **Jude's *Fellrunner* article is the voice of the site** (Holly: "the heart and soul of the challenge"): her tagline, her words on why local runners share the round, her stop-by-stop route guide and sign-off. Credited to "Jude, Shap fell runner" — surname to confirm with Holly.
 
+- **Café owner Stacy is now named** (Holly, Sept 2026): "Stacy's story" on the home page and the new /birchwood-cafe/ page. Wording is drafted only from facts in this brief (family ran the post office and sorting office; post sorted at six each morning; her father one of the last postmen on the round; counter, clock, memorabilia). **Check with Stacy before launch.**
+- **Instagram:** the café's account is @birchwoodcafeshap (found publicly). Home and café pages link to it with a photo strip; hashtag suggested: #ThePostmansChallenge. Showing the café's actual latest posts needs a feed widget or an Instagram access token.
+
 ## Naming
 
 Recommended: **The Shap Postal Round**. Strong alternative: **The Shap Postal Path**. Use "loneliest" with caution: it may deter solo walkers, especially women, and the documented "loneliest round in England" phrase comes from the *Post Office Magazine*, August 1936, about the Keld–Tan Hill postman in Yorkshire, not Shap. `[CONV]`/`[RESEARCH]`

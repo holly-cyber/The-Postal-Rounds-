@@ -26,6 +26,7 @@ import posties from '../assets/photos/posties-at-stone-ruin.jpg';
 import letterSummit from '../assets/photos/runner-with-letter-summit.jpg';
 import autumnValley from '../assets/photos/autumn-valley.jpg';
 import wall from '../assets/photos/dry-stone-wall.jpg';
+import cafeCounter from '../assets/photos/finish-at-birchwood.jpg';
 
 export interface Photo {
   src: ImageMetadata;
@@ -69,6 +70,24 @@ export const STOP_PHOTOS: Record<string, Photo> = {
   'Thorney Bank': { src: reservoir, alt: 'Autumn fellside above Wet Sleddale reservoir.', caption: 'Above Wet Sleddale' },
 };
 
+/** The café's old post office counter, with the post office clock behind. */
+export const CAFE_PHOTO: Photo = {
+  src: cafeCounter,
+  alt: 'Two smiling women hold up a delivered letter at the café’s old wooden post office counter, with the old post office clock on the wall behind.',
+  caption: 'Special delivery at the old post office counter',
+  focus: '55% 45%',
+};
+
+/** Square tiles for the Instagram strip. */
+export const INSTAGRAM_TILES: Photo[] = [
+  { src: heroImg, alt: 'A runner with a letter bounding down into the valley.', focus: '28% 45%' },
+  { src: cafeCounter, alt: 'A delivered letter at the old post office counter.', focus: '55% 45%' },
+  { src: abbeyFrost, alt: 'Shap Abbey on a frosty morning.' },
+  { src: waterfall, alt: 'A waterfall in a mossy gorge.' },
+  { src: snowyTrack, alt: 'A walker on a snowy track.' },
+  { src: mosedaleGroup, alt: 'Runners outside Mosedale Cottage.' },
+];
+
 /** Banner photos for inner pages. */
 export const PAGE_PHOTOS = {
   story: { src: posties, alt: 'Two women in postie caps deliver letters at a ruined stone building.', focus: '50% 40%' },
@@ -77,6 +96,7 @@ export const PAGE_PHOTOS = {
   roundbook: { src: fellGroup, alt: 'Four runners and a dog on open fell, with hills behind.', focus: '50% 45%' },
   log: { src: letterSummit, alt: 'A runner in a postie’s cap leaps along a grassy ridge holding a letter aloft.', focus: '40% 18%' },
   faq: { src: wall, alt: 'A dry stone wall with snowy fells beyond.', focus: '50% 40%' },
+  cafe: { src: cafeCounter, alt: 'The old wooden post office counter at Birchwood Cafe, with the post office clock on the wall.', focus: '50% 22%' },
   contact: { src: farmhouseSnow, alt: 'A stone farmhouse beneath a snow-dusted fell.', focus: '50% 40%' },
 } satisfies Record<string, Photo>;
 

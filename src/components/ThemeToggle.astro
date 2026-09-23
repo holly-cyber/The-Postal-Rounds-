@@ -40,10 +40,9 @@
     cursor: pointer;
   }
   .icon-moon { display: none; }
-  @media (max-width: 460px) {
-    .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-    .theme-toggle { padding: 0.4rem 0.7rem; }
-  }
+  /* Icon-only: the accessible name comes from aria-label. */
+  .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .theme-toggle { padding: 0; width: 2.4rem; height: 2.4rem; min-height: 0; justify-content: center; }
   :global([data-theme='dark']) .icon-sun { display: none; }
   :global([data-theme='dark']) .icon-moon { display: inline; }
   @media (prefers-color-scheme: dark) {

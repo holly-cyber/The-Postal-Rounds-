@@ -5,6 +5,8 @@
  */
 import { ROUNDS } from '../lib/config.ts';
 import Postmark from './Postmark.astro';
+import Photo from './Photo.astro';
+import { CAFE_PHOTO } from '../lib/photos.ts';
 
 const tiles: [string, string, string][] = [
   [`${ROUNDS.long.km}`, 'km', 'long round'],
@@ -76,4 +78,41 @@ const details: [string, string][] = [
       <a class="btn red stamp-cta" href="/route/">See the route</a>
     </aside>
   </div>
+
+  <!-- Stacy's story. DRAFT from the build brief: check the wording with Stacy before launch. -->
+  <div class="wrap stacy">
+    <Photo photo={CAFE_PHOTO} class="stacy-photo" sizes="(min-width: 900px) 520px, 100vw" />
+    <div class="stacy-text">
+      <p class="label-kicker on-dark">Why it starts at Birchwood Cafe</p>
+      <h2 id="stacy-h">Stacy’s story</h2>
+      <p>
+        Stacy’s family ran Shap’s post office and sorting office for generations. Growing up, the family sorted the post at
+        six every morning, and her father was one of the last postmen to walk the round.
+      </p>
+      <p>
+        Today Stacy runs Birchwood Cafe on Main Street, and the post office is still part of the furniture: an original post
+        office counter, the old post office clock on the wall and a collection of postal memorabilia. The post always started
+        here. So does the challenge.
+      </p>
+      <a class="intro-link" href="/birchwood-cafe/">About the café <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
 </section>
+
+<style>
+  .stacy {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+    margin-top: clamp(3.5rem, 7vw, 5.5rem);
+    padding-top: clamp(3rem, 6vw, 4.5rem);
+    border-top: 1px solid rgba(238, 241, 232, 0.18);
+  }
+  .stacy :global(.stacy-photo img) { aspect-ratio: 4 / 3; border-radius: 12px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35); }
+  .stacy :global(.stacy-photo figcaption) { color: #b9c4b1; }
+  .stacy h2 { color: #fff; font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 800; }
+  .stacy p { font-size: 1.08rem; }
+  @media (max-width: 900px) { .stacy { grid-template-columns: 1fr; } }
+</style>

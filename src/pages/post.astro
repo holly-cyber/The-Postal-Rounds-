@@ -106,10 +106,11 @@ const today = todayInShap();
             </label>
             <div class="gpxresult" id="gpxres" aria-live="polite"></div>
           </div>
-          <div class="row">
+          <div class="row when">
             <div class="field">
               <label for="date">Date</label>
-              <input id="date" name="date" type="date" required max={today} min={LIMITS.earliestDate} />
+              <input id="date" name="date" type="date" required max={today} min={LIMITS.earliestDate} aria-describedby="date-help" />
+              <span class="hint" id="date-help">Tap to choose the day you did it</span>
             </div>
             <div class="field">
               <span class="label" id="timelbl">Time taken <span class="hint">(total, start to finish)</span></span>
@@ -310,6 +311,10 @@ const today = todayInShap();
   @keyframes thunk { from { opacity: 0; transform: rotate(-14deg) scale(2.2); } to { opacity: 0.85; transform: rotate(-14deg) scale(1); } }
 
   .gpx-filled { margin: 0.8rem 0 0; padding: 0.6rem 0.8rem; border-radius: 8px; background: var(--paper); font-size: 0.92rem; color: var(--ink); max-width: calc(100% - 100px); }
+  @media (max-width: 560px) {
+    .gpx-filled { max-width: none; }
+    .frank { top: 0.6rem; bottom: auto; right: 0.6rem; width: 76px; height: 76px; }
+  }
   /* Fields filled in from the GPX glow briefly. */
   .filled { animation: filled 1.8s ease-out; border-radius: 6px; }
   @keyframes filled { 0%, 30% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--moss) 70%, transparent); } 100% { box-shadow: 0 0 0 3px transparent; } }

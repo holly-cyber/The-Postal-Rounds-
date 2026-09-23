@@ -51,13 +51,20 @@ form#f input[type='text'], form#f input[type='date'], form#f input[type='url'], 
 }
 form#f input[type='file'] { max-width: 100%; font: inherit; font-size: 1rem; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+.row > * { min-width: 0; }
+/* Date and time stack on phones, so neither squeezes the other. */
+@media (max-width: 560px) { .row.when { grid-template-columns: 1fr; gap: 0; } }
+/* iOS Safari: an empty date input collapses and overflows its column without these. */
+form#f input[type='date'] { -webkit-appearance: none; appearance: none; display: block; min-width: 0; max-width: 100%; min-height: 2.9rem; text-align: left; }
+form#f input[type='date']::-webkit-date-and-time-value { text-align: left; }
+#date-help { display: block; margin-top: 0.3rem; }
 .seg { display: flex; border: 1.5px solid var(--line); border-radius: 4px; overflow: hidden; }
 form#f .seg label { flex: 1; margin: 0; text-align: center; padding: 0.55rem; cursor: pointer; font-weight: 500; }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .seg label:has(input:checked) { background: var(--fell); color: var(--paper); }
 .seg label:has(input:focus-visible) { outline: 3px solid var(--red); outline-offset: -3px; }
 .time { display: flex; gap: 0.4rem; align-items: center; }
-form#f .time input { width: 4.5rem; text-align: center; }
+form#f .time input { width: 4.5rem; min-height: 2.9rem; text-align: center; }
 .drop { border: 2px dashed var(--line); border-radius: 6px; padding: 1rem; text-align: center; background: var(--paper); }
 .gpxresult { margin-top: 0.7rem; font-size: 0.95rem; text-align: left; }
 .gpxresult ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }

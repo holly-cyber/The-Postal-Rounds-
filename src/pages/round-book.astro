@@ -1,0 +1,164 @@
+---
+/** The round book: records, a filterable leaderboard, and everyone newest first. Data from GET /api/rounds. */
+import Base from '../layouts/Base.astro';
+import PageBanner from '../components/PageBanner.astro';
+import { ROUNDS } from '../lib/config.ts';
+import { AGE_GROUPS } from '../lib/rounds.ts';
+---
+<Base title="The round book" description="Fastest times on the Postman's Challenge: overall, female, male and by age group, for runners and walkers on both rounds.">
+  <main id="main">
+    <PageBanner
+      page="roundbook"
+      title="The round book"
+      kicker="Leaderboard"
+      lede="Everyone who’s taken on the Postman’s Challenge, and the fastest times on each round. Not a race, but somebody has to hold the record."
+    />
+
+    <section class="band-fell tight" aria-labelledby="records-h">
+      <div class="wrap">
+        <p class="label-kicker on-dark">Round records</p>
+        <h2 id="records-h">The times to beat</h2>
+        <div class="records" id="records" aria-live="polite">
+          <p class="records-loading">Loading the records…</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="board" aria-labelledby="board-h">
+      <div class="wrap">
+        <p class="label-kicker">Fastest times</p>
+        <h2 id="board-h">Leaderboard</h2>
+
+        <div class="filters" role="group" aria-label="Leaderboard filters">
+          <div class="filter">
+            <span class="filter-label" id="f-round">Round</span>
+            <div class="tabs" role="group" aria-labelledby="f-round">
+              {Object.values(ROUNDS).map((r, i) => <button type="button" data-f="round" data-v={r.id} aria-pressed={i === 0 ? 'true' : 'false'}>{r.id === 'long' ? 'Long round' : 'Short round'}</button>)}
+            </div>
+          </div>
+          <div class="filter">
+            <span class="filter-label" id="f-mode">Walk or run</span>
+            <div class="tabs" role="group" aria-labelledby="f-mode">
+              <button type="button" data-f="mode" data-v="run" aria-pressed="true">Running</button>
+              <button type="button" data-f="mode" data-v="walk" aria-pressed="false">Walking</button>
+            </div>
+          </div>
+          <div class="filter">
+            <span class="filter-label" id="f-sex">Category</span>
+            <div class="tabs" role="group" aria-labelledby="f-sex">
+              <button type="button" data-f="sex" data-v="all" aria-pressed="true">Overall</button>
+              <button type="button" data-f="sex" data-v="F" aria-pressed="false">Female</button>
+              <button type="button" data-f="sex" data-v="M" aria-pressed="false">Male</button>
+            </div>
+          </div>
+          <div class="filter">
+            <label class="filter-label" for="f-age">Age group</label>
+            <select id="f-age">
+              <option value="all">All ages</option>
+              {AGE_GROUPS.map(([v, l]) => <option value={v}>{l}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <p class="board-summary" id="board-summary" aria-live="polite"></p>
+        <div class="tablewrap">
+          <table class="board ranked">
+            <caption class="sr-only" id="board-caption">Leaderboard</caption>
+            <thead>
+              <tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Category</th><th scope="col">Time</th><th scope="col">Date</th><th scope="col">Evidence</th></tr>
+            </thead>
+            <tbody id="board-rows"></tbody>
+          </table>
+          <div class="empty" id="board-empty">Loading the round book…</div>
+        </div>
+        <p class="hint board-note">
+          Only rounds with a checked GPX or verified evidence are ranked. Category and age group are optional, so those
+          tables only include people who chose to share them. Age is on the day of the round.
+        </p>
+      </div>
+    </section>
+
+    <section id="everyone" aria-labelledby="everyone-h">
+      <div class="wrap">
+        <div class="everyone-head">
+          <div>
+            <p class="label-kicker">Everyone</p>
+            <h2 id="everyone-h">Newest first</h2>
+          </div>
+          <a class="btn red" href="/log/">Log your round</a>
+        </div>
+        <p id="everyone-count"></p>
+        <div class="tablewrap">
+          <table class="board all">
+            <caption class="sr-only">Every round logged, newest first</caption>
+            <thead>
+              <tr><th scope="col">Name</th><th scope="col">Round</th><th scope="col">Category</th><th scope="col">Time</th><th scope="col">Date</th><th scope="col">Evidence</th></tr>
+            </thead>
+            <tbody id="everyone-rows"></tbody>
+          </table>
+          <div class="empty" id="everyone-empty">Loading…</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</Base>
+
+<script>
+  import '../scripts/roundbook.ts';
+</script>
+
+<style>
+  .records { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.4rem; margin-top: 1.6rem; }
+  .records-loading { color: #d7dfcf; }
+  :global(.record) { padding: 1.6rem 1.4rem 1.4rem; max-width: none; }
+  :global(.record:nth-child(odd)) { transform: rotate(-1deg); }
+  :global(.record:nth-child(even)) { transform: rotate(1deg); }
+  :global(.record .record-what) { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #c4241c; margin: 0 0 0.6rem; }
+  :global(.record .record-time) { font-family: var(--serif); font-weight: 800; font-size: 2.2rem; line-height: 1; color: #2e4a2b; margin: 0 0 0.4rem; letter-spacing: -0.02em; }
+  :global(.record .record-who) { font-weight: 700; color: #1a2019; margin: 0; }
+  :global(.record .record-when) { font-size: 0.88rem; color: #4f5a4b; margin: 0.2rem 0 0; }
+  :global(.record.vacant .record-time) { font-size: 1.5rem; color: #6f8b3f; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 1rem 1.6rem; align-items: flex-end; margin: 1.2rem 0 1rem; padding: 1.1rem 1.2rem; background: var(--paper-2); border-radius: 12px; }
+  .filter { display: flex; flex-direction: column; gap: 0.4rem; }
+  .filter-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+  .filter select { font: inherit; padding: 0.45rem 0.7rem; border: 1.5px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--ink); min-height: 2.4rem; }
+  .board-summary { font-weight: 600; color: var(--fell); margin: 0 0 0.8rem; }
+  .board-note { margin-top: 0.8rem; }
+  :global(.board td.pos) { width: 3rem; }
+  :global(.board tr.top1 td.pos), :global(.board tr.top2 td.pos), :global(.board tr.top3 td.pos) { color: #fff; }
+  :global(.board .medal) { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; font-size: 1rem; }
+  :global(.board tr.top1 .medal) { background: #c4241c; }
+  :global(.board tr.top2 .medal) { background: #2e4a2b; }
+  :global(.board tr.top3 .medal) { background: #6f8b3f; }
+  :global(.board .time) { font-family: var(--serif); font-weight: 800; font-size: 1.1rem; white-space: nowrap; }
+  :global(.board .cat) { white-space: nowrap; color: var(--ink-soft); }
+  .everyone-head { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: flex-end; }
+  @media (max-width: 900px) { .records { grid-template-columns: 1fr 1fr; } }
+  /* Phones: each row becomes a compact card instead of a wide table. */
+  @media (max-width: 640px) {
+    :global(.tablewrap table.board) { min-width: 0; }
+    :global(.board thead) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    :global(.board tbody tr) { display: grid; gap: 0.15rem 0.8rem; padding: 0.8rem 0.9rem; border-bottom: 1px solid var(--line); align-items: center; }
+    :global(.board tbody td) { border: 0 !important; padding: 0 !important; }
+    :global(.board.ranked tbody tr) { grid-template-columns: 2.4rem 1fr auto; grid-template-areas: 'pos name time' 'pos cat date' 'pos ev ev'; }
+    :global(.board.ranked td:nth-child(1)) { grid-area: pos; }
+    :global(.board.ranked td:nth-child(2)) { grid-area: name; }
+    :global(.board.ranked td:nth-child(3)) { grid-area: cat; font-size: 0.88rem; }
+    :global(.board.ranked td:nth-child(4)) { grid-area: time; text-align: right; }
+    :global(.board.ranked td:nth-child(5)) { grid-area: date; text-align: right; font-size: 0.88rem; color: var(--ink-soft); }
+    :global(.board.ranked td:nth-child(6)) { grid-area: ev; }
+    :global(.board.all tbody tr) { grid-template-columns: 1fr auto; grid-template-areas: 'name time' 'round date' 'cat cat' 'ev ev'; }
+    :global(.board.all td:nth-child(1)) { grid-area: name; }
+    :global(.board.all td:nth-child(2)) { grid-area: round; font-size: 0.88rem; }
+    :global(.board.all td:nth-child(3)) { grid-area: cat; font-size: 0.88rem; }
+    :global(.board.all td:nth-child(4)) { grid-area: time; text-align: right; }
+    :global(.board.all td:nth-child(5)) { grid-area: date; text-align: right; font-size: 0.88rem; color: var(--ink-soft); }
+    :global(.board.all td:nth-child(6)) { grid-area: ev; }
+  }
+  @media (max-width: 520px) {
+    .records { grid-template-columns: 1fr; }
+    :global(.record:nth-child(n)) { transform: none; }
+    .filters { flex-direction: column; align-items: stretch; }
+  }
+</style>

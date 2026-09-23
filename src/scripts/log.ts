@@ -1,17 +1,14 @@
 /**
- * Log your round page behaviour, ported from the prototype's inline script. Storage moved
- * server-side: the round book comes from GET /api/rounds, entries go to POST /api/rounds.
+ * Log your round page: instant GPX feedback and sending the entry to POST /api/rounds.
+ * The round book itself lives on /round-book/ (src/scripts/roundbook.ts).
  */
 import { LIMITS, ROUNDS, type RoundId } from '../lib/config.ts';
 import { GpxError, parseGpx, type GpxResult } from '../lib/gpx.ts';
-import { formatDate, formatDuration, sortForView, todayInShap, type PublicRound, type View } from '../lib/rounds.ts';
+import { todayInShap, type PublicRound } from '../lib/rounds.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
 let gpxText: string | null = null;
-let entries: PublicRound[] = [];
-let view: View = 'date';
-let boardRound: RoundId = 'long';
 
 const chosenRound = () =>
   (document.querySelector<HTMLInputElement>('input[name=round]:checked')?.value ?? 'long') as RoundId;
@@ -189,114 +186,13 @@ form.addEventListener('submit', async (e) => {
         ? 'Your round is in the book. Well delivered.'
         : 'Your round is in the book. It will show as checked once we’ve looked at your evidence.',
     );
-    await load();
-    $('board').scrollIntoView();
+    const a = document.createElement('a');
+    a.href = '/round-book/';
+    a.textContent = 'See the round book';
+    $('msg').append(' ', a);
   } catch {
     setMsg('Your round couldn’t be saved. Try again in a moment.', true);
   } finally {
     submit.disabled = false;
   }
 });
-
-/* ---------- Round book ---------- */
-
-const tabs = [...document.querySelectorAll<HTMLButtonElement>('button[data-view]')];
-tabs.forEach((b) =>
-  b.addEventListener('click', () => {
-    view = b.dataset.view as View;
-    tabs.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    $('roundfilter').hidden = view === 'date';
-    render();
-  }),
-);
-const roundTabs = [...document.querySelectorAll<HTMLButtonElement>('button[data-round]')];
-roundTabs.forEach((b) =>
-  b.addEventListener('click', () => {
-    boardRound = b.dataset.round as RoundId;
-    roundTabs.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    render();
-  }),
-);
-
-function render() {
-  const rows = $('rows');
-  rows.textContent = '';
-  const list = sortForView(entries, view, boardRound);
-  if (view === 'date') {
-    $('count').textContent = list.length
-      ? `${list.length}${list.length === 1 ? ' round' : ' rounds'} completed, newest first.`
-      : 'Everyone who has completed the Shap round, newest first.';
-  } else {
-    const which = boardRound === 'long' ? 'long' : 'short';
-    $('count').textContent = `Fastest checked ${view === 'run' ? 'runs' : 'walks'} of the ${which} round. Only rounds with a checked GPX or a verified entry are ranked.`;
-  }
-  const empty = $('empty');
-  empty.hidden = list.length > 0;
-  if (!list.length) {
-    empty.textContent =
-      view === 'date'
-        ? 'No rounds logged yet. Be the first name in the Shap round book.'
-        : `No checked ${view === 'run' ? 'runs' : 'walks'} of the ${boardRound} round yet. Log yours with a GPX file to take the top spot.`;
-  }
-  list.forEach((e, i) => {
-    const tr = document.createElement('tr');
-    const td = () => tr.appendChild(document.createElement('td'));
-    const p = td();
-    p.className = 'pos';
-    p.textContent = String(i + 1);
-    const w = td();
-    const n = document.createElement('div');
-    n.className = 'who';
-    n.textContent = e.name || 'Someone';
-    w.appendChild(n);
-    const s = document.createElement('div');
-    s.className = 'sub';
-    s.textContent = `${e.mode === 'run' ? 'Ran' : 'Walked'} the ${e.round === 'short' ? 'short' : 'long'} round` + (e.km ? `, ${e.km} km` : '');
-    w.appendChild(s);
-    if (e.note) {
-      const q = document.createElement('div');
-      q.className = 'sub';
-      q.style.fontStyle = 'italic';
-      q.textContent = `“${e.note}”`;
-      w.appendChild(q);
-    }
-    td().textContent = formatDate(e.date);
-    td().textContent = formatDuration(e.secs);
-    const ev = td();
-    const tag = (t: string, c: string) => {
-      const x = document.createElement('span');
-      x.className = `tag ${c}`;
-      x.textContent = t;
-      ev.appendChild(x);
-    };
-    if (e.verified) tag('Verified', 'v');
-    if (e.gpxChecked) tag('GPX checked', 'g');
-    if (!e.verified && !e.gpxChecked) tag('Waiting for check', 'p');
-    if (e.link && /^https:\/\//i.test(e.link)) {
-      const a = document.createElement('a');
-      a.href = e.link;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer nofollow ugc';
-      a.textContent = 'Activity';
-      a.className = 'sub';
-      ev.appendChild(document.createElement('br'));
-      ev.appendChild(a);
-    }
-    rows.appendChild(tr);
-  });
-}
-
-async function load() {
-  try {
-    const res = await fetch('/api/rounds', { cache: 'no-store' });
-    if (!res.ok) throw new Error();
-    entries = (await res.json()).rounds as PublicRound[];
-    render();
-  } catch {
-    const empty = $('empty');
-    empty.hidden = false;
-    empty.textContent = 'The round book couldn’t load. Reload the page to try again.';
-  }
-}
-
-load();

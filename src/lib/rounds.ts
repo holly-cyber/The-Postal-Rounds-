@@ -4,11 +4,30 @@ import type { GpxCheck } from './gpx.ts';
 
 export type Mode = 'walk' | 'run';
 
+/** Optional round book category. Entries without one appear in Overall only. */
+export type Sex = 'F' | 'M';
+export const SEX_LABELS: Record<Sex, string> = { F: 'Female', M: 'Male' };
+
+/** Optional age group, by age on the day of the round. */
+export const AGE_GROUPS = [
+  ['U20', 'Under 20'],
+  ['20-39', '20–39'],
+  ['40-49', '40–49'],
+  ['50-59', '50–59'],
+  ['60-69', '60–69'],
+  ['70+', '70 and over'],
+] as const;
+export type AgeGroup = (typeof AGE_GROUPS)[number][0];
+export const AGE_LABELS = Object.fromEntries(AGE_GROUPS) as Record<AgeGroup, string>;
+export const isAgeGroup = (v: string): v is AgeGroup => AGE_GROUPS.some(([k]) => k === v);
+
 /** What GET /api/rounds returns for each entry — nothing else leaves the server. */
 export interface PublicRound {
   name: string;
   round: RoundId;
   mode: Mode;
+  sex: Sex | null;
+  ageGroup: AgeGroup | null;
   date: string;
   secs: number;
   km: number | null;
@@ -42,6 +61,8 @@ export function toPublic(r: StoredRound): PublicRound {
     name: r.name,
     round: r.round ?? 'long',
     mode: r.mode,
+    sex: r.sex ?? null,
+    ageGroup: r.ageGroup ?? null,
     date: r.date,
     secs: r.secs,
     km: r.km,
@@ -94,4 +115,34 @@ export function todayInShap(now = new Date()): string {
     month: '2-digit',
     day: '2-digit',
   }).format(now);
+}
+
+/** Short category label for the round book, e.g. "Female 40–49", "Male", "40–49". */
+export function categoryLabel(r: Pick<PublicRound, 'sex' | 'ageGroup'>): string {
+  return [r.sex ? SEX_LABELS[r.sex] : '', r.ageGroup ? AGE_LABELS[r.ageGroup] : ''].filter(Boolean).join(' ');
+}
+
+export interface BoardFilter {
+  round: RoundId;
+  mode: Mode;
+  sex: Sex | 'all';
+  age: AgeGroup | 'all';
+}
+
+/**
+ * Leaderboard rows: checked (GPX or verified) rounds with a time, for one round and mode,
+ * optionally narrowed by category and age group, fastest first.
+ */
+export function leaderboard<T extends PublicRound>(rows: T[], f: BoardFilter): T[] {
+  return rows
+    .filter(
+      (r) =>
+        r.round === f.round &&
+        r.mode === f.mode &&
+        r.secs > 0 &&
+        isConfirmed(r) &&
+        (f.sex === 'all' || r.sex === f.sex) &&
+        (f.age === 'all' || r.ageGroup === f.age),
+    )
+    .sort((a, b) => a.secs - b.secs || a.date.localeCompare(b.date));
 }

@@ -32,22 +32,24 @@ palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`; light and dark
 | Entry shapes, `toPublic()`, sorting for the three leaderboard views | `src/lib/rounds.ts` |
 | Server-side form validation (the check that counts) | `src/server/submission.ts` |
 | Blob stores, admin-token check | `src/server/store.ts`, `src/server/http.ts` |
-| Pages: home, story, route, safety, log (form + round book), FAQ, contact (Netlify Forms), privacy, admin | `src/pages/` |
-| Browser logic (instant GPX feedback, upload, round book; admin) | `src/scripts/log.ts`, `src/scripts/admin.ts` |
+| Pages: home, story, route, safety, log (entry form), round-book (records + filterable leaderboard + everyone), FAQ, contact (Netlify Forms), privacy, admin | `src/pages/` |
+| Browser logic: entry form (`log.ts`), round book with URL-shareable filters (`roundbook.ts`), admin | `src/scripts/` |
 | Sketch map (drawn from `STOPS`) | `src/components/SketchMap.astro` |
 | **Photos**: originals in `src/assets/photos/` (never `public/` — Astro optimises imported photos to AVIF/WebP). Which photo goes where, alt text, captions, crop focus | `src/lib/photos.ts` |
 | Home hero | `src/components/Hero.astro` |
 
 ## API
 
-- `GET /api/rounds` — public fields only: name, round, mode, date, secs, km, gpxChecked, verified, link, note. Never ids, IPs or file keys.
-- `POST /api/rounds` — multipart. Requires `round` (long|short) and `consent=yes`. Validates everything, re-runs the GPX checks server-side (never trusts the client), stores JSON in the `rounds` store and files in `evidence` (`<id>/gpx`, `<id>/photo`). Honeypot field `website`. Rate limit: 5 accepted submissions per IP per hour (IP HMAC-hashed with ADMIN_TOKEN in the `ratelimit` store; IPs are never stored in entries).
+- `GET /api/rounds` — public fields only: name, round, mode, sex, ageGroup, date, secs, km, gpxChecked, verified, link, note. Never ids, IPs or file keys.
+- `POST /api/rounds` — multipart. Requires `round` (long|short) and `consent=yes`; optional `sex` (F|M) and `ageGroup` (U20, 20-39, 40-49, 50-59, 60-69, 70+). Validates everything, re-runs the GPX checks server-side (never trusts the client), stores JSON in the `rounds` store and files in `evidence` (`<id>/gpx`, `<id>/photo`). Honeypot field `website`. Rate limit: 5 accepted submissions per IP per hour (IP HMAC-hashed with ADMIN_TOKEN in the `ratelimit` store; IPs are never stored in entries).
 - `PATCH /api/rounds/:id` `{ "verified": bool }` and `DELETE /api/rounds/:id` — `Authorization: Bearer $ADMIN_TOKEN`.
 - `GET /api/admin/rounds`, `GET /api/admin/evidence/:id/:kind` — admin only. GPX files and photos are never publicly served.
 
 `/admin` is unlinked, `noindex`, and asks for the token in a password prompt (kept in sessionStorage for the tab).
 
 **Request size:** Netlify functions accept ~6 MB per request. The browser gzips GPX files (server detects and unzips, 10 MB limit on the unzipped file) and resizes photos to 2048 px JPEG, so a normal submission is well under 1 MB.
+
+**Leaderboard:** `leaderboard()` in `src/lib/rounds.ts` filters by round, walk/run, category (overall/F/M) and age group; only checked or verified rounds with a time are ranked. Category and age group are optional, so entries without them appear in Overall only.
 
 **Evidence tags:** "Verified", "GPX checked", or "Waiting for check" when neither. Fastest runs/walks are per round and show only gpxChecked or verified entries with a time. Time is optional; if blank, the GPX elapsed time is used.
 

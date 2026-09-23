@@ -4,6 +4,7 @@ import { gzipSync } from 'node:zlib';
 import { readFileSync } from 'node:fs';
 import { GpxError, parseGpx, parsePoints } from '../src/lib/gpx.ts';
 import { prepare, InvalidSubmission } from '../src/server/submission.ts';
+import { leaderboard, categoryLabel, type PublicRound } from '../src/lib/rounds.ts';
 import { LONG_WIGGLE, SHORT_WIGGLE, roundTrack, toGpx } from './make-gpx.ts';
 
 const passing = toGpx(roundTrack(LONG_WIGGLE, true));
@@ -159,4 +160,42 @@ test('server: accepts a real PNG header', async () => {
   const { entry, photo } = await prepare(f, 'id', now);
   assert.equal(photo!.type, 'image/png');
   assert.equal(entry.files.photo!.key, 'id/photo');
+});
+
+test('server: category and age group are optional and validated', async () => {
+  const f = baseForm();
+  f.set('link', 'https://example.com');
+  const none = (await prepare(f, 'x', now)).entry;
+  assert.equal(none.sex, null);
+  assert.equal(none.ageGroup, null);
+  f.set('sex', 'F');
+  f.set('ageGroup', '40-49');
+  const some = (await prepare(f, 'x', now)).entry;
+  assert.equal(some.sex, 'F');
+  assert.equal(some.ageGroup, '40-49');
+  assert.equal(categoryLabel(some), 'Female 40–49');
+  f.set('sex', 'X');
+  await assert.rejects(prepare(f, 'x', now), /female, male/);
+  f.set('sex', 'M');
+  f.set('ageGroup', '30');
+  await assert.rejects(prepare(f, 'x', now), /age group/);
+});
+
+test('leaderboard filters by round, mode, category and age, fastest first', () => {
+  const base: PublicRound = { name: '', round: 'long', mode: 'run', sex: null, ageGroup: null, date: '2026-09-01', secs: 0, km: 23.7, gpxChecked: true, verified: false, link: null, note: null };
+  const rows: PublicRound[] = [
+    { ...base, name: 'A', secs: 4 * 3600, sex: 'F', ageGroup: '40-49' },
+    { ...base, name: 'B', secs: 3 * 3600, sex: 'M', ageGroup: '20-39' },
+    { ...base, name: 'C', secs: 3.5 * 3600, sex: 'F', ageGroup: '20-39' },
+    { ...base, name: 'D', secs: 2 * 3600, gpxChecked: false },
+    { ...base, name: 'E', secs: 3 * 3600, mode: 'walk', sex: 'F' },
+    { ...base, name: 'F', secs: 1 * 3600, round: 'short' },
+    { ...base, name: 'G', secs: 3.2 * 3600 },
+  ];
+  const names = (f: Parameters<typeof leaderboard>[1]) => leaderboard(rows, f).map((r) => r.name);
+  assert.deepEqual(names({ round: 'long', mode: 'run', sex: 'all', age: 'all' }), ['B', 'G', 'C', 'A']);
+  assert.deepEqual(names({ round: 'long', mode: 'run', sex: 'F', age: 'all' }), ['C', 'A']);
+  assert.deepEqual(names({ round: 'long', mode: 'run', sex: 'all', age: '20-39' }), ['B', 'C']);
+  assert.deepEqual(names({ round: 'long', mode: 'walk', sex: 'F', age: 'all' }), ['E']);
+  assert.deepEqual(names({ round: 'short', mode: 'run', sex: 'all', age: 'all' }), ['F']);
 });

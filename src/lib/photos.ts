@@ -74,6 +74,7 @@ export const PAGE_PHOTOS = {
   story: { src: posties, alt: 'Two women in postie caps deliver letters at a ruined stone building.', focus: '50% 40%' },
   route: { src: autumnValley, alt: 'An autumn valley of bracken and green fields under a blue sky.', focus: '50% 60%' },
   safety: { src: snowyRunner, alt: 'A runner on a snowy fell track under a pale sky.', focus: '55% 50%' },
+  roundbook: { src: fellGroup, alt: 'Four runners and a dog on open fell, with hills behind.', focus: '50% 45%' },
   log: { src: letterSummit, alt: 'A runner in a postie’s cap leaps along a grassy ridge holding a letter aloft.', focus: '40% 18%' },
   faq: { src: wall, alt: 'A dry stone wall with snowy fells beyond.', focus: '50% 40%' },
   contact: { src: farmhouseSnow, alt: 'A stone farmhouse beneath a snow-dusted fell.', focus: '50% 40%' },

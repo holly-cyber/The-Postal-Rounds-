@@ -2,7 +2,7 @@
 import { gunzipSync } from 'node:zlib';
 import { LIMITS, ROUNDS, type RoundId } from '../lib/config.ts';
 import { GpxError, parseGpx, type GpxResult } from '../lib/gpx.ts';
-import { todayInShap, type Mode, type StoredRound } from '../lib/rounds.ts';
+import { isAgeGroup, todayInShap, type Mode, type Sex, type StoredRound } from '../lib/rounds.ts';
 
 export class InvalidSubmission extends Error {}
 
@@ -44,6 +44,14 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
 
   const mode = clean(form.get('mode'));
   if (mode !== 'walk' && mode !== 'run') fail('Choose walked or ran.');
+
+  // Optional round book category and age group.
+  const sexRaw = clean(form.get('sex'));
+  if (sexRaw && sexRaw !== 'F' && sexRaw !== 'M') fail('Choose female, male or prefer not to say.');
+  const sex = (sexRaw || null) as Sex | null;
+  const ageRaw = clean(form.get('ageGroup'));
+  if (ageRaw && !isAgeGroup(ageRaw)) fail('Choose an age group from the list.');
+  const ageGroup = ageRaw && isAgeGroup(ageRaw) ? ageRaw : null;
 
   if (clean(form.get('consent')) !== 'yes') fail('Please tick the box to agree to your round appearing in the round book.');
 
@@ -122,6 +130,8 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
     name,
     round: round as RoundId,
     mode: mode as Mode,
+    sex,
+    ageGroup,
     date,
     secs,
     km: gpxResult ? gpxResult.km : null,

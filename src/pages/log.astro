@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import PageBanner from '../components/PageBanner.astro';
 import Postmark from '../components/Postmark.astro';
 import { LIMITS, SITE } from '../lib/config.ts';
-import { todayInShap } from '../lib/rounds.ts';
+import { AGE_GROUPS, todayInShap } from '../lib/rounds.ts';
 
 const today = todayInShap();
 ---
@@ -73,6 +73,26 @@ const today = todayInShap();
               <label><input type="radio" name="mode" value="run" /><span>Ran</span></label>
             </div>
           </div>
+          <div class="row">
+            <div class="field">
+              <label for="sex">Category <span class="hint">(optional)</span></label>
+              <select id="sex" name="sex" aria-describedby="cat-help">
+                <option value="">Prefer not to say</option>
+                <option value="F">Female</option>
+                <option value="M">Male</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="ageGroup">Age group <span class="hint">(optional)</span></label>
+              <select id="ageGroup" name="ageGroup" aria-describedby="cat-help">
+                <option value="">Prefer not to say</option>
+                {AGE_GROUPS.map(([v, l]) => <option value={v}>{l}</option>)}
+              </select>
+            </div>
+          </div>
+          <p class="hint" id="cat-help" style="margin:-0.4rem 0 1rem">
+            Used for the round book’s category tables. Age on the day of your round. Leave blank to appear in Overall only.
+          </p>
           <div class="field">
             <label for="gpx">GPX file <span class="hint">(recommended)</span></label>
             <div class="drop">
@@ -108,7 +128,7 @@ const today = todayInShap();
           <div class="field">
             <label class="consent" for="consent">
               <input id="consent" name="consent" type="checkbox" value="yes" required />
-              <span>I’m happy for my name, round, date, time, link and note to appear in the public round book.</span>
+              <span>I’m happy for my name, round, category, age group, date, time, link and note to appear in the public round book.</span>
             </label>
           </div>
           <div class="hp" aria-hidden="true">
@@ -121,31 +141,14 @@ const today = todayInShap();
       </div>
     </section>
 
-    <section id="board" class="board-section">
-      <div class="wrap">
-        <p class="label-kicker">Who’s done it</p>
-        <h2>The round book</h2>
-        <div class="board-head">
-          <p style="margin:0" id="count">Everyone who has completed the Shap round, newest first.</p>
-          <div class="round-filter tabs" id="roundfilter" role="group" aria-label="Which round" hidden>
-            <button type="button" data-round="long" aria-pressed="true">Long round</button>
-            <button type="button" data-round="short" aria-pressed="false">Short round</button>
-          </div>
-          <div class="tabs" role="group" aria-label="Sort leaderboard">
-            <button type="button" data-view="date" aria-pressed="true">By date</button>
-            <button type="button" data-view="run" aria-pressed="false">Fastest runs</button>
-            <button type="button" data-view="walk" aria-pressed="false">Fastest walks</button>
-          </div>
+    <section class="rb-cta" aria-labelledby="rb-h">
+      <div class="wrap rb-cta-inner">
+        <div>
+          <p class="label-kicker">Who’s done it</p>
+          <h2 id="rb-h">See the round book</h2>
+          <p>Fastest times overall, by category and by age group, for walkers and runners on both rounds.</p>
         </div>
-        <div class="tablewrap">
-          <table>
-            <thead>
-              <tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Date</th><th scope="col">Time</th><th scope="col">Evidence</th></tr>
-            </thead>
-            <tbody id="rows"></tbody>
-          </table>
-          <div class="empty" id="empty">Loading the round book…</div>
-        </div>
+        <a class="btn red" href="/round-book/">Open the round book</a>
       </div>
     </section>
 
@@ -186,6 +189,9 @@ const today = todayInShap();
   .steps h3 { color: var(--fell); font-weight: 800; margin-bottom: 0.4rem; }
   .steps p { margin: 0; color: var(--ink-soft); }
   .form-section { background: var(--paper-2); }
+  :global(form#f select) { width: 100%; font: inherit; font-size: 1rem; padding: 0.6rem 0.7rem; border: 1.5px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  .rb-cta-inner { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; justify-content: space-between; }
+  .rb-cta-inner p:last-child { margin: 0; }
   :global(.log-postmark) { position: static !important; display: block; width: 130px; height: 130px; color: var(--red); opacity: 0.8; transform: rotate(-12deg); margin-top: 1.5rem; }
   :global(form#f) { box-shadow: 0 18px 44px rgba(20, 30, 18, 0.1); border-radius: 12px; background: var(--paper); }
   @media (max-width: 820px) {

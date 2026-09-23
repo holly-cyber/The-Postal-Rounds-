@@ -1,5 +1,4 @@
 ---
-import ThemeToggle from './ThemeToggle.astro';
 import { SITE } from '../lib/config.ts';
 
 const NAV = [
@@ -22,6 +21,5 @@ const here = Astro.url.pathname.replace(/\/?$/, '/');
         {NAV.map((n) => <li><a href={n.href} aria-current={here === n.href ? 'page' : undefined}>{n.label}</a></li>)}
       </ul>
     </nav>
-    <ThemeToggle />
   </div>
 </header>

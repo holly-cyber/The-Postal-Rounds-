@@ -12,7 +12,7 @@ Alan Cleaver; don't publish anything marked `[UNVERIFIED]` there.
 
 Visual design grew from the prototype `reference/shap-postal-round.html`. Current look (Holly's call,
 Sept 2026): white page, self-hosted Inter (text) and Inter Tight (headings) via @fontsource-variable;
-palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`; light and dark themes.
+palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`; light and dark themes follow the visitor's device setting (no theme switch, Holly's call).
 
 ## Stack
 

@@ -98,8 +98,8 @@ footer ul { padding-left: 1.1rem; margin: 0; }
 .site-head { border-bottom: 1px solid var(--line); font-family: var(--sans); }
 .site-head .bar { display: flex; align-items: center; gap: 0.5rem 1.25rem; flex-wrap: wrap; padding-top: 0.8rem; padding-bottom: 0.8rem; }
 .site-head .brand { display: inline-flex; align-items: center; gap: 0.55rem; font-family: var(--serif); font-weight: 800; font-size: 1.25rem; color: var(--fell); text-decoration: none; margin-right: auto; }
-.site-head .brand-stamp { flex: none; transform: rotate(-6deg); filter: drop-shadow(0 1px 1.5px rgba(20, 30, 18, 0.25)); transition: transform 0.2s ease; }
-.site-head .brand:hover .brand-stamp { transform: rotate(0deg) scale(1.06); }
+.site-head .brand-stamp { flex: none; transform: rotate(-6deg); filter: drop-shadow(1px 2px 1px rgba(20, 30, 18, 0.28)) drop-shadow(2px 5px 6px rgba(20, 30, 18, 0.22)); transition: transform 0.2s ease, filter 0.2s ease; }
+.site-head .brand:hover .brand-stamp { transform: rotate(0deg) scale(1.06) translateY(-1px); filter: drop-shadow(1px 3px 1px rgba(20, 30, 18, 0.25)) drop-shadow(3px 9px 10px rgba(20, 30, 18, 0.25)); }
 @media (prefers-reduced-motion: reduce) { .site-head .brand-stamp { transition: none; } }
 .site-head nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.25rem 0.85rem; margin: 0; padding: 0; font-size: 0.95rem; }
 .site-head nav a { color: var(--ink); text-decoration: none; font-weight: 500; padding: 0.2rem 0; border-bottom: 2px solid transparent; }

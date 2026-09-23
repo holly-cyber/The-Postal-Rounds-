@@ -16,6 +16,10 @@ The last man to walk it was Stuart Lewis. Before him, in the 1950s, the round be
 
 The round begins and ends at Birchwood Cafe, and that is no accident. The café is run by Stuart’s family, who ran Shap’s post office and sorting office for generations, and grew up sorting the post at six in the morning. The café still keeps an original post office counter and postal memorabilia. The round starts here because this is where the post always began.
 
+## Keeping the round on the go
+
+Today the round is a favourite of Shap’s fell runners. Jude, who has run it regularly since moving to the village, wrote it up for *The Fellrunner* so more people could explore these remote, rarely visited eastern fells and keep the historic round going. Her route guide is on [the route page](/route/). In her words, it will leave you with nothing but respect for the village postie.
+
 ## The Postal Paths
 
 Stuart’s story is told in Alan Cleaver’s book *The Postal Paths: Rediscovering Britain’s Forgotten Trails and the People Who Walked Them* (Monoray, 2025).

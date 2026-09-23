@@ -23,8 +23,8 @@ const rounds = Object.values(ROUNDS).map((r) => ({
     <div class="wrap page-head">
       <h1>The route</h1>
       <p class="lede">
-        A circular route out of Shap and back, following Alan Cleaver’s mapping of the round. Start and finish at
-        Birchwood Cafe, run by the family of the last postman to walk it.
+        Tougher than it looks. Three remote Lake District valleys, out of Shap and back, following the round the postman
+        walked until 1976. Start and finish at Birchwood Cafe, run by the family of the last postman to walk it.
       </p>
     </div>
 
@@ -69,6 +69,7 @@ const rounds = Object.values(ROUNDS).map((r) => ({
 
       <section id="stops" aria-labelledby="stops-h">
         <h2 id="stops-h">The round, stop by stop</h2>
+        <p class="measure guide-by">Your guide: <strong>Jude</strong>, a Shap fell runner who runs the round regularly.</p>
         <p class="measure">
           Both rounds follow the same line as far as Truss Gap in Swindale. The long round then loops up the valley to
           Mosedale Cottage; the short round takes the postie’s shortcut over Ralfland Fell. They meet again at Sleddale
@@ -109,12 +110,19 @@ const rounds = Object.values(ROUNDS).map((r) => ({
             going is easier, though colder and wetter.
           </p>
           <p>New to the round? Try the short round first, then come back for the long one.</p>
-          <p>
-            Good luck, and enjoy this route that commemorates the posties who served their communities over the years.
-          </p>
+          <blockquote class="signoff">
+            <p>
+              “This is a suggested route, so please take full responsibility for your own navigation and safety. It is at
+              times exposed and challenging in winter conditions. That’s why I know you’ll enjoy it. The round
+              commemorates the posties who served their communities for many years, so please take a moment to doff your
+              cap.”
+            </p>
+            <cite>Jude</cite>
+          </blockquote>
           <p class="credit">
-            Route notes from Alan Cleaver, who thanks Stuart Lewis and Jean Scott-Smith for their help plotting the route,
-            and from Birchwood Cafe’s illustrated map, <em>The Postman’s Route</em>.
+            Route guide by Jude, written for <em>The Fellrunner</em> with the kind permission of Alan Cleaver. Short round
+            from Alan Cleaver’s route notes; he thanks Stuart Lewis and Jean Scott-Smith for their help plotting the route.
+            Stops follow Birchwood Cafe’s illustrated map, <em>The Postman’s Route</em>.
           </p>
           <p><a class="btn red" href="/log/">Log your round</a></p>
         </div>
@@ -124,6 +132,11 @@ const rounds = Object.values(ROUNDS).map((r) => ({
 </Base>
 
 <style>
+  .guide-by { color: var(--ink-soft); margin-top: -0.4rem; }
+  .signoff { margin: 2rem 0 1.5rem; padding: 1.4rem 1.6rem; background: var(--paper-2); border-left: 5px solid var(--red); border-radius: 6px; }
+  .signoff p { font-family: var(--serif); font-weight: 600; font-size: 1.2rem; line-height: 1.45; margin: 0; }
+  .signoff cite { display: block; margin-top: 0.7rem; font-style: normal; font-weight: 700; color: var(--red); }
+  .signoff cite::before { content: '— '; }
   .notices { border-top: 0; padding: 2.5rem 0 0; }
   .notices h2, #season-h, #stops-h { color: var(--fell); }
 </style>

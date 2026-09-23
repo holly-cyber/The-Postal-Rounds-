@@ -13,8 +13,8 @@ export interface LatLon {
 
 /** Site-wide names and links. Change the name here and it changes everywhere. */
 export const SITE = {
-  name: 'Shap Postal Path',
-  strapline: 'The loneliest postal path',
+  name: 'The Postman’s Challenge',
+  strapline: 'Take on the last post round in Shap, Cumbria',
   placement:
     'A low-level heritage round through the quiet Far Eastern Fells of the Lake District, starting and finishing at Birchwood Cafe in Shap.',
   /** Café Instagram URL. Leave empty to hide the link. */
@@ -128,39 +128,40 @@ export interface Stop {
 }
 
 /**
- * The stops, in walking order, following the café's illustrated map ("The Postman's Route")
- * and Alan Cleaver's route notes. The rounds split after Truss Gap.
+ * The stops, in walking order, following the café's illustrated map ("The Postman's Route").
+ * Words are Jude's, from her Fellrunner article (docs/research), except the Ralfland Fell
+ * stop, which follows Alan Cleaver's route notes. The rounds split after Truss Gap.
  */
 export const STOPS: Stop[] = [
   {
     name: 'Birchwood Cafe',
-    html: 'Start in the middle of Shap village. Fill your bottles, buy something for the road over the old post office counter, and check your time against the old post office clock on the wall. Head for Shap Abbey via the Goggleby Stone, a 10-foot prehistoric monolith standing alone in a field, with your first view of the eastern fells and the route to come.',
+    html: 'Start at Birchwood Café in the middle of Shap village (NY 56268 15254). This is where water bottles can be filled and pre-run sustenance purchased over the old post office counter. Be sure to check your time against the old post office clock that hangs on the wall. Head for Shap Abbey via the ancient Goggleby Stone: a 10-foot prehistoric monolith standing alone in its field, and a great opportunity to survey the eastern fells and your route to come.',
     map: { x: 481, y: 139, label: 'Birchwood Cafe', lx: 470, ly: 176, bold: true, anchor: 'end' },
   },
   {
     name: 'Shap Abbey',
-    html: 'The picturesque ruin of a 12th-century abbey in a secluded valley beside the River Lowther. Take the path over the fields to meet the road. <strong>The Coast to Coast path has been rerouted here with new bridges, and some old signs are gone.</strong> Follow the current right of way rather than cutting straight across the fields.',
+    html: 'A picturesque ruin of a 12th-century monastery in a lovely secluded valley beside the River Lowther. From the abbey take the path over the fields to meet the road, then across the moorland to Tailbert Farm. <strong>The Coast to Coast path has been rerouted here with new bridges, and some old signs are gone: follow the current right of way rather than cutting straight across the fields.</strong>',
     map: { x: 337, y: 161, label: 'Shap Abbey', lx: 262, ly: 150 },
   },
   {
     name: 'Tailbert Farm',
-    html: 'Cross the moorland to Tailbert Farm and make your way through the farmyard. Carry on to Tailbert Head, once the home of the reclusive Mary Burgess and now a ruin, with open views of Swindale.',
+    html: 'Make your way through the farmyard (better get a mooooove on) and continue to Tailbert Head, the one-time home of the reclusive Mary Burgess. Now a delightful ruin, it opens up views of Swindale.',
     map: { x: 156, y: 248, label: 'Tailbert', lx: 166, ly: 244 },
   },
   {
     name: 'Swindale Foot',
-    html: 'Take the seldom-used footpath down to Swindale Foot Farm. In high summer the bracken can make this section hard going.',
+    html: 'Next take the seldom-used footpath to Swindale Foot Farm. This section may present more of a challenge in high summer, when the bracken is high.',
     map: { x: 108, y: 362, label: 'Swindale Foot', lx: 118, ly: 358 },
   },
   {
     name: 'Truss Gap',
-    html: 'A short stretch of road leads to Truss Gap House. Swindale is one of the quietest valleys in the eastern Lake District, known for its untouched landscape and pioneering wildlife conservation. <strong>This is where the rounds split.</strong>',
+    html: 'Leave Swindale Foot by a short stretch of road and head towards Truss Gap House. Swindale is one of the quietest, most secluded valleys in the eastern Lake District, known for tranquil, untouched landscapes and pioneering wildlife conservation. <strong>This is where the rounds split.</strong> On the long round, take the lower path along the valley across the open meadows to reach Swindale Head.',
     map: { x: 60, y: 424, label: 'Truss Gap', lx: 70, ly: 420 },
   },
   {
     name: 'Mosedale Cottage',
     onlyOn: 'long',
-    html: 'Take the lower path along the valley meadows to Swindale Head, then the old bridleway round the head of the valley, past long-abandoned farmsteads, and up into Mosedale. Take the old footpath, or scramble up beside the hidden waterfalls and their deep pools. Follow the gnarly track to Mosedale Cottage, the most remote bothy in the Lake District, once home to shepherds and slate-quarry workers. A shepherd lived here six weeks a year, and the postie took up any post for him. Then retrace your steps a little, cross Mosedale Beck at Flatbed Bridge and climb steeply through bog to the head of Wet Sleddale, where the postman once ate his pack-up in a little sentry-box shelter, long since blown away. Skirt under Scam Matthew and drop to Sleddale Hall.',
+    html: 'Swindale Head Farm is a dramatic gateway to the head of the valley. The old bridleway contours round it, passing long-abandoned homes and farmsteads, and from here the route becomes wilder as it climbs to the remote Mosedale valley. Use the old footpath or pick your way up beside the waterfalls: a spectacular but hidden series of cascades with deep pools that make a swim irresistible on a hot day. It’s a scrambly ascent with no definitive path, but well worth the mini detour. Once you’ve plateaued in Mosedale, a rugged and bleakly beautiful glacial glen, continue along the old and now gnarly track to Mosedale Cottage, the most remote bothy in the Lake District, once home to shepherds and to workers at the nearby slate quarry.<br><br>Now reverse your route for a little while, then head east to cross Mosedale Beck at Flatbed Bridge. You’ll almost certainly have wet feet by now, so don’t be worried by the short, steep climb through boggy ground to the head of Wet Sleddale. It didn’t get that name for nothing. Just be glad you’re not the postman and have to do it all again tomorrow. There used to be a small sentry-box shelter here where he could eat his pack-up, but it has long since blown away. A variable track skirts under the summit of Scam Matthew (519 m) and gradually descends to Sleddale Hall.',
     map: { x: 34, y: 560, label: 'Mosedale Cottage', lx: 22, ly: 600 },
   },
   {
@@ -171,17 +172,17 @@ export const STOPS: Stop[] = [
   },
   {
     name: 'Sleddale Hall',
-    html: 'A remote 18th-century farmhouse, famous as Crow Crag in the cult film <em>Withnail and I</em>.',
+    html: 'A remote 18th-century farmhouse, famous as Crow Crag Farm in the cult classic <em>Withnail and I</em>, and now a major pilgrimage site.',
     map: { x: 180, y: 548, label: 'Sleddale Hall', lx: 190, ly: 580 },
   },
   {
     name: 'Thorney Bank',
-    html: 'Leave Sleddale Hall along the terraced track, join the tarmac road at Green Farm and carry on past the postbox at Thorney Bank Farm.',
+    html: 'Leave Sleddale Hall along the terraced track and join the tarmac road at Green Farm, continuing past the postbox at Thorney Bank Farm.',
     map: { x: 330, y: 517, label: 'Thorney Bank', lx: 250, ly: 506 },
   },
   {
     name: 'Stepps Hall and home',
-    html: 'One last delivery. Keeping the river on your right, cross the concrete road and follow the river to Stepps Hall. Cross on the stepping stones, then take the lane or the fields up to the A6 and turn left, back north to Birchwood Cafe. <strong>If the river is in spate the stepping stones may be impassable:</strong> follow the road from Thorney Bank to the A6 instead. Note your time, sit down and doff your cap to the posties.',
+    html: 'Only one more letter to drop off now. Keeping the river on your right-hand side, cross the concrete road and follow the river until you reach your final delivery: Stepps Hall. Cross the river at the stepping stones <strong>(if the river is in spate they may be uncrossable: follow the road from Thorney Bank to the A6 instead)</strong> and continue up the lane or across the fields to the A6. Turn left and head north back to Birchwood Café. Take a note of your time and log your round. It’s now time to sit down, relax and replenish.',
     map: { x: 440, y: 496, label: 'Stepps Hall', lx: 400, ly: 478 },
   },
 ];

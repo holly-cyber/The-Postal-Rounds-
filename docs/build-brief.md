@@ -61,6 +61,11 @@ The café map photos have glare and are rotated: fine for reference, not for pub
 
 Cleaver's sheet is titled **"Shap Postal Path"**, which supports that name.
 
+## Decisions since the brief
+
+- **Name: "The Postman's Challenge"**, byline "Take on the last post round in Shap, Cumbria" (Holly, Sept 2026). "Loneliest" dropped.
+- **Jude's *Fellrunner* article is the voice of the site** (Holly: "the heart and soul of the challenge"): her tagline, her words on why local runners share the round, her stop-by-stop route guide and sign-off. Credited to "Jude, Shap fell runner" — surname to confirm with Holly.
+
 ## Naming
 
 Recommended: **The Shap Postal Round**. Strong alternative: **The Shap Postal Path**. Use "loneliest" with caution: it may deter solo walkers, especially women, and the documented "loneliest round in England" phrase comes from the *Post Office Magazine*, August 1936, about the Keld–Tan Hill postman in Yorkshire, not Shap. `[CONV]`/`[RESEARCH]`

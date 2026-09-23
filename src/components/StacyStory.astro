@@ -1,0 +1,54 @@
+---
+/**
+ * Home page: why the challenge starts at Birchwood Cafe. Sits on its own light band,
+ * with an airmail-envelope edge, so it reads apart from the green challenge band above.
+ * DRAFT from the build brief: check the wording with Stacy before launch.
+ */
+import Photo from './Photo.astro';
+import { CAFE_PHOTO } from '../lib/photos.ts';
+---
+<section class="stacy-band" aria-labelledby="stacy-h">
+  <div class="wrap stacy">
+    <Photo photo={CAFE_PHOTO} class="stacy-photo" sizes="(min-width: 900px) 520px, 100vw" />
+    <div class="stacy-text">
+      <p class="label-kicker">Why it starts at Birchwood Cafe</p>
+      <h2 id="stacy-h">Stacy’s story</h2>
+      <p>
+        Stacy’s family ran Shap’s post office and sorting office for generations. Growing up, the family sorted the post at
+        six every morning, and her father was one of the last postmen to walk the round.
+      </p>
+      <p>
+        Today Stacy runs Birchwood Cafe on Main Street, and the post office is still part of the furniture: an original post
+        office counter, the old post office clock on the wall and a collection of postal memorabilia. The post always started
+        here. So does the challenge.
+      </p>
+      <a class="stacy-link" href="/birchwood-cafe/">About the café <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .stacy-band {
+    position: relative;
+    border-top: 0;
+    background: var(--paper-2);
+    padding-top: calc(clamp(3.5rem, 7vw, 5.5rem) + 10px);
+  }
+  /* Airmail envelope edge between the green band and this one. */
+  .stacy-band::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 10px;
+    background: repeating-linear-gradient(-45deg, var(--red) 0 18px, var(--paper-2) 18px 30px, var(--fell) 30px 48px, var(--paper-2) 48px 60px);
+  }
+  .stacy { display: grid; grid-template-columns: 1fr 1.1fr; gap: clamp(2rem, 5vw, 4rem); align-items: center; }
+  .stacy :global(.stacy-photo img) { aspect-ratio: 4 / 3; border-radius: 12px; box-shadow: 0 20px 50px rgba(20, 30, 18, 0.18); }
+  .stacy h2 { color: var(--fell); font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 800; }
+  .stacy p { font-size: 1.08rem; }
+  .stacy-link { color: var(--fell); font-weight: 700; text-decoration: none; border-bottom: 2px solid var(--red); padding-bottom: 2px; }
+  .stacy-link:hover { color: var(--red); }
+  @media (max-width: 900px) { .stacy { grid-template-columns: 1fr; } }
+</style>

@@ -221,8 +221,8 @@ ol.stops .photo img { aspect-ratio: 4 / 3; }
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.09;
-  background-image: repeating-radial-gradient(circle at 85% 110%, transparent 0 22px, #eef1e8 22px 23px);
+  opacity: 0.13;
+  background: url('/textures/contours.svg') center / cover no-repeat;
   pointer-events: none;
 }
 .intro-grid {
@@ -390,7 +390,8 @@ main section > .wrap > h2, .section-h { color: var(--fell); font-weight: 800; }
 }
 .page-hero.no-photo { min-height: 0; padding-top: 3rem; }
 .page-hero.no-photo::after {
-  background-image: repeating-radial-gradient(circle at 85% 110%, transparent 0 22px, rgba(238, 241, 232, 0.09) 22px 23px);
+  background: url('/textures/contours.svg') center / cover no-repeat;
+  opacity: 0.13;
 }
 .page-hero-inner { padding-top: 3rem; padding-bottom: clamp(2.2rem, 5vw, 3.5rem); }
 .page-hero h1 {
@@ -461,8 +462,9 @@ footer::before {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.07;
-  background-image: repeating-radial-gradient(circle at 10% -20%, transparent 0 22px, #eef1e8 22px 23px);
+  opacity: 0.1;
+  background: url('/textures/contours.svg') left top / cover no-repeat;
+  transform: scaleX(-1);
   pointer-events: none;
 }
 footer .wrap { position: relative; }

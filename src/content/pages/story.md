@@ -14,7 +14,7 @@ The last man to walk it was Stuart Lewis. Before him, in the 1950s, the round be
 
 ## Why the round starts at Birchwood Cafe
 
-The round begins and ends at Birchwood Cafe, and that is no accident. The café is run by Stuart’s family, who ran Shap’s post office and sorting office for generations, and grew up sorting the post at six in the morning. The café still keeps an original post office counter and postal memorabilia. The round starts here because this is where the post always began.
+The round begins and ends at Birchwood Cafe, and that is no accident. The café is run by the family who ran Shap’s post office and sorting office for generations, sorting the post at six every morning. The café still keeps an original post office counter and postal memorabilia. The round starts here because this is where the post always began.
 
 ## Keeping the round on the go
 

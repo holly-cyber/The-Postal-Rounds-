@@ -141,19 +141,19 @@ export function checkPoints(pts: GpxPoint[], round: RoundId): GpxResult {
       id: 'west',
       label: 'Reaches Swindale',
       pass: reachedWest,
-      detail: reachedWest ? 'Reached Swindale' : 'Did not reach far enough west',
+      detail: reachedWest ? 'Reached Swindale' : 'Didn’t get far enough west',
     },
     !rules.requireWetSleddale ? null : {
       id: 'south',
       label: 'Reaches Wet Sleddale',
       pass: reachedSouth,
-      detail: reachedSouth ? 'Reached Wet Sleddale' : 'Did not reach far enough south',
+      detail: reachedSouth ? 'Reached Wet Sleddale' : 'Didn’t get far enough south',
     },
     !rules.requireMosedale ? null : {
       id: 'mosedale',
       label: 'Reaches Mosedale Cottage',
       pass: reachedMosedale,
-      detail: reachedMosedale ? 'Reached Mosedale Cottage' : 'Did not reach Mosedale Cottage',
+      detail: reachedMosedale ? 'Reached Mosedale Cottage' : 'Didn’t reach Mosedale Cottage',
     },
   ];
   const checks = all.filter((c): c is GpxCheck => c !== null);

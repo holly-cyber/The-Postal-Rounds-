@@ -140,7 +140,7 @@ export interface Stop {
 export const STOPS: Stop[] = [
   {
     name: 'Birchwood Cafe',
-    html: 'Start at Birchwood Café in the middle of Shap village (NY 56268 15254). This is where water bottles can be filled and pre-run sustenance purchased over the old post office counter. Be sure to check your time against the old post office clock that hangs on the wall. Head for Shap Abbey via the ancient Goggleby Stone: a 10-foot prehistoric monolith standing alone in its field, and a great opportunity to survey the eastern fells and your route to come.',
+    html: 'Start at Birchwood Cafe in the middle of Shap village (NY 56268 15254). This is where water bottles can be filled and pre-run sustenance purchased over the old post office counter. Be sure to check your time against the old post office clock that hangs on the wall. Head for Shap Abbey via the ancient Goggleby Stone: a 10-foot prehistoric monolith standing alone in its field, and a great opportunity to survey the eastern fells and your route to come.',
     map: { x: 481, y: 139, label: 'Birchwood Cafe', lx: 470, ly: 176, bold: true, anchor: 'end' },
   },
   {
@@ -187,7 +187,7 @@ export const STOPS: Stop[] = [
   },
   {
     name: 'Stepps Hall and home',
-    html: 'Only one more letter to drop off now. Keeping the river on your right-hand side, cross the concrete road and follow the river until you reach your final delivery: Stepps Hall. Cross the river at the stepping stones <strong>(if the river is in spate they may be uncrossable: follow the road from Thorney Bank to the A6 instead)</strong> and continue up the lane or across the fields to the A6. Turn left and head north back to Birchwood Café. Take a note of your time and post your round. It’s now time to sit down, relax and replenish.',
+    html: 'Only one more letter to drop off now. Keeping the river on your right-hand side, cross the concrete road and follow the river until you reach your final delivery: Stepps Hall. Cross the river at the stepping stones <strong>(if the river is in spate they may be uncrossable: follow the road from Thorney Bank to the A6 instead)</strong> and continue up the lane or across the fields to the A6. Turn left and head north back to Birchwood Cafe. Take a note of your time and post your round. It’s now time to sit down, relax and replenish.',
     map: { x: 440, y: 496, label: 'Stepps Hall', lx: 400, ly: 478 },
   },
 ];

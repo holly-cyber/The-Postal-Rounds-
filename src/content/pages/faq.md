@@ -5,7 +5,7 @@ description: Common questions about walking or running the Shap postal round.
 
 ### Is this a race?
 
-No. It’s a heritage round you can walk or run, in one go or in stages. Logging a time is optional.
+No. It’s a heritage round you can walk or run, in one go or in stages. Posting a time is optional.
 
 ### How long is it?
 
@@ -13,7 +13,7 @@ The long round is about 14.7 miles by GPS (often rounded to 15). The short “wi
 
 ### What’s the difference between the rounds?
 
-They share the same line out to Truss Gap in Swindale and back from Sleddale Hall. The long round adds a loop up the valley to Mosedale Cottage, where a shepherd lived for six weeks a year. The short round cuts straight over Ralfland Fell, the postie’s shortcut.
+They follow the same line out to Truss Gap in Swindale and back from Sleddale Hall. The long round adds a loop up the valley to Mosedale Cottage, where a shepherd lived for six weeks a year. The short round cuts straight over Ralfland Fell, the postie’s shortcut.
 
 ### How much climbing is there?
 
@@ -41,7 +41,7 @@ The long round finishes over stepping stones at Stepps Hall. If the river is in 
 
 ### Can I swim?
 
-Beside the waterfalls on the climb to Mosedale there are deep pools that are hard to resist on a hot day. The water is cold and you’re a long way from help, so swim only if you’re confident, and never alone. The scramble up beside the falls has no set path.
+You can, with care. Beside the waterfalls on the climb to Mosedale there are deep pools that are hard to resist on a hot day. The water is cold and you’re a long way from help, so swim only if you’re confident, and never alone. The scramble up beside the falls has no set path.
 
 ### Can I bring my dog?
 

@@ -19,7 +19,7 @@ Check a mountain forecast such as the [Mountain Weather Information Service](htt
 
 ## This isn’t an organised event
 
-There’s no marshalling, no sweeper and no support. You take full responsibility for yourself. Logging a time is a courtesy, like parkrun, not a race.
+There’s no marshalling, no sweeper and no support. You take full responsibility for yourself. Posting your time is for fun, not a race.
 
 ## Respect the land
 

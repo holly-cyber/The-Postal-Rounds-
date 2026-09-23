@@ -14,7 +14,7 @@ export interface LatLon {
 /** Site-wide names and links. Change the name here and it changes everywhere. */
 export const SITE = {
   name: 'The Postman’s Challenge',
-  strapline: 'Take on the last post round in Shap, Cumbria',
+  strapline: 'Take on the loneliest post round, in Shap, Cumbria',
   placement:
     'A low-level heritage round through the quiet Far Eastern Fells of the Lake District, starting and finishing at Birchwood Cafe in Shap.',
   /** Café Instagram. Leave the URL empty to hide Instagram links and sections. */

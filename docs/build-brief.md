@@ -63,7 +63,7 @@ Cleaver's sheet is titled **"Shap Postal Path"**, which supports that name.
 
 ## Decisions since the brief
 
-- **Name: "The Postman's Challenge"**, byline "Take on the last post round in Shap, Cumbria" (Holly, Sept 2026). "Loneliest" dropped.
+- **Name: "The Postman's Challenge"**, byline "Take on the loneliest post round, in Shap, Cumbria" (Holly, Sept 2026; "loneliest" brought back by Holly, see the naming caution below).
 - **Jude's *Fellrunner* article is the voice of the site** (Holly: "the heart and soul of the challenge"): her tagline, her words on why local runners share the round, her stop-by-stop route guide and sign-off. Credited to "Jude, Shap fell runner" — surname to confirm with Holly.
 
 - **Café owner Stacy is now named** (Holly, Sept 2026): "Stacy's story" on the home page and the new /birchwood-cafe/ page. Wording is drafted only from facts in this brief (family ran the post office and sorting office; post sorted at six each morning; her father one of the last postmen on the round; counter, clock, memorabilia). **Check with Stacy before launch.**

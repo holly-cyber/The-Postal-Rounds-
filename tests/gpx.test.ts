@@ -1,11 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { gzipSync } from 'node:zlib';
+import { readFileSync } from 'node:fs';
 import { GpxError, parseGpx, parsePoints } from '../src/lib/gpx.ts';
 import { prepare, InvalidSubmission } from '../src/server/submission.ts';
 import { LONG_WIGGLE, SHORT_WIGGLE, roundTrack, toGpx } from './make-gpx.ts';
 
-const passing = toGpx(roundTrack(LONG_WIGGLE));
+const passing = toGpx(roundTrack(LONG_WIGGLE, true));
 const shortRound = toGpx(roundTrack(SHORT_WIGGLE));
 
 test('a full long round passes every check', () => {
@@ -49,7 +50,16 @@ test('rejects non-GPX input', () => {
 test('the short round passes as short but not as long', () => {
   assert.equal(parseGpx(shortRound, 'short').passed, true);
   const asLong = parseGpx(shortRound, 'long');
-  assert.deepEqual(asLong.checks.filter((c) => !c.pass).map((c) => c.id), ['distance']);
+  assert.deepEqual(asLong.checks.filter((c) => !c.pass).map((c) => c.id), ['distance', 'mosedale']);
+});
+
+test('the OS Maps GPX of the long round passes as long', () => {
+  const real = readFileSync(new URL('./fixtures/real-long-round.gpx', import.meta.url), 'utf8');
+  const r = parseGpx(real, 'long');
+  assert.equal(r.passed, true, JSON.stringify(r.checks));
+  assert.equal(r.km, 23.7);
+  assert.ok(r.startKm < 0.05 && r.finishKm < 0.05);
+  assert.equal(r.elapsedSecs, null);
 });
 
 function baseForm(): FormData {

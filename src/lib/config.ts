@@ -23,8 +23,8 @@ export const SITE = {
   pinsAvailable: false,
 } as const;
 
-/** Birchwood Cafe, Main Street, Shap CA10 3NJ. APPROXIMATE — confirm from a GPX. */
-export const BIRCHWOOD: LatLon = { lat: 54.5315, lon: -2.68 };
+/** Birchwood Cafe, Main Street, Shap CA10 3NJ (NY 56268 15254). Start point of the OS Maps GPX of the round. */
+export const BIRCHWOOD: LatLon = { lat: 54.530675, lon: -2.677442 };
 
 /** Checks every GPX must pass, whichever round. */
 export const GPX_RULES = {
@@ -36,6 +36,8 @@ export const GPX_RULES = {
   westOfLon: -2.735,
   /** Latitude the track must reach south of, when a round requires Wet Sleddale. */
   southOfLat: 54.5,
+  /** Latitude the track must reach south of, when a round requires Mosedale Cottage (at 54.4779). */
+  mosedaleSouthOfLat: 54.481,
   /** Fewer points than this is a planned route, not a recorded activity. */
   minPoints: 10,
 } as const;
@@ -45,7 +47,7 @@ export type RoundId = 'long' | 'short';
 export interface RoundInfo {
   id: RoundId;
   name: string;
-  /** Distances by GPS, as quoted on the site. PROVISIONAL until the final GPX. */
+  /** Distances by GPS, as quoted on the site. Long round confirmed from the OS Maps GPX (23.7 km, 570 m ascent). */
   miles: number;
   km: number;
   summary: string;
@@ -55,6 +57,7 @@ export interface RoundInfo {
   minDistanceKm: number;
   requireSwindale: boolean;
   requireWetSleddale: boolean;
+  requireMosedale: boolean;
 }
 
 export const ROUNDS: Record<RoundId, RoundInfo> = {
@@ -68,6 +71,7 @@ export const ROUNDS: Record<RoundId, RoundInfo> = {
     minDistanceKm: 21,
     requireSwindale: true,
     requireWetSleddale: true,
+    requireMosedale: true,
   },
   short: {
     id: 'short',
@@ -79,6 +83,7 @@ export const ROUNDS: Record<RoundId, RoundInfo> = {
     minDistanceKm: 15,
     requireSwindale: true,
     requireWetSleddale: true,
+    requireMosedale: false,
   },
 };
 
@@ -129,33 +134,33 @@ export interface Stop {
 export const STOPS: Stop[] = [
   {
     name: 'Birchwood Cafe',
-    html: 'Park in Shap and start on Main Street. Alan Cleaver recommends eating at Birchwood before you set off. Head out of the village and follow the road to Shap Abbey, past the Goggleby Stone.',
+    html: 'Start in the middle of Shap village. Fill your bottles, buy something for the road over the old post office counter, and check your time against the old post office clock on the wall. Head for Shap Abbey via the Goggleby Stone, a 10-foot prehistoric monolith standing alone in a field, with your first view of the eastern fells and the route to come.',
     map: { x: 481, y: 139, label: 'Birchwood Cafe', lx: 470, ly: 176, bold: true, anchor: 'end' },
   },
   {
     name: 'Shap Abbey',
-    html: 'Cross the Lowther and head west out of the abbey, over a boggy field, to reach a tarmac road. <strong>The Coast to Coast path has been rerouted here with new bridges, and some old signs are gone.</strong> Follow the current right of way rather than cutting straight up across the fields.',
+    html: 'The picturesque ruin of a 12th-century abbey in a secluded valley beside the River Lowther. Take the path over the fields to meet the road. <strong>The Coast to Coast path has been rerouted here with new bridges, and some old signs are gone.</strong> Follow the current right of way rather than cutting straight across the fields.',
     map: { x: 337, y: 161, label: 'Shap Abbey', lx: 262, ly: 150 },
   },
   {
     name: 'Tailbert Farm',
-    html: 'Follow the road to Tailbert Farm. The path goes through the farm and out the other side to the now deserted Tailbert Head.',
+    html: 'Cross the moorland to Tailbert Farm and make your way through the farmyard. Carry on to Tailbert Head, once the home of the reclusive Mary Burgess and now a ruin, with open views of Swindale.',
     map: { x: 156, y: 248, label: 'Tailbert', lx: 166, ly: 244 },
   },
   {
     name: 'Swindale Foot',
-    html: 'Follow the path down into Swindale and cross the valley to reach the road.',
+    html: 'Take the seldom-used footpath down to Swindale Foot Farm. In high summer the bracken can make this section hard going.',
     map: { x: 108, y: 362, label: 'Swindale Foot', lx: 118, ly: 358 },
   },
   {
     name: 'Truss Gap',
-    html: 'The postie delivered to the homes along the valley road towards Swindale Head, then doubled back to Truss Gap. <strong>This is where the rounds split.</strong>',
+    html: 'A short stretch of road leads to Truss Gap House. Swindale is one of the quietest valleys in the eastern Lake District, known for its untouched landscape and pioneering wildlife conservation. <strong>This is where the rounds split.</strong>',
     map: { x: 60, y: 424, label: 'Truss Gap', lx: 70, ly: 420 },
   },
   {
     name: 'Mosedale Cottage',
     onlyOn: 'long',
-    html: 'For six weeks of the year a shepherd lived at Mosedale Cottage, now a bothy, and the postie had to take up any post addressed to him. Follow the valley past Swindale Head and the waterfalls to the cottage, then cross the beck and head over to Wet Sleddale. About three extra miles, and worth it if you’re fit enough.',
+    html: 'Take the lower path along the valley meadows to Swindale Head, then the old bridleway round the head of the valley, past long-abandoned farmsteads, and up into Mosedale. Take the old footpath, or scramble up beside the hidden waterfalls and their deep pools. Follow the gnarly track to Mosedale Cottage, the most remote bothy in the Lake District, once home to shepherds and slate-quarry workers. A shepherd lived here six weeks a year, and the postie took up any post for him. Then retrace your steps a little, cross Mosedale Beck at Flatbed Bridge and climb steeply through bog to the head of Wet Sleddale, where the postman once ate his pack-up in a little sentry-box shelter, long since blown away. Skirt under Scam Matthew and drop to Sleddale Hall.',
     map: { x: 34, y: 560, label: 'Mosedale Cottage', lx: 22, ly: 600 },
   },
   {
@@ -166,24 +171,24 @@ export const STOPS: Stop[] = [
   },
   {
     name: 'Sleddale Hall',
-    html: 'Drop down into Wet Sleddale by Sleddale Hall, Uncle Monty’s cottage in the film <em>Withnail and I</em>.',
+    html: 'A remote 18th-century farmhouse, famous as Crow Crag in the cult film <em>Withnail and I</em>.',
     map: { x: 180, y: 548, label: 'Sleddale Hall', lx: 190, ly: 580 },
   },
   {
     name: 'Thorney Bank',
-    html: 'Follow the terrace path above Wet Sleddale, past Green Farm, to Thorney Bank and the Victorian postbox emptied on the round.',
+    html: 'Leave Sleddale Hall along the terraced track, join the tarmac road at Green Farm and carry on past the postbox at Thorney Bank Farm.',
     map: { x: 330, y: 517, label: 'Thorney Bank', lx: 250, ly: 506 },
   },
   {
     name: 'Stepps Hall and home',
-    html: 'Carry on past Stepps Hall, cross the river and climb to the A6, then turn back into Shap. Finish at Birchwood Cafe, and log your round.',
+    html: 'One last delivery. Keeping the river on your right, cross the concrete road and follow the river to Stepps Hall. Cross on the stepping stones, then take the lane or the fields up to the A6 and turn left, back north to Birchwood Cafe. <strong>If the river is in spate the stepping stones may be impassable:</strong> follow the road from Thorney Bank to the A6 instead. Note your time, sit down and doff your cap to the posties.',
     map: { x: 440, y: 496, label: 'Stepps Hall', lx: 400, ly: 478 },
   },
 ];
 
 /** "Route at a glance" facts on the home page. */
 export const FACTS: [string, string][] = [
-  ['Start and finish', 'Birchwood Cafe, Main Street, Shap'],
+  ['Start and finish', 'Birchwood Cafe, Main Street, Shap (NY 56268 15254)'],
   ['Long round', `About ${ROUNDS.long.miles} miles / ${ROUNDS.long.km} km, 600 m of climb`],
   ['Short “winter” round', `About ${ROUNDS.short.miles} miles / ${ROUNDS.short.km} km`],
   ['Time', 'Allow a full day walking (tough in places); 3 to 3½ hours at a steady run'],

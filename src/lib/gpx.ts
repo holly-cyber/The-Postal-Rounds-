@@ -12,7 +12,7 @@ export interface GpxPoint extends LatLon {
 }
 
 export interface GpxCheck {
-  id: 'start' | 'finish' | 'distance' | 'west' | 'south';
+  id: 'start' | 'finish' | 'distance' | 'west' | 'south' | 'mosedale';
   label: string;
   pass: boolean;
   detail: string;
@@ -117,6 +117,7 @@ export function checkPoints(pts: GpxPoint[], round: RoundId): GpxResult {
 
   const reachedWest = minLon <= R.westOfLon;
   const reachedSouth = minLat <= R.southOfLat;
+  const reachedMosedale = minLat <= R.mosedaleSouthOfLat;
   const all: (GpxCheck | null)[] = [
     {
       id: 'start',
@@ -147,6 +148,12 @@ export function checkPoints(pts: GpxPoint[], round: RoundId): GpxResult {
       label: 'Reaches Wet Sleddale',
       pass: reachedSouth,
       detail: reachedSouth ? 'Reached Wet Sleddale' : 'Did not reach far enough south',
+    },
+    !rules.requireMosedale ? null : {
+      id: 'mosedale',
+      label: 'Reaches Mosedale Cottage',
+      pass: reachedMosedale,
+      detail: reachedMosedale ? 'Reached Mosedale Cottage' : 'Did not reach Mosedale Cottage',
     },
   ];
   const checks = all.filter((c): c is GpxCheck => c !== null);

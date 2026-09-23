@@ -13,19 +13,25 @@ const WAYPOINTS: LatLon[] = [
   { lat: 54.529, lon: -2.705 }, // Shap Abbey
   { lat: 54.519, lon: -2.733 }, // Tailbert
   { lat: 54.508, lon: -2.757 }, // Truss Gap
-  { lat: 54.5, lon: -2.748 }, // Glede Howe
+  { lat: 54.5, lon: -2.748 }, // Ralfland Fell (the long round swaps this for Mosedale)
   { lat: 54.492, lon: -2.737 }, // Sleddale Hall
   { lat: 54.498, lon: -2.7 }, // Thorney Bank
   { lat: 54.505, lon: -2.672 }, // A6
 ];
 
-/** A loop through the waypoints, densified, with a gentle wiggle so it measures like a real walk. */
+const MOSEDALE: LatLon = { lat: 54.4779, lon: -2.7813 };
+
 /** Wiggle sizes that make the synthetic loop measure like each round. */
-export const LONG_WIGGLE = 0.00052;
+export const LONG_WIGGLE = 0.00042;
 export const SHORT_WIGGLE = 0.00028;
 
-export function roundTrack(wiggle = SHORT_WIGGLE): LatLon[] {
-  const ring = [...WAYPOINTS, WAYPOINTS[0]];
+/**
+ * A loop through the waypoints, densified, with a gentle wiggle so it measures like a real walk.
+ * `viaMosedale` swaps the Ralfland Fell shortcut for the long round's loop to Mosedale Cottage.
+ */
+export function roundTrack(wiggle = SHORT_WIGGLE, viaMosedale = false): LatLon[] {
+  const points = viaMosedale ? WAYPOINTS.map((p, i) => (i === 5 ? MOSEDALE : p)) : WAYPOINTS;
+  const ring = [...points, points[0]];
   const out: LatLon[] = [];
   for (let i = 0; i < ring.length - 1; i++) {
     const a = ring[i];
@@ -60,7 +66,7 @@ export function toGpx(pts: LatLon[], start = Date.parse('2026-09-12T08:00:00Z'),
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const out = (name: string, gpx: string) => writeFileSync(new URL(`./fixtures/${name}`, import.meta.url), gpx);
-  out('round-long.gpx', toGpx(roundTrack(LONG_WIGGLE)));
+  out('round-long.gpx', toGpx(roundTrack(LONG_WIGGLE, true)));
   out('round-short.gpx', toGpx(roundTrack(SHORT_WIGGLE), undefined, 3 * 3600));
   // Turns back before Swindale and Wet Sleddale.
   out('round-incomplete.gpx', toGpx(roundTrack().filter((p) => p.lon > -2.71 && p.lat > 54.505), undefined, 2 * 3600));

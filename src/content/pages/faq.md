@@ -35,6 +35,14 @@ At Birchwood Cafe on Main Street, Shap. Please start and finish there, and suppo
 
 No. You need to navigate with a map and compass and follow the current rights of way. Take care near Shap Abbey, where the path has been rerouted.
 
+### What if the river is high?
+
+The long round finishes over stepping stones at Stepps Hall. If the river is in spate they may be impassable, so follow the road from Thorney Bank to the A6 instead.
+
+### Can I swim?
+
+Beside the waterfalls on the climb to Mosedale there are deep pools that are hard to resist on a hot day. The water is cold and you’re a long way from help, so swim only if you’re confident, and never alone. The scramble up beside the falls has no set path.
+
 ### Can I bring my dog?
 
 Yes, under control. This is livestock country.

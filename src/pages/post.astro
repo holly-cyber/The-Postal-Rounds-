@@ -112,7 +112,7 @@ const today = todayInShap();
               <input id="date" name="date" type="date" required max={today} min={LIMITS.earliestDate} />
             </div>
             <div class="field">
-              <span class="label" id="timelbl">Time taken</span>
+              <span class="label" id="timelbl">Time taken <span class="hint">(total, start to finish)</span></span>
               <div class="time" role="group" aria-labelledby="timelbl">
                 <input id="hh" name="hours" type="text" inputmode="numeric" maxlength="2" placeholder="h" aria-label="Hours" />:
                 <input id="mm" name="minutes" type="text" inputmode="numeric" maxlength="2" placeholder="mm" aria-label="Minutes" />

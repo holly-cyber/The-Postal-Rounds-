@@ -90,16 +90,26 @@ const rounds = Object.values(ROUNDS).map((r) => ({
         <div class="route">
           <SketchMap />
           <div>
+            <div class="stops-tools">
+              <button type="button" class="btn small ghost" data-stops="open">Expand all</button>
+              <button type="button" class="btn small ghost" data-stops="close">Collapse all</button>
+            </div>
             <ol class="stops">
               {
-                STOPS.map((s) => (
+                STOPS.map((s, i) => (
                   <li>
-                    <h3>
-                      {s.name}
-                      {s.onlyOn && <span class="onlyon">{s.onlyOn === 'long' ? 'Long round only' : 'Short round only'}</span>}
-                    </h3>
-                    <p set:html={s.html} />
-                    {STOP_PHOTOS[s.name] && <Photo photo={STOP_PHOTOS[s.name]} sizes="(min-width: 1080px) 416px, 90vw" widths={[400, 800]} />}
+                    <details class="stop" open={i === 0}>
+                      <summary>
+                        <h3>
+                          {s.name}
+                          {s.onlyOn && <span class="onlyon">{s.onlyOn === 'long' ? 'Long round only' : 'Short round only'}</span>}
+                        </h3>
+                      </summary>
+                      <div class="stop-body">
+                        <p set:html={s.html} />
+                        {STOP_PHOTOS[s.name] && <Photo photo={STOP_PHOTOS[s.name]} sizes="(min-width: 1080px) 416px, 90vw" widths={[400, 800]} />}
+                      </div>
+                    </details>
                   </li>
                 ))
               }
@@ -143,7 +153,41 @@ const rounds = Object.values(ROUNDS).map((r) => ({
   </main>
 </Base>
 
+<script>
+  // Expand or collapse every stop at once.
+  document.querySelectorAll<HTMLButtonElement>('[data-stops]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const open = b.dataset.stops === 'open';
+      document.querySelectorAll<HTMLDetailsElement>('details.stop').forEach((d) => (d.open = open));
+    }),
+  );
+</script>
+
 <style>
+  .stops-tools { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; }
+  details.stop > summary { list-style: none; cursor: pointer; position: relative; padding-right: 2.6rem; }
+  details.stop > summary::-webkit-details-marker { display: none; }
+  details.stop > summary h3 { margin: 0.1rem 0 0.2rem; }
+  details.stop > summary::after {
+    content: '+';
+    position: absolute;
+    right: 0;
+    top: 0.1rem;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 50%;
+    border: 2px solid var(--red);
+    color: var(--red);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    line-height: 1;
+  }
+  details.stop[open] > summary::after { content: '–'; background: var(--red); color: #fff; }
+  details.stop > summary:hover h3 { color: var(--red); }
+  details.stop > summary:focus-visible { outline: 3px solid var(--red); outline-offset: 4px; border-radius: 4px; }
+  .stop-body { padding-top: 0.5rem; }
+  ol.stops li { padding-bottom: 1.3rem; }
   .round-stamps { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3rem); margin: 2rem 0 1.5rem; }
   .round-stamp { max-width: none; }
   .round-stamp h3 { color: var(--fell); font-size: 1.6rem; font-weight: 800; margin: 0 0 1.2rem; max-width: 70%; }

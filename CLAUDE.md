@@ -1,8 +1,8 @@
 # The Shap Postal Round
 
 Public heritage site for the last walked postal round in Shap, Cumbria, from Alan Cleaver's
-*The Postal Paths* (Monoray, 2025). People walk or run the long (~14.7 mi) or short "winter"
-(~10.3 mi) round from Birchwood Cafe (Main Street, Shap CA10 3NJ), upload a GPX file or other
+*The Postal Paths* (Monoray, 2025). People walk or run the round (~14.7 mi / 23.7 km, via Mosedale;
+the short "winter" round was removed in Sept 2026) from Birchwood Cafe (Main Street, Shap CA10 3NJ), upload a GPX file or other
 evidence, and appear in a dated round book (leaderboard).
 
 **Scope, principles and content facts: `docs/build-brief.md`.** Read it before changing copy.
@@ -25,7 +25,7 @@ palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`; light and dark
 
 | What | Where |
 |---|---|
-| **All tunable constants** — site name/strapline, Instagram, pins flag, Birchwood coordinates, the two rounds (distances, GPX file names, per-round check thresholds), upload limits, rate limit, the 8 stops (text + sketch-map positions), home facts, route notices | `src/lib/config.ts` |
+| **All tunable constants** — site name/strapline, Instagram, pins flag, Birchwood coordinates, the round (distance, GPX file name, check thresholds; one entry, id `long`, kept so stored entries match), upload limits, rate limit, the stops (text + sketch-map positions), home facts, route notices | `src/lib/config.ts` |
 | **Editable page text** (story, café, safety & respect, FAQ, privacy) | `src/content/pages/*.md` |
 | GPX downloads (buttons appear once the files exist) | `public/gpx/` |
 | **GPX parser + the five checks** (shared by browser and server; DOM-free) | `src/lib/gpx.ts` |
@@ -41,7 +41,7 @@ palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`; light and dark
 ## API
 
 - `GET /api/rounds` — public fields only: name, round, mode, sex, ageGroup, date, secs, km, gpxChecked, verified, link, note. Never ids, IPs or file keys.
-- `POST /api/rounds` — multipart. Requires `round` (long|short) and `consent=yes`; optional `sex` (F|M) and `ageGroup` (5-year bands: U20, 20-24 … 75-79, 80+). Validates everything, re-runs the GPX checks server-side (never trusts the client), stores JSON in the `rounds` store and files in `evidence` (`<id>/gpx`, `<id>/photo`). Honeypot field `website`. Rate limit: 5 accepted submissions per IP per hour (IP HMAC-hashed with ADMIN_TOKEN in the `ratelimit` store; IPs are never stored in entries).
+- `POST /api/rounds` — multipart. Requires `consent=yes`; `round` is optional and must be `long` if sent (the only round); optional `sex` (F|M) and `ageGroup` (5-year bands: U20, 20-24 … 75-79, 80+). Validates everything, re-runs the GPX checks server-side (never trusts the client), stores JSON in the `rounds` store and files in `evidence` (`<id>/gpx`, `<id>/photo`). Honeypot field `website`. Rate limit: 5 accepted submissions per IP per hour (IP HMAC-hashed with ADMIN_TOKEN in the `ratelimit` store; IPs are never stored in entries).
 - `PATCH /api/rounds/:id` `{ "verified": bool }` and `DELETE /api/rounds/:id` — `Authorization: Bearer $ADMIN_TOKEN`.
 - `GET /api/admin/rounds`, `GET /api/admin/evidence/:id/:kind` — admin only. GPX files and photos are never publicly served.
 
@@ -49,9 +49,9 @@ palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`; light and dark
 
 **Request size:** Netlify functions accept ~6 MB per request. The browser gzips GPX files (server detects and unzips, 10 MB limit on the unzipped file) and resizes photos to 2048 px JPEG, so a normal submission is well under 1 MB.
 
-**Leaderboard:** `leaderboard()` in `src/lib/rounds.ts` filters by round, walk/run, category (overall/F/M) and age group; only checked or verified rounds with a time are ranked. Category and age group are optional, so entries without them appear in Overall only.
+**Leaderboard:** `leaderboard()` in `src/lib/rounds.ts` filters by walk/run, category (overall/F/M) and age group; only checked or verified rounds with a time are ranked. Category and age group are optional, so entries without them appear in Overall only.
 
-**Evidence tags:** "Verified", "GPX checked", or "Waiting for check" when neither. Fastest runs/walks are per round and show only gpxChecked or verified entries with a time. Time is optional; if blank, the GPX elapsed time is used.
+**Evidence tags:** "Verified", "GPX checked", or "Waiting for check" when neither. Fastest runs/walks show only gpxChecked or verified entries with a time. Time is optional; if blank, the GPX elapsed time is used.
 
 ## Develop
 

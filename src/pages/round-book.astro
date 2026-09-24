@@ -2,16 +2,15 @@
 /** The round book: records, a filterable leaderboard, and everyone newest first. Data from GET /api/rounds. */
 import Base from '../layouts/Base.astro';
 import PageBanner from '../components/PageBanner.astro';
-import { ROUNDS } from '../lib/config.ts';
 import { AGE_GROUPS } from '../lib/rounds.ts';
 ---
-<Base title="The round book" description="Fastest times on the Postman's Challenge: overall, female, male and by age group, for runners and walkers on both rounds.">
+<Base title="The round book" description="Fastest times on the Postman's Challenge: overall, female, male and by age group, for runners and walkers.">
   <main id="main">
     <PageBanner
       page="roundbook"
       title="The round book"
       kicker="Leaderboard"
-      lede="Everyone who’s taken on the Postman’s Challenge, and the fastest times on each round. Not a race, but somebody has to hold the record."
+      lede="Everyone who’s taken on the Postman’s Challenge, and the fastest times on the round. Not a race, but somebody has to hold the record."
     />
 
     <section class="band-fell tight" aria-labelledby="records-h">
@@ -30,12 +29,6 @@ import { AGE_GROUPS } from '../lib/rounds.ts';
         <h2 id="board-h">Leaderboard</h2>
 
         <div class="filters" role="group" aria-label="Leaderboard filters">
-          <div class="filter">
-            <span class="filter-label" id="f-round">Round</span>
-            <div class="tabs" role="group" aria-labelledby="f-round">
-              {Object.values(ROUNDS).map((r, i) => <button type="button" data-f="round" data-v={r.id} aria-pressed={i === 0 ? 'true' : 'false'}>{r.id === 'long' ? 'Long round' : 'Short round'}</button>)}
-            </div>
-          </div>
           <div class="filter">
             <span class="filter-label" id="f-mode">Walk or run</span>
             <div class="tabs" role="group" aria-labelledby="f-mode">
@@ -92,7 +85,7 @@ import { AGE_GROUPS } from '../lib/rounds.ts';
           <table class="board all">
             <caption class="sr-only">Every round posted, newest first</caption>
             <thead>
-              <tr><th scope="col">Name</th><th scope="col">Round</th><th scope="col">Category</th><th scope="col">Time</th><th scope="col">Date</th><th scope="col">Evidence</th></tr>
+              <tr><th scope="col">Name</th><th scope="col">Walk or run</th><th scope="col">Category</th><th scope="col">Time</th><th scope="col">Date</th><th scope="col">Evidence</th></tr>
             </thead>
             <tbody id="everyone-rows"></tbody>
           </table>

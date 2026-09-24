@@ -50,7 +50,7 @@ function entryHtml(r: StoredRound): string {
     : '';
   return `<article class="card entry" data-id="${r.id}">
     <h2>${esc(r.name)}</h2>
-    <p class="meta">${r.round === 'short' ? 'Short round' : 'Long round'} · ${r.mode === 'run' ? 'Run' : 'Walk'}${categoryLabel(r) ? ` · ${categoryLabel(r)}` : ''} · ${formatDuration(r.secs)} · ${formatDate(r.date)}${r.km !== null ? ` · ${r.km} km` : ''} · submitted ${new Date(r.createdAt).toLocaleString('en-GB')}</p>
+    <p class="meta">${r.mode === 'run' ? 'Run' : 'Walk'}${categoryLabel(r) ? ` · ${categoryLabel(r)}` : ''} · ${formatDuration(r.secs)} · ${formatDate(r.date)}${r.km !== null ? ` · ${r.km} km` : ''} · submitted ${new Date(r.createdAt).toLocaleString('en-GB')}</p>
     <p>${r.verified ? '<span class="tag v">Verified</span>' : ''}${r.gpxChecked ? '<span class="tag g">GPX checked</span>' : ''}${!r.verified && !r.gpxChecked ? '<span class="tag p">Waiting for check</span>' : ''}</p>
     ${r.link ? `<p>Link: <a href="${esc(r.link)}" target="_blank" rel="noopener noreferrer">${esc(r.link)}</a></p>` : ''}
     ${r.note ? `<p>Note: “${esc(r.note)}”</p>` : ''}

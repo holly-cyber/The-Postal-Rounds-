@@ -69,6 +69,7 @@ Cleaver's sheet is titled **"Shap Postal Path"**, which supports that name.
 - **Café owner Stacy is now named** (Holly, Sept 2026): "Stacy's story" on the home page and the new /birchwood-cafe/ page. Wording is drafted only from facts in this brief (family ran the post office and sorting office; post sorted at six each morning; her father one of the last postmen on the round; counter, clock, memorabilia). **Check with Stacy before launch.**
 - **Instagram:** the café's account is @birchwoodcafeshap (found publicly). Home and café pages link to it with a photo strip; hashtag suggested: #ThePostmansChallenge. Showing the café's actual latest posts needs a feed widget or an Instagram access token.
 - **"Post your round"** replaces "log your round" (Holly, Sept 2026): you finish the round and post it into the round book, as the posties ended their day with the post delivered. Entry form now at /post/ (old /log/ links redirect). Home page has a "Post your round" section with an airmail envelope addressed to the round book (deliberately no real postal address, so nobody posts letters to the café).
+- **One round only** (Holly, Sept 2026): the short "winter" round over Ralfland Fell is removed from the site, the form, the round book and the GPX checks. The full round via Mosedale is "The Shap round" (internal id stays `long` so stored entries still match). The story page still describes Ralfland Fell as part of the historic postie's route, as that is history, not a route we offer.
 
 ## Naming
 

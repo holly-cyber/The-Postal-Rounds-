@@ -6,23 +6,25 @@
 import { STOPS } from '../lib/config.ts';
 
 const marked = STOPS.filter((s) => s.map);
-const [home, ...rest] = marked;
+const [start, ...rest] = marked;
 
-// The long round's extra loop to Mosedale, drawn from Truss Gap to Sleddale Hall via Mosedale.
+// The route: out to Truss Gap, up the valley to Mosedale Cottage, then back over to Sleddale Hall and home.
 const at = (name: string) => STOPS.find((s) => s.name === name)?.map;
 const truss = at('Truss Gap');
 const mosedale = at('Mosedale Cottage');
 const sleddale = at('Sleddale Hall');
-const spur =
+const out = 'M480 139 L466 60 C420 70 380 120 337 161 C300 180 270 205 240 217 C210 225 180 238 156 248 C135 290 118 330 108 362 C90 390 72 408 60 424';
+const loop =
   truss && mosedale && sleddale
-    ? `M${truss.x} ${truss.y} C${truss.x - 20} ${truss.y + 50} ${mosedale.x - 10} ${mosedale.y - 60} ${mosedale.x} ${mosedale.y} C${mosedale.x + 40} ${mosedale.y + 25} ${sleddale.x - 70} ${sleddale.y + 25} ${sleddale.x} ${sleddale.y}`
-    : null;
+    ? ` C${truss.x - 20} ${truss.y + 50} ${mosedale.x - 10} ${mosedale.y - 60} ${mosedale.x} ${mosedale.y} C${mosedale.x + 40} ${mosedale.y + 25} ${sleddale.x - 70} ${sleddale.y + 25} ${sleddale.x} ${sleddale.y}`
+    : ' C75 460 90 490 180 548';
+const back = ' C230 540 280 525 330 517 C390 505 450 494 492 486 C510 420 520 360 520 300 C515 230 500 180 480 139';
+const route = out + loop + back;
 ---
 <div class="mapbox">
   <svg viewBox="0 0 600 620" role="img" aria-labelledby="maptitle">
     <title id="maptitle">
       Sketch map of the Shap postal round, looping west from Shap through {rest.map((s) => s.map!.label).join(', ')}.
-      The long round adds a loop from Truss Gap to Mosedale Cottage before rejoining at Sleddale Hall.
     </title>
     <!-- fells -->
     <path d="M0 330 C60 300 90 260 70 200 C50 140 10 120 0 110 Z" fill="var(--moss)" opacity=".18" />
@@ -37,26 +39,18 @@ const spur =
     <path d="M470 0 C475 80 485 150 492 230 C500 330 505 430 500 620" fill="none" stroke="var(--ink-soft)" stroke-width="4" opacity=".45" />
     <text x="508" y="600" font-family="'Inter Variable', Inter, sans-serif" font-size="15" fill="var(--ink-soft)">A6</text>
     <!-- route -->
-    <path
-      d="M480 139 L466 60 C420 70 380 120 337 161 C300 180 270 205 240 217 C210 225 180 238 156 248 C135 290 118 330 108 362 C90 390 72 408 60 424 C75 460 90 490 102 506 C130 525 158 540 180 548 C230 540 280 525 330 517 C390 505 450 494 492 486 C510 420 520 360 520 300 C515 230 500 180 480 139"
-      fill="none"
-      stroke="var(--red)"
-      stroke-width="3.5"
-      stroke-dasharray="9 6"
-      stroke-linecap="round"
-    />
-    {spur && <path d={spur} fill="none" stroke="var(--fell)" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round" />}
+    <path d={route} fill="none" stroke="var(--red)" stroke-width="3.5" stroke-dasharray="9 6" stroke-linecap="round" />
     <!-- stops -->
     <g font-family="'Inter Variable', Inter, sans-serif" font-size="15" fill="var(--ink)">
       {
-        home && (
+        start && (
           <>
             <g>
-              <rect x={home.map!.x - 11} y={home.map!.y - 12} width="22" height="24" rx="4" fill="var(--red)" />
-              <rect x={home.map!.x - 7} y={home.map!.y - 6} width="14" height="3" fill="#fff" />
+              <rect x={start.map!.x - 11} y={start.map!.y - 12} width="22" height="24" rx="4" fill="var(--red)" />
+              <rect x={start.map!.x - 7} y={start.map!.y - 6} width="14" height="3" fill="#fff" />
             </g>
-            <text x={home.map!.lx} y={home.map!.ly} font-weight="700" text-anchor={home.map!.anchor}>
-              {home.map!.label}
+            <text x={start.map!.lx} y={start.map!.ly} font-weight="700" text-anchor={start.map!.anchor}>
+              {start.map!.label}
             </text>
           </>
         )
@@ -80,9 +74,5 @@ const spur =
       <text x="-5" y="34">N</text>
     </g>
   </svg>
-  <p class="mapnote maplegend">
-    <span><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" stroke="var(--red)" stroke-width="3" stroke-dasharray="7 5" stroke-linecap="round" /></svg>Both rounds (short round over Ralfland Fell)</span>
-    <span><svg width="28" height="8" aria-hidden="true"><line x1="2" y1="4" x2="26" y2="4" stroke="var(--fell)" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round" /></svg>Long round: extra loop to Mosedale</span>
-  </p>
   <p class="mapnote">Sketch map, not to scale — use OS Explorer OL5 and a compass.</p>
 </div>

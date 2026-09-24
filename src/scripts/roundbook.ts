@@ -1,7 +1,7 @@
 /**
- * The round book page: round records, a filterable leaderboard (round, walk/run,
+ * The round book page: round records, a filterable leaderboard (walk/run,
  * category, age group) and everyone newest first. Filters are kept in the URL so a
- * view can be shared, e.g. /round-book/?round=long&mode=run&sex=F&age=40-49
+ * view can be shared, e.g. /round-book/?mode=run&sex=F&age=40-44
  */
 import { ROUNDS, type RoundId } from '../lib/config.ts';
 import {
@@ -25,7 +25,7 @@ let entries: PublicRound[] = [];
 
 function readFilter(): BoardFilter {
   const q = new URLSearchParams(location.search);
-  const round = q.get('round') === 'short' ? 'short' : 'long';
+  const round = 'long' as const;
   const mode = q.get('mode') === 'walk' ? 'walk' : 'run';
   const sexQ = q.get('sex');
   const sex = sexQ === 'F' || sexQ === 'M' ? sexQ : 'all';
@@ -38,7 +38,6 @@ let filter = readFilter();
 
 function writeFilter() {
   const q = new URLSearchParams();
-  if (filter.round !== 'long') q.set('round', filter.round);
   if (filter.mode !== 'run') q.set('mode', filter.mode);
   if (filter.sex !== 'all') q.set('sex', filter.sex);
   if (filter.age !== 'all') q.set('age', filter.age);
@@ -48,7 +47,7 @@ function writeFilter() {
 
 function syncControls() {
   document.querySelectorAll<HTMLButtonElement>('button[data-f]').forEach((b) => {
-    const key = b.dataset.f as 'round' | 'mode' | 'sex';
+    const key = b.dataset.f as 'mode' | 'sex';
     b.setAttribute('aria-pressed', String(String(filter[key]) === b.dataset.v));
   });
   $<HTMLSelectElement>('f-age').value = filter.age;
@@ -56,7 +55,7 @@ function syncControls() {
 
 document.querySelectorAll<HTMLButtonElement>('button[data-f]').forEach((b) =>
   b.addEventListener('click', () => {
-    const key = b.dataset.f as 'round' | 'mode' | 'sex';
+    const key = b.dataset.f as 'mode' | 'sex';
     filter = { ...filter, [key]: b.dataset.v } as BoardFilter;
     writeFilter();
     syncControls();
@@ -107,7 +106,6 @@ function nameCell(r: PublicRound): HTMLTableCellElement {
 }
 
 const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
-const roundName = (id: RoundId) => (id === 'short' ? 'Short' : 'Long');
 const modeWord = (m: Mode) => (m === 'run' ? 'run' : 'walk');
 
 // ---------- Round records ----------
@@ -118,13 +116,11 @@ function renderRecords() {
   const slots: [RoundId, Mode][] = [
     ['long', 'run'],
     ['long', 'walk'],
-    ['short', 'run'],
-    ['short', 'walk'],
   ];
   for (const [round, mode] of slots) {
     const best = leaderboard(entries, { round, mode, sex: 'all', age: 'all' })[0];
     const card = el('a', `stamp record${best ? '' : ' vacant'}`);
-    card.href = `?round=${round}&mode=${mode}#board`;
+    card.href = `?mode=${mode}#board`;
     card.style.textDecoration = 'none';
     card.appendChild(el('p', 'record-what', `${ROUNDS[round].name.replace(/^The /, '')} · fastest ${modeWord(mode)}`));
     if (best) {
@@ -193,7 +189,7 @@ function renderEveryone() {
     const tr = el('tr');
     tr.append(
       nameCell(r),
-      el('td', '', `${roundName(r.round)} · ${r.mode === 'run' ? 'Ran' : 'Walked'}${r.km ? `, ${r.km} km` : ''}`),
+      el('td', '', `${r.mode === 'run' ? 'Ran' : 'Walked'}${r.km ? `, ${r.km} km` : ''}`),
       el('td', 'cat', categoryLabel(r) || '–'),
       el('td', 'time', formatDuration(r.secs)),
       el('td', '', formatDate(r.date)),

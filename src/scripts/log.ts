@@ -10,8 +10,8 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 
 let gpxText: string | null = null;
 
-const chosenRound = () =>
-  (document.querySelector<HTMLInputElement>('input[name=round]:checked')?.value ?? 'long') as RoundId;
+/** There is one round now; kept as a function so the checks read the same as before. */
+const chosenRound = (): RoundId => 'long';
 
 const today = todayInShap();
 $<HTMLInputElement>('date').max = today;
@@ -110,8 +110,7 @@ function showGpx(r: GpxResult) {
     frank.className = 'frank';
     frank.setAttribute('aria-hidden', 'true');
     frank.style.setProperty('--n', String(r.checks.length));
-    const round = chosenRound() === 'long' ? 'LONG ROUND' : 'SHORT ROUND';
-    for (const [tag, t] of [['span', 'SHAP'], ['strong', 'CHECKED'], ['span', round]] as const) {
+    for (const [tag, t] of [['span', 'SHAP'], ['strong', 'CHECKED'], ['span', 'THE ROUND']] as const) {
       const e = document.createElement(tag);
       e.textContent = t;
       frank.appendChild(e);
@@ -185,21 +184,8 @@ function checkGpx(prefill: boolean): GpxResult | null {
       return parsed;
     }
     gpxPoints = parsePoints(gpxText);
-
-    // Which round? Pick the one the track passes; the long round wins if both do.
-    const long = checkPoints(gpxPoints, 'long');
-    const short = checkPoints(gpxPoints, 'short');
-    // If neither passes, go by distance: nearer to 23.7 km is the long round, nearer to 16.6 km the short.
-    const byDistance: RoundId =
-      Math.abs(long.km - ROUNDS.long.km) <= Math.abs(long.km - ROUNDS.short.km) ? 'long' : 'short';
-    const round: RoundId = long.passed ? 'long' : short.passed ? 'short' : long.km >= 8 ? byDistance : chosenRound();
+    const parsed = checkPoints(gpxPoints, chosenRound());
     const filled: string[] = [];
-    if (long.passed || short.passed || long.km >= 8) {
-      setRadio('round', round);
-      flash(document.querySelector('[aria-labelledby=roundlbl]'));
-      filled.push(ROUNDS[round].name.replace(/^The /, 'the '));
-    }
-    const parsed = round === 'long' ? long : round === 'short' ? short : checkPoints(gpxPoints, round);
 
     const mode = guessMode(gpxText, parsed);
     if (mode) {
@@ -278,10 +264,6 @@ $<HTMLInputElement>('gpx').addEventListener('change', async (e) => {
   gpxText = await f.text();
   checkGpx(true);
 });
-
-document.querySelectorAll<HTMLInputElement>('input[name=round]').forEach((r) =>
-  r.addEventListener('change', () => checkGpx(false)),
-);
 
 /* Photo: show it as a little snapshot. */
 let snapUrl: string | null = null;

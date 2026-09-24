@@ -8,9 +8,10 @@ import { leaderboard, categoryLabel, type PublicRound } from '../src/lib/rounds.
 import { LONG_WIGGLE, SHORT_WIGGLE, roundTrack, toGpx } from './make-gpx.ts';
 
 const passing = toGpx(roundTrack(LONG_WIGGLE, true));
-const shortRound = toGpx(roundTrack(SHORT_WIGGLE));
+/** A round that cuts over Ralfland Fell and skips Mosedale. It no longer counts. */
+const skipsMosedale = toGpx(roundTrack(SHORT_WIGGLE));
 
-test('a full long round passes every check', () => {
+test('a full round passes every check', () => {
   const r = parseGpx(passing, 'long');
   assert.equal(r.passed, true, JSON.stringify(r.checks));
   assert.ok(r.km >= 21, `km ${r.km}`);
@@ -20,9 +21,9 @@ test('a full long round passes every check', () => {
 
 test('a short walk fails west, south and distance', () => {
   const pts = roundTrack().filter((p) => p.lon > -2.71 && p.lat > 54.505);
-  const r = parseGpx(toGpx(pts), 'short');
+  const r = parseGpx(toGpx(pts), 'long');
   const failed = r.checks.filter((c) => !c.pass).map((c) => c.id).sort();
-  assert.deepEqual(failed, ['distance', 'south', 'west']);
+  assert.deepEqual(failed, ['distance', 'mosedale', 'south', 'west']);
 });
 
 test('a loop started elsewhere fails start and finish', () => {
@@ -48,13 +49,12 @@ test('rejects non-GPX input', () => {
   assert.throws(() => parseGpx('<gpx></gpx>', 'long'), GpxError);
 });
 
-test('the short round passes as short but not as long', () => {
-  assert.equal(parseGpx(shortRound, 'short').passed, true);
-  const asLong = parseGpx(shortRound, 'long');
-  assert.deepEqual(asLong.checks.filter((c) => !c.pass).map((c) => c.id), ['distance', 'mosedale']);
+test('a round that skips Mosedale over Ralfland Fell fails', () => {
+  const r = parseGpx(skipsMosedale, 'long');
+  assert.deepEqual(r.checks.filter((c) => !c.pass).map((c) => c.id), ['distance', 'mosedale']);
 });
 
-test('the OS Maps GPX of the long round passes as long', () => {
+test('the OS Maps GPX of the round passes', () => {
   const real = readFileSync(new URL('./fixtures/real-long-round.gpx', import.meta.url), 'utf8');
   const r = parseGpx(real, 'long');
   assert.equal(r.passed, true, JSON.stringify(r.checks));
@@ -107,19 +107,20 @@ test('server: requires consent and a valid round', async () => {
   const badRound = baseForm();
   badRound.set('round', 'toString');
   badRound.set('link', 'https://example.com');
-  await assert.rejects(prepare(badRound, 'x', now), /long or short/);
+  await assert.rejects(prepare(badRound, 'x', now), /isn’t recognised/);
+  const shortRound = baseForm();
+  shortRound.set('round', 'short');
+  shortRound.set('link', 'https://example.com');
+  await assert.rejects(prepare(shortRound, 'x', now), /isn’t recognised/);
 });
 
-test('server: a short-round GPX is checked against the short round', async () => {
+test('server: round defaults to the one round, and a GPX that skips Mosedale waits for a check', async () => {
   const f = baseForm();
-  f.set('round', 'short');
-  f.set('gpx', new Blob([shortRound]), 'round.gpx');
+  f.delete('round');
+  f.set('gpx', new Blob([skipsMosedale]), 'round.gpx');
   const { entry } = await prepare(f, 'x', now);
-  assert.equal(entry.round, 'short');
-  assert.equal(entry.gpxChecked, true);
-  const g = baseForm();
-  g.set('gpx', new Blob([shortRound]), 'round.gpx');
-  assert.equal((await prepare(g, 'x', now)).entry.gpxChecked, false);
+  assert.equal(entry.round, 'long');
+  assert.equal(entry.gpxChecked, false);
 });
 
 test('server: link-only entry waits for a check', async () => {
@@ -181,7 +182,7 @@ test('server: category and age group are optional and validated', async () => {
   await assert.rejects(prepare(f, 'x', now), /age group/);
 });
 
-test('leaderboard filters by round, mode, category and age, fastest first', () => {
+test('leaderboard filters by mode, category and age, fastest first', () => {
   const base: PublicRound = { name: '', round: 'long', mode: 'run', sex: null, ageGroup: null, date: '2026-09-01', secs: 0, km: 23.7, gpxChecked: true, verified: false, link: null, note: null };
   const rows: PublicRound[] = [
     { ...base, name: 'A', secs: 4 * 3600, sex: 'F', ageGroup: '40-44' },
@@ -189,7 +190,6 @@ test('leaderboard filters by round, mode, category and age, fastest first', () =
     { ...base, name: 'C', secs: 3.5 * 3600, sex: 'F', ageGroup: '25-29' },
     { ...base, name: 'D', secs: 2 * 3600, gpxChecked: false },
     { ...base, name: 'E', secs: 3 * 3600, mode: 'walk', sex: 'F' },
-    { ...base, name: 'F', secs: 1 * 3600, round: 'short' },
     { ...base, name: 'G', secs: 3.2 * 3600 },
   ];
   const names = (f: Parameters<typeof leaderboard>[1]) => leaderboard(rows, f).map((r) => r.name);
@@ -197,7 +197,6 @@ test('leaderboard filters by round, mode, category and age, fastest first', () =
   assert.deepEqual(names({ round: 'long', mode: 'run', sex: 'F', age: 'all' }), ['C', 'A']);
   assert.deepEqual(names({ round: 'long', mode: 'run', sex: 'all', age: '25-29' }), ['B', 'C']);
   assert.deepEqual(names({ round: 'long', mode: 'walk', sex: 'F', age: 'all' }), ['E']);
-  assert.deepEqual(names({ round: 'short', mode: 'run', sex: 'all', age: 'all' }), ['F']);
 });
 
 test('age groups are 5-year bands from under 20 to 80 and over', async () => {

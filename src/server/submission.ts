@@ -39,8 +39,9 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
   const name = clean(form.get('name'));
   if (name.length < 1 || name.length > LIMITS.nameMax) fail(`Name must be 1–${LIMITS.nameMax} characters.`);
 
-  const round = clean(form.get('round'));
-  if (!Object.hasOwn(ROUNDS, round)) fail('Choose the long or short round.');
+  // One round now. Older pages may still send round=long; anything else is refused.
+  const round = clean(form.get('round')) || 'long';
+  if (!Object.hasOwn(ROUNDS, round)) fail('That round isn’t recognised. Reload the page and try again.');
 
   const mode = clean(form.get('mode'));
   if (mode !== 'walk' && mode !== 'run') fail('Choose walked or ran.');

@@ -67,8 +67,8 @@ export function toGpx(pts: LatLon[], start = Date.parse('2026-09-12T08:00:00Z'),
 if (import.meta.url === `file://${process.argv[1]}`) {
   const out = (name: string, gpx: string) => writeFileSync(new URL(`./fixtures/${name}`, import.meta.url), gpx);
   out('round-long.gpx', toGpx(roundTrack(LONG_WIGGLE, true)));
-  out('round-short.gpx', toGpx(roundTrack(SHORT_WIGGLE), undefined, 3 * 3600));
+  out('round-skips-mosedale.gpx', toGpx(roundTrack(SHORT_WIGGLE), undefined, 3 * 3600));
   // Turns back before Swindale and Wet Sleddale.
   out('round-incomplete.gpx', toGpx(roundTrack().filter((p) => p.lon > -2.71 && p.lat > 54.505), undefined, 2 * 3600));
-  console.log('Wrote tests/fixtures/round-long.gpx, round-short.gpx and round-incomplete.gpx');
+  console.log('Wrote tests/fixtures/round-long.gpx, round-skips-mosedale.gpx and round-incomplete.gpx');
 }

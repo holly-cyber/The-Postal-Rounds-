@@ -9,15 +9,11 @@ No. It’s a heritage round you can walk or run, in one go or in stages. Posting
 
 ### How long is it?
 
-The long round is about 14.7 miles by GPS (often rounded to 15). The short “winter” round is about 10.3 miles.
-
-### What’s the difference between the rounds?
-
-They follow the same line out to Truss Gap in Swindale and back from Sleddale Hall. The long round adds a loop up the valley to Mosedale Cottage, where a shepherd lived for six weeks a year. The short round cuts straight over Ralfland Fell, the postie’s shortcut.
+About 14.7 miles (23.7 km) by GPS, often rounded to 15.
 
 ### How much climbing is there?
 
-About 600 metres on the long round.
+About 600 metres.
 
 ### How long does it take?
 
@@ -37,7 +33,7 @@ No. You need to navigate with a map and compass and follow the current rights of
 
 ### What if the river is high?
 
-The long round finishes over stepping stones at Stepps Hall. If the river is in spate they may be impassable, so follow the road from Thorney Bank to the A6 instead.
+The round finishes over stepping stones at Stepps Hall. If the river is in spate they may be impassable, so follow the road from Thorney Bank to the A6 instead.
 
 ### Can I swim?
 

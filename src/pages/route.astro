@@ -17,7 +17,7 @@ const rounds = Object.values(ROUNDS).map((r) => ({
 ---
 <Base
   title="The route"
-  description="The long and short Shap postal rounds from Birchwood Cafe: distances, stops, GPX downloads and current notices."
+  description="The Shap postal round from Birchwood Cafe: distance, stops, GPX download and current notices."
 >
   <main id="main">
     <PageBanner
@@ -29,14 +29,14 @@ const rounds = Object.values(ROUNDS).map((r) => ({
 
     <section class="band-fell tight rounds-band" aria-labelledby="rounds-h">
       <div class="wrap">
-        <p class="label-kicker on-dark">Choose your round</p>
-        <h2 id="rounds-h">Two rounds, one start</h2>
+        <p class="label-kicker on-dark">The round</p>
+        <h2 id="rounds-h">One round, three valleys</h2>
         <div class="round-stamps">
           {
             rounds.map((r, i) => (
               <div class:list={['stamp', 'round-stamp', i % 2 ? 'tilt-l' : 'tilt']}>
-                {i === 0 && <Postmark line="LONG ROUND" year={`${Math.round(r.km)} KM`} />}
-                <p class="stamp-label">{r.id === 'long' ? 'The full round' : 'Winter or first-timer'}</p>
+                {i === 0 && <Postmark line="THE ROUND" year={`${Math.round(r.km)} KM`} />}
+                <p class="stamp-label">From Birchwood Cafe</p>
                 <h3>{r.name}</h3>
                 <dl class="tiles">
                   <div>
@@ -59,11 +59,17 @@ const rounds = Object.values(ROUNDS).map((r) => ({
               </div>
             ))
           }
+          <div class="rounds-side">
+            <p>
+              Out of Shap past the abbey, into Swindale and up the valley to Mosedale Cottage, then over to Wet Sleddale
+              and home to Birchwood Cafe.
+            </p>
+            <p class="rounds-note">
+              Distances are by GPS. Please follow the route and stay on public footpaths: the GPX is a guide, not a licence
+              to cross private land. The round isn’t waymarked, so carry OS Explorer OL5 and a compass.
+            </p>
+          </div>
         </div>
-        <p class="rounds-note">
-          Distances are by GPS. Please follow the route and stay on public footpaths: the GPX is a guide, not a licence to
-          cross private land. The round isn’t waymarked, so carry OS Explorer OL5 and a compass.
-        </p>
       </div>
     </section>
 
@@ -82,11 +88,6 @@ const rounds = Object.values(ROUNDS).map((r) => ({
       <section id="stops" aria-labelledby="stops-h">
         <h2 id="stops-h">The round, stop by stop</h2>
         <p class="measure guide-by">Your guide: <strong>Jude</strong>, a Shap fell runner who runs the round regularly.</p>
-        <p class="measure">
-          Both rounds follow the same line as far as Truss Gap in Swindale. The long round then loops up the valley to
-          Mosedale Cottage; the short round takes the postie’s shortcut over Ralfland Fell. They meet again at Sleddale
-          Hall.
-        </p>
         <div class="route">
           <SketchMap />
           <div>
@@ -102,7 +103,6 @@ const rounds = Object.values(ROUNDS).map((r) => ({
                       <summary>
                         <h3>
                           {s.name}
-                          {s.onlyOn && <span class="onlyon">{s.onlyOn === 'long' ? 'Long round only' : 'Short round only'}</span>}
                         </h3>
                       </summary>
                       <div class="stop-body">
@@ -131,7 +131,7 @@ const rounds = Object.values(ROUNDS).map((r) => ({
             fells are off-limits. In summer, thick bracken and grass can cut up your legs; in winter it dies back and the
             going is easier, though colder and wetter.
           </p>
-          <p>New to the round? Try the short round first, then come back for the long one.</p>
+          <p>New to the round? Go with someone who knows it, or walk it in stages first.</p>
           <blockquote class="signoff">
             <p>
               “This is a suggested route, so please take full responsibility for your own navigation and safety. It is at
@@ -142,8 +142,8 @@ const rounds = Object.values(ROUNDS).map((r) => ({
             <cite>Jude</cite>
           </blockquote>
           <p class="credit">
-            Route guide by Jude, written for <em>The Fellrunner</em> with the kind permission of Alan Cleaver. Short round
-            from Alan Cleaver’s route notes; he thanks Stuart Lewis and Jean Scott-Smith for their help plotting the route.
+            Route guide by Jude, written for <em>The Fellrunner</em> with the kind permission of Alan Cleaver. Alan
+            Cleaver thanks Stuart Lewis and Jean Scott-Smith for their help plotting the route.
             Stops follow Birchwood Cafe’s illustrated map, <em>The Postman’s Route</em>.
           </p>
           <p><a class="btn red" href="/post/">Post your round</a></p>
@@ -188,7 +188,8 @@ const rounds = Object.values(ROUNDS).map((r) => ({
   details.stop > summary:focus-visible { outline: 3px solid var(--red); outline-offset: 4px; border-radius: 4px; }
   .stop-body { padding-top: 0.5rem; }
   ol.stops li { padding-bottom: 1.3rem; }
-  .round-stamps { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3rem); margin: 2rem 0 1.5rem; }
+  .round-stamps { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3rem); align-items: center; margin: 2rem 0 1.5rem; }
+  .rounds-side p:first-child { font-size: 1.15rem; color: #fff; }
   .round-stamp { max-width: none; }
   .round-stamp h3 { color: var(--fell); font-size: 1.6rem; font-weight: 800; margin: 0 0 1.2rem; max-width: 70%; }
   .round-stamp .round-summary { color: #3c4639 !important; margin-bottom: 1.3rem; }

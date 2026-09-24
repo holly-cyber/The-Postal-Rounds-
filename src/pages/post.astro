@@ -59,13 +59,7 @@ const today = todayInShap();
             <label for="name">Your name <span class="hint">(or a nickname)</span></label>
             <input id="name" name="name" type="text" maxlength={LIMITS.nameMax} autocomplete="name" required />
           </div>
-          <div class="field">
-            <span class="label" id="roundlbl">Which round?</span>
-            <div class="seg" role="radiogroup" aria-labelledby="roundlbl">
-              <label><input type="radio" name="round" value="long" checked /><span>Long round</span></label>
-              <label><input type="radio" name="round" value="short" /><span>Short round</span></label>
-            </div>
-          </div>
+          <input type="hidden" name="round" value="long" />
           <div class="field">
             <span class="label" id="modelbl">How did you do it?</span>
             <div class="seg" role="radiogroup" aria-labelledby="modelbl">
@@ -171,7 +165,7 @@ const today = todayInShap();
         <div>
           <p class="label-kicker">Who’s done it</p>
           <h2 id="rb-h">See the round book</h2>
-          <p>Fastest times overall, by category and by age group, for walkers and runners on both rounds.</p>
+          <p>Fastest times overall, by category and by age group, for walkers and runners.</p>
         </div>
         <a class="btn red" href="/round-book/">Open the round book</a>
       </div>

@@ -164,7 +164,6 @@ a.card .more { font-family: var(--sans); font-weight: 700; color: var(--fell); }
 .strap { font-style: italic; font-size: clamp(1.4rem, 3vw, 1.9rem); color: var(--red); margin-bottom: 1.2rem; }
 .maplegend { display: flex; flex-wrap: wrap; gap: 0.3rem 1.2rem; }
 .maplegend span { display: inline-flex; align-items: center; gap: 0.4rem; }
-.onlyon { display: inline-block; font-family: var(--sans); font-size: 0.78rem; font-weight: 700; padding: 0.05rem 0.45rem; border-radius: 3px; border: 1px solid currentColor; color: var(--fell); margin-left: 0.4rem; vertical-align: middle; }
 
 /* ---------- Photos ---------- */
 .photo { margin: 0; }

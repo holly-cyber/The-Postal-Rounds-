@@ -47,7 +47,8 @@ export const GPX_RULES = {
   minPoints: 10,
 } as const;
 
-export type RoundId = 'long' | 'short';
+/** One round now (the short round was removed, Sept 2026). The id stays 'long' so stored entries still match. */
+export type RoundId = 'long';
 
 export interface RoundInfo {
   id: RoundId;
@@ -68,27 +69,15 @@ export interface RoundInfo {
 export const ROUNDS: Record<RoundId, RoundInfo> = {
   long: {
     id: 'long',
-    name: 'The long round',
+    name: 'The Shap round',
     miles: 14.7,
     km: 23.7,
-    summary: 'The full round, including the extra loop up Swindale to Mosedale Cottage. About 600 metres of climb. A steady run takes around 3 to 3½ hours; walkers should allow a full day.',
+    summary: 'Out through Swindale to Mosedale Cottage and home through Wet Sleddale. About 600 metres of climb. A steady run takes around 3 to 3½ hours; walkers should allow a full day.',
     gpxFile: 'shap-postal-long-round.gpx',
     minDistanceKm: 21,
     requireSwindale: true,
     requireWetSleddale: true,
     requireMosedale: true,
-  },
-  short: {
-    id: 'short',
-    name: 'The short “winter” round',
-    miles: 10.3,
-    km: 16.6,
-    summary: 'Leaves out Mosedale and cuts straight from Truss Gap over Ralfland Fell to Wet Sleddale, as the postie did when there was no post for the shepherd. A good first go before the long round.',
-    gpxFile: 'shap-postal-short-round.gpx',
-    minDistanceKm: 15,
-    requireSwindale: true,
-    requireWetSleddale: true,
-    requireMosedale: false,
   },
 };
 
@@ -122,8 +111,6 @@ export interface Stop {
   name: string;
   /** Description in the stops list. Trusted HTML (it only comes from this file). */
   html: string;
-  /** Set when a stop is on one round only. */
-  onlyOn?: RoundId;
   /**
    * Where the stop sits on the sketch map (SVG units, 600 × 620 viewBox) and where its
    * label goes. Birchwood is drawn as a postbox; the rest as circles. Omit `map` for
@@ -134,8 +121,7 @@ export interface Stop {
 
 /**
  * The stops, in walking order, following the café's illustrated map ("The Postman's Route").
- * Words are Jude's, from her Fellrunner article (docs/research), except the Ralfland Fell
- * stop, which follows Alan Cleaver's route notes. The rounds split after Truss Gap.
+ * Words are Jude's, from her Fellrunner article (docs/research).
  */
 export const STOPS: Stop[] = [
   {
@@ -160,20 +146,13 @@ export const STOPS: Stop[] = [
   },
   {
     name: 'Truss Gap',
-    html: 'Leave Swindale Foot by a short stretch of road and head towards Truss Gap House. Swindale is one of the quietest, most secluded valleys in the eastern Lake District, known for tranquil, untouched landscapes and pioneering wildlife conservation. <strong>This is where the rounds split.</strong> On the long round, take the lower path along the valley across the open meadows to reach Swindale Head.',
+    html: 'Leave Swindale Foot by a short stretch of road and head towards Truss Gap House. Swindale is one of the quietest, most secluded valleys in the eastern Lake District, known for tranquil, untouched landscapes and pioneering wildlife conservation. From here, take the lower path along the valley across the open meadows to reach Swindale Head.',
     map: { x: 60, y: 424, label: 'Truss Gap', lx: 70, ly: 420 },
   },
   {
     name: 'Mosedale Cottage',
-    onlyOn: 'long',
     html: 'Swindale Head Farm is a dramatic gateway to the head of the valley. The old bridleway contours round it, passing long-abandoned homes and farmsteads, and from here the route becomes wilder as it climbs to the remote Mosedale valley. Use the old footpath or pick your way up beside the waterfalls: a spectacular but hidden series of cascades with deep pools that make a swim irresistible on a hot day. It’s a scrambly ascent with no definitive path, but well worth the mini detour. Once you’ve plateaued in Mosedale, a rugged and bleakly beautiful glacial glen, continue along the old and now gnarly track to Mosedale Cottage, the most remote bothy in the Lake District, once home to shepherds and to workers at the nearby slate quarry.<br><br>Now reverse your route for a little while, then head east to cross Mosedale Beck at Flatbed Bridge. You’ll almost certainly have wet feet by now, so don’t be worried by the short, steep climb through boggy ground to the head of Wet Sleddale. It didn’t get that name for nothing. Just be glad you’re not the postman and have to do it all again tomorrow. There used to be a small sentry-box shelter here where he could eat his pack-up, but it has long since blown away. A variable track skirts under the summit of Scam Matthew (519 m) and gradually descends to Sleddale Hall.',
     map: { x: 34, y: 560, label: 'Mosedale Cottage', lx: 22, ly: 600 },
-  },
-  {
-    name: 'Over Ralfland Fell',
-    onlyOn: 'short',
-    html: 'Climb Gouther Crag onto Ralfland Fell. This is the true postie’s path: the postman’s own shortcut to Wet Sleddale, once marked with wooden staves to find the driest line, even in snow. The staves are long gone, so take a bearing.',
-    map: { x: 102, y: 506, label: 'Ralfland Fell', lx: 112, ly: 500 },
   },
   {
     name: 'Sleddale Hall',
@@ -195,8 +174,7 @@ export const STOPS: Stop[] = [
 /** "Route at a glance" facts on the home page. */
 export const FACTS: [string, string][] = [
   ['Start and finish', 'Birchwood Cafe, Main Street, Shap (NY 56268 15254)'],
-  ['Long round', `About ${ROUNDS.long.miles} miles / ${ROUNDS.long.km} km, 600 m of climb`],
-  ['Short “winter” round', `About ${ROUNDS.short.miles} miles / ${ROUNDS.short.km} km`],
+  ['The round', `About ${ROUNDS.long.miles} miles / ${ROUNDS.long.km} km, 600 m of climb`],
   ['Time', 'Allow a full day walking (tough in places); 3 to 3½ hours at a steady run'],
   ['Terrain', 'Fields, lanes and rough, often pathless fell'],
   ['Map', 'OS Explorer OL5'],

@@ -12,7 +12,6 @@ import abbeyFrost from '../assets/photos/shap-abbey-frost-red-van.jpg';
 import abbeySummer from '../assets/photos/shap-abbey-summer.jpg';
 import goggleby from '../assets/photos/goggleby-stone-runner.jpg';
 import swindaleOverlook from '../assets/photos/swindale-overlook.jpg';
-import snowFarm from '../assets/photos/white-farmhouse-snowy-valley.jpg';
 import farmhouseSnow from '../assets/photos/farmhouse-snowy-fell.jpg';
 import mosedaleGroup from '../assets/photos/group-at-mosedale-cottage.jpg';
 import bothyInside from '../assets/photos/inside-mosedale-bothy.jpg';
@@ -27,6 +26,7 @@ import letterSummit from '../assets/photos/runner-with-letter-summit.jpg';
 import autumnValley from '../assets/photos/autumn-valley.jpg';
 import wall from '../assets/photos/dry-stone-wall.jpg';
 import cafeCounter from '../assets/photos/finish-at-birchwood.jpg';
+import trussGap from '../assets/photos/truss-gap-house.jpg';
 
 export interface Photo {
   src: ImageMetadata;
@@ -64,7 +64,7 @@ export const STOP_PHOTOS: Record<string, Photo> = {
   'Birchwood Cafe': { src: goggleby, alt: 'A runner passes the Goggleby Stone in a frosty field.', caption: 'The Goggleby Stone, on the way out of Shap' },
   'Shap Abbey': { src: abbeySummer, alt: 'A runner photographs the tower of Shap Abbey beside an old stone bridge.', caption: 'Shap Abbey' },
   'Swindale Foot': { src: swindaleOverlook, alt: 'A runner looks down a long green valley from a rocky knoll.', caption: 'Dropping into Swindale' },
-  'Truss Gap': { src: snowFarm, alt: 'A white farmhouse in a wooded valley under snow-capped fells.', caption: 'Swindale in winter' },
+  'Truss Gap': { src: trussGap, alt: 'Truss Gap House, a stone farmhouse behind dry stone walls, with snow on the fell above.', caption: 'Truss Gap House, where the rounds split', focus: '65% 55%' },
   'Mosedale Cottage': { src: mosedaleGroup, alt: 'Four runners outside Mosedale Cottage, a small white bothy on the fell.', caption: 'Mosedale Cottage' },
   'Over Ralfland Fell': { src: fellGroup, alt: 'Four runners and a dog stand on rough open fell with hills behind.', caption: 'Up on the fell' },
   'Thorney Bank': { src: reservoir, alt: 'Autumn fellside above Wet Sleddale reservoir.', caption: 'Above Wet Sleddale' },

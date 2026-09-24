@@ -1,5 +1,7 @@
 ---
 import { SITE } from '../lib/config.ts';
+
+const year = new Date().getFullYear();
 ---
 <footer>
   <div class="wrap cols">
@@ -36,9 +38,13 @@ import { SITE } from '../lib/config.ts';
       Historical material drawn from Alan Cleaver’s <em>The Postal Paths</em> and used with kind permission.{' · '}<a
         href="/privacy/">Privacy</a>{' · '}<a href="/contact/">Contact</a>
     </p>
+    <p class="credit made">
+      © {year} {SITE.name}. All rights reserved.{' · '}Site made by{' '}<a href="https://weareactiveai.com" target="_blank" rel="noopener">Active AI Ltd<span class="sr-only"> (opens in a new tab)</span></a>
+    </p>
   </div>
 </footer>
 
 <style>
   .legal { margin-top: 2rem; }
+  .made { margin-top: 0.4rem; }
 </style>

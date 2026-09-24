@@ -6,7 +6,7 @@ lede: Until 1976, the post that reached the remote farms around Shap went on foo
 
 ## The last walking postman
 
-Until 1976, the postman who served the remote farms and homes around Shap did his round on foot: a tough 15 miles in all weathers, six days a week, out past Shap Abbey and Tailbert into Swindale, over Ralfland Fell and back through Wet Sleddale. For six weeks of the year a shepherd lived at Mosedale Cottage, at the head of the valley, and any post for him meant an extra three miles. He carried a leather pouch to sell stamps and postal orders at the farms along the way.
+Until 1976, the postman who served the remote farms and homes around Shap did his round on foot: a tough 15 miles in all weathers, six days a week, out past Shap Abbey and Tailbert into Swindale and home through Wet Sleddale. For six weeks of the year a shepherd lived at Mosedale Cottage, at the head of the valley, and any post for him meant an extra three miles up to the cottage. He carried a leather pouch to sell stamps and postal orders at the farms along the way. Today’s round always takes in Mosedale.
 
 The last man to walk it was Stuart Lewis. Before him, in the 1950s, the round belonged to Jimmy Eland. When Stuart was told in June 1976 that he would be given a van, he was heartbroken. As he told the author Alan Cleaver:
 

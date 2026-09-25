@@ -26,7 +26,7 @@ import { SITE } from '../lib/config.ts';
         <p class="admin-brand"><span class="stamp-mark" aria-hidden="true"></span>Round book admin</p>
         <nav class="admin-tabs" aria-label="Admin">
           <a href="#overview" data-tab="overview">Overview</a>
-          <a href="#rounds" data-tab="rounds">Rounds <span class="count" id="waiting-badge" hidden></span></a>
+          <a href="#rounds" data-tab="rounds">Rounds</a>
           <a href="#contacts" data-tab="contacts">Contacts</a>
         </nav>
         <div class="admin-actions">
@@ -70,9 +70,9 @@ import { SITE } from '../lib/config.ts';
         <h1 id="rd-h">Rounds</h1>
         <div class="toolbar">
           <div class="chips" role="group" aria-label="Show">
-            <button type="button" data-filter="waiting" aria-pressed="true">Waiting for check</button>
-            <button type="button" data-filter="checked" aria-pressed="false">Checked or verified</button>
-            <button type="button" data-filter="all" aria-pressed="false">All</button>
+            <button type="button" data-filter="all" aria-pressed="true">All</button>
+            <button type="button" data-filter="checked" aria-pressed="false">Passed the check</button>
+            <button type="button" data-filter="waiting" aria-pressed="false">Didn’t pass</button>
           </div>
           <label class="search"><span class="sr-only">Search rounds</span><input id="rd-search" type="search" placeholder="Search name or email" /></label>
         </div>

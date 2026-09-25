@@ -3,9 +3,8 @@ import Base from '../layouts/Base.astro';
 import PageBanner from '../components/PageBanner.astro';
 import Postmark from '../components/Postmark.astro';
 import { LIMITS, SITE } from '../lib/config.ts';
-import { AGE_GROUPS, todayInShap } from '../lib/rounds.ts';
+import { AGE_GROUPS } from '../lib/rounds.ts';
 
-const today = todayInShap();
 ---
 <Base
   title="Post your round"
@@ -31,12 +30,12 @@ const today = todayInShap();
           <li>
             <span class="step-n" aria-hidden="true">2</span>
             <h3>Post it</h3>
-            <p>Fill in the form below and attach your GPX. No GPX? Add an activity link or a photo from the Thorney Bank postbox.</p>
+            <p>Drop the GPX of your recorded walk or run in the postbox below. Your date, time and distance come straight from it.</p>
           </li>
           <li>
             <span class="step-n" aria-hidden="true">3</span>
             <h3>Franked and delivered</h3>
-            <p>We check your GPX on the spot and your round lands in the book straight away. Checked rounds count towards the fastest times.</p>
+            <p>We check your route on the spot and your round lands in the book straight away. Rounds that pass the check count towards the fastest times.</p>
           </li>
         </ol>
       </div>
@@ -48,13 +47,26 @@ const today = todayInShap();
           <p class="label-kicker">Your round</p>
           <h2>Addressed to the round book</h2>
           <p>
-            Your name, date and time appear in the public round book. Your email stays private. Your GPX file and photo are only used to check your
-            round and are never shown to others.
+            Your GPX is your proof: we read your date, time and distance from it and check it follows the round. Your name,
+            date, time and distance appear in the public round book. Your email and GPX file stay private.
           </p>
           <Postmark class="log-postmark" line="ROUND BOOK" year="2026" />
         </div>
 
         <form id="f" novalidate>
+          <div class="field">
+            <span class="label">Your GPX file</span>
+            <label class="postbox" id="postbox" for="gpx">
+              <input id="gpx" class="postbox-input" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" aria-describedby="gpx-help" />
+              <span class="postbox-plate" aria-hidden="true">SHAP</span>
+              <span class="postbox-slot" aria-hidden="true"><span class="postbox-letter"></span></span>
+              <span class="postbox-text">
+                <strong id="gpx-title">Drop your GPX in the postbox</strong>
+                <span id="gpx-help">or tap to choose a file. We’ll check it and read your date, time and distance from it.</span>
+              </span>
+            </label>
+            <div class="gpxresult" id="gpxres" aria-live="polite"></div>
+          </div>
           <div class="field">
             <label for="name">Your name <span class="hint">(or a nickname)</span></label>
             <input id="name" name="name" type="text" maxlength={LIMITS.nameMax} autocomplete="name" required />
@@ -93,42 +105,8 @@ const today = todayInShap();
             Used for the round book’s category tables. Age on the day of your round. Leave blank to appear in Overall only.
           </p>
           <div class="field">
-            <span class="label">Your GPX file <span class="hint">(recommended)</span></span>
-            <label class="postbox" id="postbox" for="gpx">
-              <input id="gpx" class="postbox-input" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" aria-describedby="gpx-help" />
-              <span class="postbox-plate" aria-hidden="true">SHAP</span>
-              <span class="postbox-slot" aria-hidden="true"><span class="postbox-letter"></span></span>
-              <span class="postbox-text">
-                <strong id="gpx-title">Drop your GPX in the postbox</strong>
-                <span id="gpx-help">or tap to choose a file. We’ll check it on the spot.</span>
-              </span>
-            </label>
-            <div class="gpxresult" id="gpxres" aria-live="polite"></div>
-          </div>
-          <div class="row when">
-            <div class="field">
-              <label for="date">Date</label>
-              <input id="date" name="date" type="date" required max={today} min={LIMITS.earliestDate} aria-describedby="date-help" />
-              <span class="hint" id="date-help">Tap to choose the day you did it</span>
-            </div>
-            <div class="field">
-              <span class="label" id="timelbl">Time taken <span class="hint">(total, start to finish)</span></span>
-              <div class="time" role="group" aria-labelledby="timelbl">
-                <input id="hh" name="hours" type="text" inputmode="numeric" maxlength="2" placeholder="h" aria-label="Hours" />:
-                <input id="mm" name="minutes" type="text" inputmode="numeric" maxlength="2" placeholder="mm" aria-label="Minutes" />
-              </div>
-            </div>
-          </div>
-          <div class="field">
             <label for="link">Activity link <span class="hint">(optional)</span></label>
             <input id="link" name="link" type="url" maxlength={LIMITS.linkMax} placeholder="https://www.strava.com/activities/…" />
-          </div>
-          <div class="field">
-            <label for="photo">Photo evidence <span class="hint">(optional: a selfie at the Thorney Bank postbox is perfect)</span></label>
-            <input id="photo" type="file" accept="image/jpeg,image/png,image/webp" />
-            <figure class="snap" id="snap" hidden>
-              <img id="snap-img" alt="Your chosen photo" />
-            </figure>
           </div>
           <div class="field">
             <label for="note">A line for the round book <span class="hint">(optional)</span></label>
@@ -137,7 +115,7 @@ const today = todayInShap();
           <div class="field">
             <label class="consent" for="consent">
               <input id="consent" name="consent" type="checkbox" value="yes" required />
-              <span>I’m happy for my name, round, category, age group, date, time, link and note to appear in the public round book.</span>
+              <span>I’m happy for my name, walk or run, category, age group, date, time, distance, link and note to appear in the public round book.</span>
             </label>
           </div>
           <div class="hp" aria-hidden="true">

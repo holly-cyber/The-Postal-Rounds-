@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { gzipSync } from 'node:zlib';
 import { readFileSync } from 'node:fs';
 import { GpxError, parseGpx, parsePoints } from '../src/lib/gpx.ts';
-import { prepare, InvalidSubmission } from '../src/server/submission.ts';
+import { prepare } from '../src/server/submission.ts';
 import { leaderboard, categoryLabel, type PublicRound } from '../src/lib/rounds.ts';
 import { LONG_WIGGLE, SHORT_WIGGLE, roundTrack, toGpx } from './make-gpx.ts';
 
@@ -64,6 +64,7 @@ test('the OS Maps route follows the round but is refused as a planned route (no 
   assert.equal(r.elapsedSecs, null);
 });
 
+/** A valid entry: a recorded GPX of the full round. Date, time and distance come from it. */
 function baseForm(): FormData {
   const f = new FormData();
   f.set('name', 'Test Walker');
@@ -71,52 +72,44 @@ function baseForm(): FormData {
   f.set('round', 'long');
   f.set('mode', 'walk');
   f.set('consent', 'yes');
-  f.set('date', '2026-09-12');
-  f.set('hours', '4');
-  f.set('minutes', '30');
+  f.set('gpx', new Blob([passing]), 'round.gpx');
   return f;
 }
 const now = new Date('2026-09-22T12:00:00Z');
 
-test('server: gzipped GPX is re-checked and marked gpxChecked', async () => {
+test('server: date, time and distance come from the GPX, not the form', async () => {
   const f = baseForm();
   f.set('gpx', new Blob([gzipSync(passing)]), 'round.gpx.gz');
+  f.set('date', '2020-01-01');
+  f.set('hours', '1');
+  f.set('minutes', '5');
   const { entry } = await prepare(f, '00000000-0000-0000-0000-000000000000', now);
   assert.equal(entry.gpxChecked, true);
-  assert.equal(entry.secs, 4.5 * 3600);
-  assert.ok(entry.km! >= 15);
+  assert.equal(entry.date, '2026-09-12');
+  assert.equal(entry.secs, 4 * 3600);
+  assert.ok(entry.km! >= 21);
 });
 
-test('server: time is optional and falls back to the GPX elapsed time', async () => {
+test('server: a GPX is required; a link on its own is refused', async () => {
   const f = baseForm();
-  f.delete('hours');
-  f.delete('minutes');
-  f.set('gpx', new Blob([passing]), 'round.gpx');
-  const { entry } = await prepare(f, 'x', now);
-  assert.equal(entry.secs, 4 * 3600);
-  const g = baseForm();
-  g.delete('hours');
-  g.delete('minutes');
-  g.set('link', 'https://example.com');
-  assert.equal((await prepare(g, 'x', now)).entry.secs, 0);
+  f.delete('gpx');
+  f.set('link', 'https://www.strava.com/activities/1');
+  await assert.rejects(prepare(f, 'x', now), /GPX file/);
 });
 
 test('server: requires consent and a valid round', async () => {
   const noConsent = baseForm();
   noConsent.delete('consent');
-  noConsent.set('link', 'https://example.com');
   await assert.rejects(prepare(noConsent, 'x', now), /tick the box/);
   const badRound = baseForm();
   badRound.set('round', 'toString');
-  badRound.set('link', 'https://example.com');
   await assert.rejects(prepare(badRound, 'x', now), /isn’t recognised/);
   const shortRound = baseForm();
   shortRound.set('round', 'short');
-  shortRound.set('link', 'https://example.com');
   await assert.rejects(prepare(shortRound, 'x', now), /isn’t recognised/);
 });
 
-test('server: round defaults to the one round, and a GPX that skips Mosedale waits for a check', async () => {
+test('server: round defaults to the one round, and a GPX that skips Mosedale is not checked', async () => {
   const f = baseForm();
   f.delete('round');
   f.set('gpx', new Blob([skipsMosedale]), 'round.gpx');
@@ -125,49 +118,27 @@ test('server: round defaults to the one round, and a GPX that skips Mosedale wai
   assert.equal(entry.gpxChecked, false);
 });
 
-test('server: link-only entry waits for a check', async () => {
-  const f = baseForm();
-  f.set('link', 'https://www.strava.com/activities/1');
-  const { entry } = await prepare(f, 'x', now);
-  assert.equal(entry.gpxChecked, false);
-  assert.equal(entry.verified, false);
-  assert.equal(entry.km, null);
-});
-
-test('server: rejects missing evidence, http links, future dates, bad photos', async () => {
-  await assert.rejects(prepare(baseForm(), 'x', now), InvalidSubmission);
-
+test('server: rejects http links, future GPX dates and long names; ignores photos', async () => {
   const http = baseForm();
   http.set('link', 'http://example.com');
   await assert.rejects(prepare(http, 'x', now), /https/);
 
   const future = baseForm();
-  future.set('date', '2026-09-23');
-  future.set('link', 'https://example.com');
+  future.set('gpx', new Blob([toGpx(roundTrack(LONG_WIGGLE, true), Date.parse('2026-09-30T08:00:00Z'))]), 'round.gpx');
   await assert.rejects(prepare(future, 'x', now), /future/);
-
-  const photo = baseForm();
-  photo.set('photo', new Blob(['not an image']), 'x.jpg');
-  await assert.rejects(prepare(photo, 'x', now), /JPEG/);
 
   const longName = baseForm();
   longName.set('name', 'x'.repeat(41));
-  longName.set('link', 'https://example.com');
   await assert.rejects(prepare(longName, 'x', now), /Name/);
-});
 
-test('server: accepts a real PNG header', async () => {
-  const f = baseForm();
-  const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
-  f.set('photo', new Blob([png]), 'x.png');
-  const { entry, photo } = await prepare(f, 'id', now);
-  assert.equal(photo!.type, 'image/png');
-  assert.equal(entry.files.photo!.key, 'id/photo');
+  const photo = baseForm();
+  photo.set('photo', new Blob(['anything']), 'x.jpg');
+  const { entry } = await prepare(photo, 'x', now);
+  assert.equal(entry.files.photo, undefined);
 });
 
 test('server: category and age group are optional and validated', async () => {
   const f = baseForm();
-  f.set('link', 'https://example.com');
   const none = (await prepare(f, 'x', now)).entry;
   assert.equal(none.sex, null);
   assert.equal(none.ageGroup, null);
@@ -211,7 +182,6 @@ test('age groups are 5-year bands from under 20 to 80 and over', async () => {
 test('server: email is required, kept privately, and never public', async () => {
   const f = baseForm();
   f.delete('email');
-  f.set('link', 'https://example.com');
   await assert.rejects(prepare(f, 'x', now), /email/);
   f.set('email', 'not-an-email');
   await assert.rejects(prepare(f, 'x', now), /email/);

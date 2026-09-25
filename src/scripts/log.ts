@@ -14,7 +14,6 @@ let gpxText: string | null = null;
 const chosenRound = (): RoundId => 'long';
 
 const today = todayInShap();
-$<HTMLInputElement>('date').max = today;
 
 /* ---------- GPX instant feedback ---------- */
 
@@ -133,7 +132,7 @@ function showGpx(r: GpxResult) {
     p.style.margin = '0.6rem 0 0';
     p.textContent = planned
       ? 'A planned route can’t be posted. Choose the GPX of your recorded walk or run instead.'
-      : 'You can still post your round. It will show as waiting for a check.';
+      : 'You can still post your round, but it won’t count towards the fastest times.';
     card.appendChild(p);
   }
   box.appendChild(card);
@@ -164,14 +163,6 @@ function guessMode(text: string, r: GpxResult): Mode | null {
   if (!r.elapsedSecs || !r.km) return null;
   // Round runners average 6–8 km/h including stops; walkers 3–4.5 km/h.
   return r.km / (r.elapsedSecs / 3600) >= 5.5 ? 'run' : 'walk';
-}
-
-/** Date from the file's metadata, for GPX files without timed track points. */
-function metadataDate(text: string): string | null {
-  const t = text.match(/<metadata>[\s\S]*?<time>\s*([^<]+?)\s*<\/time>/i)?.[1];
-  const ms = t ? Date.parse(t) : NaN;
-  if (!Number.isFinite(ms)) return null;
-  return new Date(ms).toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
 }
 
 function setRadio(name: string, value: string) {
@@ -206,31 +197,14 @@ function checkGpx(prefill: boolean): GpxResult | null {
       flash(document.querySelector('[aria-labelledby=modelbl]'));
       filled.push(mode === 'run' ? 'ran' : 'walked');
     }
-    const date = parsed.startDate ?? metadataDate(gpxText);
-    if (date && date <= today) {
-      $<HTMLInputElement>('date').value = date;
-      flash($('date'));
-      filled.push(formatDate(date));
-    }
-    if (parsed.elapsedSecs) {
-      const mins = Math.round(parsed.elapsedSecs / 60);
-      $<HTMLInputElement>('hh').value = String(Math.floor(mins / 60));
-      $<HTMLInputElement>('mm').value = String(mins % 60).padStart(2, '0');
-      flash(document.querySelector('.time'));
-      filled.push(formatDuration(parsed.elapsedSecs));
-    }
-
     showGpx(parsed);
-    const missing: string[] = [];
-    if (!mode) missing.push('whether you walked or ran');
-    if (!date) missing.push('the date');
-    if (!parsed.elapsedSecs) missing.push('your time');
-    let msg = filled.length
-      ? `Filled in from your GPX: ${filled.join(', ')}. Check it’s right and change anything that isn’t.`
-      : '';
-    if (missing.length) {
-      const list = missing.length > 1 ? `${missing.slice(0, -1).join(', ')} and ${missing.at(-1)}` : missing[0];
-      msg += `${msg ? ' ' : ''}Please add ${list} yourself.`;
+    // Date, time and distance are read from the GPX (the server does the same); they can't be typed in.
+    let msg = '';
+    if (parsed.timed && parsed.startDate && parsed.elapsedSecs) {
+      msg = `From your GPX: ${formatDate(parsed.startDate)}, ${formatDuration(parsed.elapsedSecs)}, ${parsed.km.toFixed(1)} km${
+        mode ? `, ${mode === 'run' ? 'ran' : 'walked'}` : ''
+      }. That’s what goes in the round book.`;
+      if (parsed.startDate > today) msg = 'The date in this GPX is in the future, so it can’t be posted.';
     }
     if (msg) {
       const note = document.createElement('p');
@@ -267,6 +241,7 @@ $<HTMLInputElement>('gpx').addEventListener('change', async (e) => {
   $('gpxres').textContent = '';
   const f = (e.target as HTMLInputElement).files?.[0];
   setPostbox(f);
+  if ($('msg').classList.contains('err')) setMsg('');
   if (!f) return;
   if (f.size > LIMITS.gpxMaxBytes) {
     gpxError('That file is over 10 MB. Export a GPX without extra sensor data.');
@@ -276,36 +251,12 @@ $<HTMLInputElement>('gpx').addEventListener('change', async (e) => {
   checkGpx(true);
 });
 
-/* Photo: show it as a little snapshot. */
-let snapUrl: string | null = null;
-$<HTMLInputElement>('photo').addEventListener('change', (e) => {
-  const f = (e.target as HTMLInputElement).files?.[0];
-  if (snapUrl) URL.revokeObjectURL(snapUrl);
-  snapUrl = f && f.type.startsWith('image/') ? URL.createObjectURL(f) : null;
-  $('snap').hidden = !snapUrl;
-  if (snapUrl) $<HTMLImageElement>('snap-img').src = snapUrl;
-});
 
 /* ---------- Upload preparation (stay under Netlify's request size limit) ---------- */
 
 async function gzip(file: File): Promise<Blob> {
   if (typeof CompressionStream === 'undefined') return file;
   return new Response(file.stream().pipeThrough(new CompressionStream('gzip'))).blob();
-}
-
-async function shrinkPhoto(file: File): Promise<Blob> {
-  try {
-    const bmp = await createImageBitmap(file);
-    const scale = Math.min(1, LIMITS.photoMaxEdgePx / Math.max(bmp.width, bmp.height));
-    if (scale === 1 && file.size < 1.5 * 1024 * 1024) return file;
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(bmp.width * scale);
-    canvas.height = Math.round(bmp.height * scale);
-    canvas.getContext('2d')!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
-    return (await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', 0.85))) ?? file;
-  } catch {
-    return file;
-  }
 }
 
 /* ---------- Submit ---------- */
@@ -321,11 +272,8 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const val = (id: string) => $<HTMLInputElement>(id).value.trim();
   const name = val('name');
-  const date = val('date');
   const link = val('link');
-  const m = parseInt(val('mm'), 10) || 0;
   const gpxFile = $<HTMLInputElement>('gpx').files?.[0];
-  const photo = $<HTMLInputElement>('photo').files?.[0];
 
   const focusErr = (msg: string, id?: string) => {
     setMsg(msg, true);
@@ -334,43 +282,31 @@ form.addEventListener('submit', async (e) => {
   if (!name) return focusErr('Add your name so we can put you in the round book.', 'name');
   const email = val('email');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return focusErr('Add your email address so we can get in touch about your round if we need to.', 'email');
-  if (!date) return focusErr('Add the date you completed the round.', 'date');
-  if (date > todayInShap()) return focusErr('The date can’t be in the future.', 'date');
-  if (m > 59) return focusErr('Minutes must be between 0 and 59.', 'mm');
+  if (!gpxFile || gpxText === null || !gpxPoints.length) {
+    return focusErr('Add the GPX file of your recorded walk or run. It’s how we check your round.', 'gpx');
+  }
   if (link && !/^https:\/\//i.test(link)) return focusErr('Activity links must start with https://', 'link');
-  if (gpxFile && gpxText !== null && gpxPoints.length && !checkPoints(gpxPoints, chosenRound()).timed) {
+  const check = checkPoints(gpxPoints, chosenRound());
+  if (!check.timed) {
     return focusErr('This GPX has no timings, so it looks like a planned route. Upload the GPX of your recorded walk or run instead.', 'gpx');
   }
-  if (!gpxFile && !link && !photo) return focusErr('Add a GPX file, an activity link or a photo so we can check your round.');
+  if (check.startDate && check.startDate > todayInShap()) return focusErr('The date in this GPX is in the future.', 'gpx');
   if (!$<HTMLInputElement>('consent').checked) {
     return focusErr('Please tick the box to agree to your round appearing in the round book.', 'consent');
   }
-  if (photo && photo.size > LIMITS.photoMaxBytes) return focusErr('That photo is over 8 MB.', 'photo');
-  if (photo && !(LIMITS.photoTypes as readonly string[]).includes(photo.type)) {
-    return focusErr('Photos must be JPEG, PNG or WebP.', 'photo');
-  }
 
-  const fd = new FormData(form); // name, mode, date, hours, minutes, link, note, website
+  const fd = new FormData(form); // name, email, mode, sex, ageGroup, link, note, consent, website
   const submit = $<HTMLButtonElement>('submit');
   submit.disabled = true;
   setMsg('Posting your round…');
   submit.textContent = 'Posting…';
   try {
-    let size = 0;
-    if (gpxFile) {
-      const z = await gzip(gpxFile);
-      size += z.size;
-      fd.append('gpx', z, 'round.gpx.gz');
-    }
-    if (photo) {
-      const p = await shrinkPhoto(photo);
-      size += p.size;
-      fd.append('photo', p, p === photo ? photo.name : 'photo.jpg');
-    }
-    if (size > LIMITS.uploadBudgetBytes) {
-      setMsg('Those files are too big to send together. Try a smaller photo, or just the GPX.', true);
+    const z = await gzip(gpxFile);
+    if (z.size > LIMITS.uploadBudgetBytes) {
+      setMsg('That GPX file is too big to send. Export it without extra sensor data and try again.', true);
       return;
     }
+    fd.append('gpx', z, 'round.gpx.gz');
 
     const res = await fetch('/api/rounds', { method: 'POST', body: fd });
     const body = await res.json().catch(() => ({}));
@@ -399,7 +335,7 @@ function showPosted(entry: PublicRound | undefined, name: string) {
   const time = entry?.secs ? ` in ${formatDuration(entry.secs)}` : '';
   $('posted-text').textContent = checked
     ? `Well delivered, ${name}. You ${how}${time}, and your GPX is checked, so you’re on the leaderboard.`
-    : `Well delivered, ${name}. You ${how}${time}. You’re in the book now and will show as checked once we’ve looked at your evidence.`;
+    : `Well delivered, ${name}. You ${how}${time}. You’re in the book, but your GPX didn’t pass every route check, so this round won’t count towards the fastest times.`;
   $<HTMLAnchorElement>('posted-link').href = checked ? `/round-book/?round=${round}&mode=${mode}#board` : '/round-book/#everyone';
   $('posted-year').textContent = String(new Date().getFullYear());
 
@@ -408,7 +344,6 @@ function showPosted(entry: PublicRound | undefined, name: string) {
   gpxPoints = [];
   $('gpxres').textContent = '';
   setPostbox();
-  $('snap').hidden = true;
   setMsg('');
   form.hidden = true;
   const panel = $('posted');
@@ -420,7 +355,6 @@ function showPosted(entry: PublicRound | undefined, name: string) {
 $('post-another').addEventListener('click', () => {
   $('posted').hidden = true;
   form.hidden = false;
-  $<HTMLInputElement>('date').value = '';
   $<HTMLInputElement>('name').focus();
 });
 
@@ -441,7 +375,7 @@ function copyToNetlifyForms(entry: PublicRound | undefined, name: string, email:
     date: entry.date,
     time: entry.secs ? formatDuration(entry.secs) : '',
     km: entry.km != null ? String(entry.km) : '',
-    evidence: entry.verified ? 'Verified' : entry.gpxChecked ? 'GPX checked' : 'Waiting for check',
+    evidence: entry.verified ? 'Verified' : entry.gpxChecked ? 'GPX checked' : 'Didn’t pass the route check',
     link: entry.link ?? '',
     note: entry.note ?? '',
   });

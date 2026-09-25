@@ -83,7 +83,7 @@ function evidenceCell(r: PublicRound): HTMLTableCellElement {
   const tag = (t: string, c: string) => td.appendChild(el('span', `tag ${c}`, t));
   if (r.verified) tag('Verified', 'v');
   if (r.gpxChecked) tag('GPX checked', 'g');
-  if (!r.verified && !r.gpxChecked) tag('Waiting for check', 'p');
+  if (!r.verified && !r.gpxChecked) tag('Not counted', 'p');
   if (r.link && /^https:\/\//i.test(r.link)) {
     const a = el('a', 'sub', 'Activity');
     a.href = r.link;

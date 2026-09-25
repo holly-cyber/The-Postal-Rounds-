@@ -5,7 +5,7 @@ description: Common questions about walking or running the Shap postal round.
 
 ### Is this a race?
 
-No. It’s a heritage round you can walk or run, in one go or in stages. Posting a time is optional.
+No. It’s a heritage round you can walk or run, in one go or in stages. Posting your round is optional.
 
 ### How long is it?
 

@@ -17,7 +17,7 @@ try {
 
 let rounds: StoredRound[] = [];
 const blobUrls: string[] = [];
-let filter: 'waiting' | 'checked' | 'all' = 'waiting';
+let filter: 'waiting' | 'checked' | 'all' = 'all';
 
 const isWaiting = (r: StoredRound) => !r.verified && !r.gpxChecked;
 const isCounted = (r: StoredRound) => (r.verified || r.gpxChecked) && r.secs > 0;
@@ -99,10 +99,6 @@ function route() {
 window.addEventListener('hashchange', route);
 
 function renderAll() {
-  const waiting = rounds.filter(isWaiting).length;
-  const badge = $('#waiting-badge');
-  badge.hidden = waiting === 0;
-  badge.textContent = String(waiting);
   renderOverview();
   renderRounds();
   renderContacts();
@@ -130,7 +126,7 @@ function renderOverview() {
     [String(people), 'people'],
     [String(runs), `runs (${pct(runs, total)})`],
     [String(walks), `walks (${pct(walks, total)})`],
-    [String(waiting), 'waiting for a check', waiting ? 'alert' : undefined],
+    [String(waiting), 'didn’t pass the check', waiting ? 'alert' : undefined],
     [`${Math.round(km).toLocaleString('en-GB')} km`, 'walked and run in total'],
   ];
   $('#ov-tiles').innerHTML = tiles
@@ -190,14 +186,12 @@ function renderOverview() {
   for (const r of rounds) if (r.ageGroup) ages.set(r.ageGroup, (ages.get(r.ageGroup) ?? 0) + 1);
   const topAge = [...ages.entries()].sort((a, b) => b[1] - a[1])[0];
   const checked = rounds.filter((r) => r.gpxChecked).length;
-  const verified = rounds.filter((r) => r.verified).length;
   const people2: [string, string][] = [
     ['Female', `${f} (${pct(f, total)})`],
     ['Male', `${m} (${pct(m, total)})`],
     ['Not said', `${total - f - m} (${pct(total - f - m, total)})`],
     ['Most common age group', topAge ? `${(AGE_LABELS as Record<string, string>)[topAge[0]] ?? topAge[0]} (${topAge[1]})` : '–'],
     ['GPX checked', `${checked} (${pct(checked, total)})`],
-    ['Verified by you', String(verified)],
   ];
   $('#ov-people').innerHTML = people2.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
 
@@ -224,7 +218,7 @@ function entryHtml(r: StoredRound): string {
         )
         .join('')}</ul>`
     : '<p class="meta">No GPX file.</p>';
-  const tags = `${r.verified ? '<span class="tag v">Verified</span>' : ''}${r.gpxChecked ? '<span class="tag g">GPX checked</span>' : ''}${isWaiting(r) ? '<span class="tag p">Waiting for check</span>' : ''}`;
+  const tags = `${r.verified ? '<span class="tag v">Verified</span>' : ''}${r.gpxChecked ? '<span class="tag g">GPX checked</span>' : ''}${isWaiting(r) ? '<span class="tag p">Didn’t pass the check</span>' : ''}`;
   return `<article class="entry" data-id="${r.id}">
     <div class="entry-head"><h2>${esc(r.name)}</h2>${tags}</div>
     <p class="meta">${r.mode === 'run' ? 'Ran' : 'Walked'} · ${formatDuration(r.secs)} · ${formatDate(r.date)}${r.km !== null ? ` · ${r.km} km` : ''}${categoryLabel(r) ? ` · ${categoryLabel(r)}` : ''} · posted ${new Date(r.createdAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}</p>
@@ -234,7 +228,6 @@ function entryHtml(r: StoredRound): string {
     ${checks}
     <div class="photo-slot"></div>
     <div class="buttons">
-      <button class="btn small${r.verified ? ' ghost' : ' red'}" data-act="verify">${r.verified ? 'Unverify' : 'Verify'}</button>
       ${r.files.gpx ? '<button class="btn small ghost" data-act="gpx">Download GPX</button>' : ''}
       ${r.files.photo ? '<button class="btn small ghost" data-act="photo">Show photo</button>' : ''}
       <button class="btn small danger" data-act="remove">Remove</button>
@@ -252,10 +245,10 @@ function renderRounds() {
     .filter((r) => (filter === 'waiting' ? isWaiting(r) : filter === 'checked' ? !isWaiting(r) : true))
     .filter((r) => matches(r, q));
   const waiting = rounds.filter(isWaiting).length;
-  $('#rd-summary').textContent = `${waiting} waiting for a check · ${rounds.length} ${rounds.length === 1 ? 'round' : 'rounds'} in total.`;
+  $('#rd-summary').textContent = `${waiting} didn’t pass the route check · ${rounds.length} ${rounds.length === 1 ? 'round' : 'rounds'} in total.`;
   $('#rd-list').innerHTML = rows.length
     ? rows.map(entryHtml).join('')
-    : `<p class="muted">${filter === 'waiting' && !q ? 'Nothing waiting for a check.' : 'No rounds match.'}</p>`;
+    : `<p class="muted">${filter === 'waiting' && !q ? 'Every round passed the route check.' : 'No rounds match.'}</p>`;
 }
 
 document.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((b) =>
@@ -277,14 +270,7 @@ $('#rd-list').addEventListener('click', async (e) => {
   const act = btn.dataset.act;
   btn.disabled = true;
   try {
-    if (act === 'verify') {
-      await api(`/api/rounds/${id}`, {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ verified: !r.verified }),
-      });
-      await load();
-    } else if (act === 'remove') {
+    if (act === 'remove') {
       if (!confirm(`Remove ${r.name}'s round and its evidence? This can't be undone.`)) return;
       await api(`/api/rounds/${id}`, { method: 'DELETE' });
       await load();

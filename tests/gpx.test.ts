@@ -232,3 +232,10 @@ test('a timed round that is impossibly fast, or runs backwards in time, is not a
   const backwards = gpx.replace(/<time>[^<]+<\/time>/g, () => `<time>${times[n++]}</time>`);
   assert.equal(parseGpx(backwards, 'long').checks.find((c) => c.id === 'recorded')!.pass, false);
 });
+
+test('server: a planned route with no timings is refused', async () => {
+  const route = readFileSync(new URL('./fixtures/real-long-round.gpx', import.meta.url), 'utf8');
+  const f = baseForm();
+  f.set('gpx', new Blob([route]), 'route.gpx');
+  await assert.rejects(prepare(f, 'x', now), /planned route/);
+});

@@ -84,7 +84,7 @@ function showGpx(r: GpxResult) {
   const head = document.createElement('p');
   head.className = 'gpx-head';
   const name = ROUNDS[chosenRound()].name.replace(/^The /, 'the ');
-  const planned = r.checks.some((c) => c.id === 'recorded' && !c.pass);
+  const planned = !r.timed;
   head.textContent = r.passed
     ? `Route checked: this is ${name}.`
     : planned
@@ -131,7 +131,9 @@ function showGpx(r: GpxResult) {
     const p = document.createElement('p');
     p.className = 'hint';
     p.style.margin = '0.6rem 0 0';
-    p.textContent = 'You can still post your round. It will show as waiting for a check.';
+    p.textContent = planned
+      ? 'A planned route can’t be posted. Choose the GPX of your recorded walk or run instead.'
+      : 'You can still post your round. It will show as waiting for a check.';
     card.appendChild(p);
   }
   box.appendChild(card);
@@ -336,6 +338,9 @@ form.addEventListener('submit', async (e) => {
   if (date > todayInShap()) return focusErr('The date can’t be in the future.', 'date');
   if (m > 59) return focusErr('Minutes must be between 0 and 59.', 'mm');
   if (link && !/^https:\/\//i.test(link)) return focusErr('Activity links must start with https://', 'link');
+  if (gpxFile && gpxText !== null && gpxPoints.length && !checkPoints(gpxPoints, chosenRound()).timed) {
+    return focusErr('This GPX has no timings, so it looks like a planned route. Upload the GPX of your recorded walk or run instead.', 'gpx');
+  }
   if (!gpxFile && !link && !photo) return focusErr('Add a GPX file, an activity link or a photo so we can check your round.');
   if (!$<HTMLInputElement>('consent').checked) {
     return focusErr('Please tick the box to agree to your round appearing in the round book.', 'consent');

@@ -27,6 +27,8 @@ export interface GpxResult {
   minLon: number;
   /** Seconds between first and last timestamp, if the file has times. */
   elapsedSecs: number | null;
+  /** True when (almost) every point has a timestamp, i.e. a recorded activity, not a planned route. */
+  timed: boolean;
   /** ISO date (YYYY-MM-DD) of the first timestamp, if any. */
   startDate: string | null;
   checks: GpxCheck[];
@@ -200,6 +202,7 @@ export function checkPoints(pts: GpxPoint[], round: RoundId): GpxResult {
     minLat,
     minLon,
     elapsedSecs,
+    timed: times.length >= pts.length * 0.9 && !!elapsedSecs,
     startDate,
     checks,
     passed: checks.every((c) => c.pass),

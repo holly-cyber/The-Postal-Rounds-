@@ -112,6 +112,8 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
     } catch (e) {
       fail(e instanceof GpxError ? e.message : 'We couldn’t read that GPX file.');
     }
+    // A planned route (no timestamps) is refused outright: only recorded activities go in the book.
+    if (!gpxResult!.timed) fail('This GPX has no timings, so it looks like a planned route. Upload the GPX of your recorded walk or run instead.');
     gpxBytes = raw;
   }
 

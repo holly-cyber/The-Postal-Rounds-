@@ -321,6 +321,8 @@ form.addEventListener('submit', async (e) => {
     if (id) $(id).focus();
   };
   if (!name) return focusErr('Add your name so we can put you in the round book.', 'name');
+  const email = val('email');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return focusErr('Add your email address so we can get in touch about your round if we need to.', 'email');
   if (!date) return focusErr('Add the date you completed the round.', 'date');
   if (date > todayInShap()) return focusErr('The date can’t be in the future.', 'date');
   if (m > 59) return focusErr('Minutes must be between 0 and 59.', 'mm');
@@ -364,7 +366,7 @@ form.addEventListener('submit', async (e) => {
     }
     const entry = body.entry as PublicRound | undefined;
     showPosted(entry, name);
-    copyToNetlifyForms(entry, name);
+    copyToNetlifyForms(entry, name, email);
   } catch {
     setMsg('Your round couldn’t be posted. Try again in a moment.', true);
   } finally {
@@ -413,11 +415,12 @@ $('post-another').addEventListener('click', () => {
  * lands in the Netlify Forms inbox and email notifications. Best effort: the round book entry is
  * already saved, so a failure here is ignored.
  */
-function copyToNetlifyForms(entry: PublicRound | undefined, name: string) {
+function copyToNetlifyForms(entry: PublicRound | undefined, name: string, email: string) {
   if (!entry) return;
   const body = new URLSearchParams({
     'form-name': 'round-entry',
     name,
+    email,
     mode: entry.mode === 'run' ? 'Ran' : 'Walked',
     category: entry.sex === 'F' ? 'Female' : entry.sex === 'M' ? 'Male' : '',
     ageGroup: entry.ageGroup ?? '',

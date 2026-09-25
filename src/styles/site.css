@@ -46,7 +46,7 @@ ol.stops p { margin: 0; font-size: 1.02rem; color: var(--ink-soft); }
 form#f { font-family: var(--sans); background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1.5rem; min-width: 0; }
 .field { margin-bottom: 1rem; min-width: 0; }
 form#f label, form#f .label { display: block; font-weight: 700; margin-bottom: 0.3rem; }
-form#f input[type='text'], form#f input[type='date'], form#f input[type='url'], form#f textarea {
+form#f input[type='text'], form#f input[type='email'], form#f input[type='date'], form#f input[type='url'], form#f textarea {
   width: 100%; font: inherit; font-size: 1rem; padding: 0.6rem 0.7rem; border: 1.5px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink);
 }
 form#f input[type='file'] { max-width: 100%; font: inherit; font-size: 1rem; }
@@ -57,7 +57,7 @@ form#f input[type='file'] { max-width: 100%; font: inherit; font-size: 1rem; }
 /* iOS Safari: an empty date input collapses and overflows its column without these. */
 form#f input[type='date'] { -webkit-appearance: none; appearance: none; display: block; min-width: 0; max-width: 100%; min-height: 2.9rem; text-align: left; }
 form#f input[type='date']::-webkit-date-and-time-value { text-align: left; }
-#date-help { display: block; margin-top: 0.3rem; }
+#date-help, #email-help { display: block; margin-top: 0.3rem; }
 .seg { display: flex; border: 1.5px solid var(--line); border-radius: 4px; overflow: hidden; }
 form#f .seg label { flex: 1; margin: 0; text-align: center; padding: 0.55rem; cursor: pointer; font-weight: 500; }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }

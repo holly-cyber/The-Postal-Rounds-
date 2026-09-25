@@ -39,6 +39,12 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
   const name = clean(form.get('name'));
   if (name.length < 1 || name.length > LIMITS.nameMax) fail(`Name must be 1–${LIMITS.nameMax} characters.`);
 
+  // Private, for follow-up only. Never returned by the public API.
+  const email = clean(form.get('email')).toLowerCase();
+  if (!email || email.length > LIMITS.emailMax || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    fail('Add an email address so we can get in touch about your round if we need to.');
+  }
+
   // One round now. Older pages may still send round=long; anything else is refused.
   const round = clean(form.get('round')) || 'long';
   if (!Object.hasOwn(ROUNDS, round)) fail('That round isn’t recognised. Reload the page and try again.');
@@ -128,6 +134,7 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
     id,
     createdAt: now.toISOString(),
     consentedAt: now.toISOString(),
+    email,
     name,
     round: round as RoundId,
     mode: mode as Mode,

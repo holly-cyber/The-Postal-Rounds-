@@ -84,6 +84,7 @@ export const ROUNDS: Record<RoundId, RoundInfo> = {
 /** Form and upload limits. The server enforces these; the browser mirrors them. */
 export const LIMITS = {
   nameMax: 40,
+  emailMax: 254,
   noteMax: 140,
   linkMax: 500,
   gpxMaxBytes: 10 * 1024 * 1024,

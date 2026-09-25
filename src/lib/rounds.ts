@@ -42,6 +42,8 @@ export interface StoredRound extends PublicRound {
   createdAt: string;
   /** When the entrant agreed to their name, date, time and note being shown publicly. */
   consentedAt: string;
+  /** For follow-up only. Never public; older entries may not have one. */
+  email?: string;
   verifiedAt: string | null;
   gpx: {
     points: number;

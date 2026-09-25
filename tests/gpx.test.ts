@@ -66,6 +66,7 @@ test('the OS Maps GPX of the round passes', () => {
 function baseForm(): FormData {
   const f = new FormData();
   f.set('name', 'Test Walker');
+  f.set('email', 'walker@example.com');
   f.set('round', 'long');
   f.set('mode', 'walk');
   f.set('consent', 'yes');
@@ -204,4 +205,18 @@ test('age groups are 5-year bands from under 20 to 80 and over', async () => {
   assert.equal(AGE_GROUPS.length, 14);
   assert.deepEqual(AGE_GROUPS.slice(0, 3).map(([k]) => k), ['U20', '20-24', '25-29']);
   assert.deepEqual(AGE_GROUPS.at(-1), ['80+', '80 and over']);
+});
+
+test('server: email is required, kept privately, and never public', async () => {
+  const f = baseForm();
+  f.delete('email');
+  f.set('link', 'https://example.com');
+  await assert.rejects(prepare(f, 'x', now), /email/);
+  f.set('email', 'not-an-email');
+  await assert.rejects(prepare(f, 'x', now), /email/);
+  f.set('email', 'Walker@Example.com');
+  const { entry } = await prepare(f, 'x', now);
+  assert.equal(entry.email, 'walker@example.com');
+  const { toPublic } = await import('../src/lib/rounds.ts');
+  assert.equal('email' in toPublic(entry), false);
 });

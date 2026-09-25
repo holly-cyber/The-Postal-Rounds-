@@ -7,6 +7,8 @@ description: What we keep when you post a round or get in touch, and how to have
 
 We show your name (or nickname), round, walk or run, date, time, distance, activity link and note in the public round book, plus your category (female or male) and age group if you choose to give them. Both are optional. You agree to this when you tick the box on the form.
 
+We also ask for your email address. It is never shown publicly and only the site organiser can see it; we use it only to get in touch about your round if we need to.
+
 Your GPX file and any photo are used only to check your round. They are never shown publicly, and only the site organiser can see them.
 
 To limit spam, we keep a scrambled (hashed) version of your internet address with the times of your recent entries. We don’t store the address itself, and it isn’t linked to your entry.

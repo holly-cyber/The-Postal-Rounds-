@@ -52,6 +52,7 @@ function entryHtml(r: StoredRound): string {
     <h2>${esc(r.name)}</h2>
     <p class="meta">${r.mode === 'run' ? 'Run' : 'Walk'}${categoryLabel(r) ? ` · ${categoryLabel(r)}` : ''} · ${formatDuration(r.secs)} · ${formatDate(r.date)}${r.km !== null ? ` · ${r.km} km` : ''} · submitted ${new Date(r.createdAt).toLocaleString('en-GB')}</p>
     <p>${r.verified ? '<span class="tag v">Verified</span>' : ''}${r.gpxChecked ? '<span class="tag g">GPX checked</span>' : ''}${!r.verified && !r.gpxChecked ? '<span class="tag p">Waiting for check</span>' : ''}</p>
+    ${r.email ? `<p>Email: <a href="mailto:${esc(r.email)}">${esc(r.email)}</a></p>` : ''}
     ${r.link ? `<p>Link: <a href="${esc(r.link)}" target="_blank" rel="noopener noreferrer">${esc(r.link)}</a></p>` : ''}
     ${r.note ? `<p>Note: “${esc(r.note)}”</p>` : ''}
     ${checks}

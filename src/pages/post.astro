@@ -48,7 +48,7 @@ const today = todayInShap();
           <p class="label-kicker">Your round</p>
           <h2>Addressed to the round book</h2>
           <p>
-            Your name, date and time appear in the public round book. Your GPX file and photo are only used to check your
+            Your name, date and time appear in the public round book. Your email stays private. Your GPX file and photo are only used to check your
             round and are never shown to others.
           </p>
           <Postmark class="log-postmark" line="ROUND BOOK" year="2026" />
@@ -58,6 +58,11 @@ const today = todayInShap();
           <div class="field">
             <label for="name">Your name <span class="hint">(or a nickname)</span></label>
             <input id="name" name="name" type="text" maxlength={LIMITS.nameMax} autocomplete="name" required />
+          </div>
+          <div class="field">
+            <label for="email">Your email <span class="hint">(private)</span></label>
+            <input id="email" name="email" type="email" maxlength={LIMITS.emailMax} autocomplete="email" inputmode="email" required aria-describedby="email-help" />
+            <span class="hint" id="email-help">Only so we can get in touch about your round if we need to. Never shown in the round book.</span>
           </div>
           <input type="hidden" name="round" value="long" />
           <div class="field">
@@ -166,7 +171,7 @@ const today = todayInShap();
     -->
     <form name="round-entry" data-netlify="true" netlify-honeypot="bot-field" hidden>
       <input name="bot-field" />
-      <input name="name" /><input name="mode" /><input name="category" /><input name="ageGroup" />
+      <input name="name" /><input name="email" /><input name="mode" /><input name="category" /><input name="ageGroup" />
       <input name="date" /><input name="time" /><input name="km" /><input name="evidence" />
       <input name="link" /><textarea name="note"></textarea>
     </form>

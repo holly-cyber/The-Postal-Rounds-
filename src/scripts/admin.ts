@@ -1,7 +1,11 @@
+/**
+ * Round book admin: sign in with the admin token, then three views (hash routes):
+ * #overview (stats and facts), #rounds (check, verify, remove) and #contacts (emails, CSV).
+ */
 import type { StoredRound } from '../lib/rounds.ts';
-import { categoryLabel, formatDate, formatDuration } from '../lib/rounds.ts';
+import { AGE_LABELS, categoryLabel, formatDate, formatDuration } from '../lib/rounds.ts';
 
-const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
 const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
@@ -12,7 +16,13 @@ try {
 } catch {}
 
 let rounds: StoredRound[] = [];
-const photoUrls: string[] = [];
+const blobUrls: string[] = [];
+let filter: 'waiting' | 'checked' | 'all' = 'waiting';
+
+const isWaiting = (r: StoredRound) => !r.verified && !r.gpxChecked;
+const isCounted = (r: StoredRound) => (r.verified || r.gpxChecked) && r.secs > 0;
+
+// ---------- API and sign in ----------
 
 async function api(path: string, init: RequestInit = {}): Promise<Response> {
   const res = await fetch(path, {
@@ -32,53 +42,28 @@ function signOut(message = '') {
   try {
     sessionStorage.removeItem(KEY);
   } catch {}
-  $('#panel').hidden = true;
-  $('#login').hidden = false;
+  $('#app').hidden = true;
+  $('#login-screen').hidden = false;
   $('#login-status').textContent = message;
   $<HTMLInputElement>('#token').focus();
 }
 
-function entryHtml(r: StoredRound): string {
-  const checks = r.gpx
-    ? `<ul class="checks">${r.gpx.checks
-        .map(
-          (c) =>
-            `<li class="${c.pass ? 'pass' : 'fail'}"><span aria-hidden="true">${c.pass ? '✓' : '✗'}</span> ${esc(c.label)} — ${esc(c.detail)}<span class="sr-only">${c.pass ? ' (passed)' : ' (not passed)'}</span></li>`,
-        )
-        .join('')}</ul>
-       <p class="meta">${r.gpx.points} points${r.gpx.elapsedSecs ? ` · GPX elapsed ${formatDuration(r.gpx.elapsedSecs)}` : ''}${r.gpx.startDate ? ` · GPX date ${formatDate(r.gpx.startDate)}` : ''}</p>`
-    : '';
-  return `<article class="card entry" data-id="${r.id}">
-    <h2>${esc(r.name)}</h2>
-    <p class="meta">${r.mode === 'run' ? 'Run' : 'Walk'}${categoryLabel(r) ? ` · ${categoryLabel(r)}` : ''} · ${formatDuration(r.secs)} · ${formatDate(r.date)}${r.km !== null ? ` · ${r.km} km` : ''} · submitted ${new Date(r.createdAt).toLocaleString('en-GB')}</p>
-    <p>${r.verified ? '<span class="tag v">Verified</span>' : ''}${r.gpxChecked ? '<span class="tag g">GPX checked</span>' : ''}${!r.verified && !r.gpxChecked ? '<span class="tag p">Waiting for check</span>' : ''}</p>
-    ${r.email ? `<p>Email: <a href="mailto:${esc(r.email)}">${esc(r.email)}</a></p>` : ''}
-    ${r.link ? `<p>Link: <a href="${esc(r.link)}" target="_blank" rel="noopener noreferrer">${esc(r.link)}</a></p>` : ''}
-    ${r.note ? `<p>Note: “${esc(r.note)}”</p>` : ''}
-    ${checks}
-    <div class="photo-slot"></div>
-    <div class="buttons">
-      <button class="btn small" data-act="verify">${r.verified ? 'Unverify' : 'Verify'}</button>
-      ${r.files.gpx ? '<button class="btn small ghost" data-act="gpx">Download GPX</button>' : ''}
-      ${r.files.photo ? '<button class="btn small ghost" data-act="photo">Show photo</button>' : ''}
-      <button class="btn small danger" data-act="remove">Remove</button>
-    </div>
-  </article>`;
-}
-
-function render() {
-  const all = $<HTMLInputElement>('#show-all').checked;
-  const rows = all ? rounds : rounds.filter((r) => !r.verified && !r.gpxChecked);
-  const pending = rounds.filter((r) => !r.verified && !r.gpxChecked).length;
-  $('#summary').textContent = `${pending} waiting for a check · ${rounds.length} entries in total.`;
-  $('#list').innerHTML = rows.length ? rows.map(entryHtml).join('') : '<p>Nothing waiting. 🎉</p>';
+function showApp() {
+  $('#login-screen').hidden = true;
+  $('#app').hidden = false;
+  route();
 }
 
 async function load() {
   const res = await api('/api/admin/rounds');
-  rounds = (await res.json()).rounds;
-  photoUrls.splice(0).forEach((u) => URL.revokeObjectURL(u));
-  render();
+  if (!res.ok) {
+    $('#status').textContent = 'The round book couldn’t load. Try Refresh in a moment.';
+    return;
+  }
+  $('#status').textContent = '';
+  rounds = ((await res.json()).rounds as StoredRound[]).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  blobUrls.splice(0).forEach((u) => URL.revokeObjectURL(u));
+  renderAll();
 }
 
 $('#login').addEventListener('submit', async (e) => {
@@ -95,15 +80,194 @@ $('#login').addEventListener('submit', async (e) => {
   } catch {}
   $<HTMLInputElement>('#token').value = '';
   $('#login-status').textContent = '';
-  $('#login').hidden = true;
-  $('#panel').hidden = false;
+  showApp();
 });
 
-$('#show-all').addEventListener('change', render);
 $('#refresh').addEventListener('click', () => load().catch(() => {}));
 $('#logout').addEventListener('click', () => signOut());
 
-$('#list').addEventListener('click', async (e) => {
+// ---------- Tabs (hash routes) ----------
+
+function route() {
+  const tab = ['overview', 'rounds', 'contacts'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview';
+  document.querySelectorAll<HTMLElement>('[data-view]').forEach((v) => (v.hidden = v.dataset.view !== tab));
+  document.querySelectorAll<HTMLAnchorElement>('[data-tab]').forEach((a) => {
+    if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+  });
+}
+window.addEventListener('hashchange', route);
+
+function renderAll() {
+  const waiting = rounds.filter(isWaiting).length;
+  const badge = $('#waiting-badge');
+  badge.hidden = waiting === 0;
+  badge.textContent = String(waiting);
+  renderOverview();
+  renderRounds();
+  renderContacts();
+}
+
+// ---------- Overview ----------
+
+const pct = (n: number, of: number) => (of ? `${Math.round((n / of) * 100)}%` : '–');
+const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
+
+function fastest(mode: 'run' | 'walk'): StoredRound | undefined {
+  return rounds.filter((r) => r.mode === mode && isCounted(r)).sort((a, b) => a.secs - b.secs)[0];
+}
+
+function renderOverview() {
+  const total = rounds.length;
+  const runs = rounds.filter((r) => r.mode === 'run').length;
+  const walks = total - runs;
+  const waiting = rounds.filter(isWaiting).length;
+  const km = rounds.reduce((s, r) => s + (r.km ?? 0), 0);
+  const people = new Set(rounds.map((r) => (r.email || r.name).toLowerCase())).size;
+
+  const tiles: [string, string, string?][] = [
+    [String(total), 'rounds posted'],
+    [String(people), 'people'],
+    [String(runs), `runs (${pct(runs, total)})`],
+    [String(walks), `walks (${pct(walks, total)})`],
+    [String(waiting), 'waiting for a check', waiting ? 'alert' : undefined],
+    [`${Math.round(km).toLocaleString('en-GB')} km`, 'walked and run in total'],
+  ];
+  $('#ov-tiles').innerHTML = tiles
+    .map(([n, l, cls], i) =>
+      i === 4 && waiting
+        ? `<a class="tile ${cls}" href="#rounds"><span class="n">${esc(n)}</span><span class="l">${esc(l)} →</span></a>`
+        : `<div class="tile${cls ? ` ${cls}` : ''}"><span class="n">${esc(n)}</span><span class="l">${esc(l)}</span></div>`,
+    )
+    .join('');
+
+  // Rounds posted by month, last 12 months.
+  const months: { key: string; label: string; n: number }[] = [];
+  const now = new Date();
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      label: d.toLocaleDateString('en-GB', { month: 'short' }),
+      n: 0,
+    });
+  }
+  for (const r of rounds) {
+    const m = months.find((x) => x.key === r.date.slice(0, 7));
+    if (m) m.n++;
+  }
+  const max = Math.max(1, ...months.map((m) => m.n));
+  $('#ov-months').innerHTML =
+    months
+      .map((m, i) => {
+        const h = `${Math.round((m.n / max) * 100)}%`;
+        return `<div class="col${i === months.length - 1 ? ' last' : ''}" tabindex="0" style="--h:${h}" aria-label="${esc(m.label)}: ${m.n} ${m.n === 1 ? 'round' : 'rounds'}" title="${esc(m.label)}: ${m.n}">
+          <span class="val">${m.n}</span><div class="bar" style="height:${m.n ? h : '0'}"></div></div>`;
+      })
+      .join('');
+  $('#ov-months-axis').innerHTML = months.map((m) => `<span>${esc(m.label)}</span>`).join('');
+
+  // Records and facts.
+  const fr = fastest('run');
+  const fw = fastest('walk');
+  const runTimes = rounds.filter((r) => r.mode === 'run' && isCounted(r)).map((r) => r.secs);
+  const walkTimes = rounds.filter((r) => r.mode === 'walk' && isCounted(r)).map((r) => r.secs);
+  const byDate = [...rounds].sort((a, b) => a.date.localeCompare(b.date));
+  const records: [string, string][] = [
+    ['Fastest run', fr ? `${formatDuration(fr.secs)} · ${fr.name}` : 'Up for grabs'],
+    ['Fastest walk', fw ? `${formatDuration(fw.secs)} · ${fw.name}` : 'Up for grabs'],
+    ['Average run', runTimes.length ? formatDuration(Math.round(avg(runTimes))) : '–'],
+    ['Average walk', walkTimes.length ? formatDuration(Math.round(avg(walkTimes))) : '–'],
+    ['First round', byDate[0] ? formatDate(byDate[0].date) : '–'],
+    ['Latest round', byDate.at(-1) ? formatDate(byDate.at(-1)!.date) : '–'],
+  ];
+  $('#ov-records').innerHTML = records.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
+
+  // Who's doing it.
+  const f = rounds.filter((r) => r.sex === 'F').length;
+  const m = rounds.filter((r) => r.sex === 'M').length;
+  const ages = new Map<string, number>();
+  for (const r of rounds) if (r.ageGroup) ages.set(r.ageGroup, (ages.get(r.ageGroup) ?? 0) + 1);
+  const topAge = [...ages.entries()].sort((a, b) => b[1] - a[1])[0];
+  const checked = rounds.filter((r) => r.gpxChecked).length;
+  const verified = rounds.filter((r) => r.verified).length;
+  const people2: [string, string][] = [
+    ['Female', `${f} (${pct(f, total)})`],
+    ['Male', `${m} (${pct(m, total)})`],
+    ['Not said', `${total - f - m} (${pct(total - f - m, total)})`],
+    ['Most common age group', topAge ? `${(AGE_LABELS as Record<string, string>)[topAge[0]] ?? topAge[0]} (${topAge[1]})` : '–'],
+    ['GPX checked', `${checked} (${pct(checked, total)})`],
+    ['Verified by you', String(verified)],
+  ];
+  $('#ov-people').innerHTML = people2.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
+
+  // Latest five.
+  $('#ov-latest').innerHTML = rounds.length
+    ? rounds
+        .slice(0, 5)
+        .map(
+          (r) =>
+            `<li><strong>${esc(r.name)}</strong><span>${r.mode === 'run' ? 'Ran' : 'Walked'} · ${formatDuration(r.secs)} · ${formatDate(r.date)}</span></li>`,
+        )
+        .join('')
+    : '<li class="muted">No rounds yet.</li>';
+}
+
+// ---------- Rounds ----------
+
+function entryHtml(r: StoredRound): string {
+  const checks = r.gpx
+    ? `<ul class="checks">${r.gpx.checks
+        .map(
+          (c) =>
+            `<li class="${c.pass ? 'pass' : 'fail'}" title="${esc(c.detail)}"><span aria-hidden="true">${c.pass ? '✓' : '✗'}</span> ${esc(c.label)}<span class="sr-only">${c.pass ? ' (passed)' : ` (not passed: ${esc(c.detail)})`}</span></li>`,
+        )
+        .join('')}</ul>`
+    : '<p class="meta">No GPX file.</p>';
+  const tags = `${r.verified ? '<span class="tag v">Verified</span>' : ''}${r.gpxChecked ? '<span class="tag g">GPX checked</span>' : ''}${isWaiting(r) ? '<span class="tag p">Waiting for check</span>' : ''}`;
+  return `<article class="entry" data-id="${r.id}">
+    <div class="entry-head"><h2>${esc(r.name)}</h2>${tags}</div>
+    <p class="meta">${r.mode === 'run' ? 'Ran' : 'Walked'} · ${formatDuration(r.secs)} · ${formatDate(r.date)}${r.km !== null ? ` · ${r.km} km` : ''}${categoryLabel(r) ? ` · ${categoryLabel(r)}` : ''} · posted ${new Date(r.createdAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+    ${r.email ? `<p><a href="mailto:${esc(r.email)}">${esc(r.email)}</a></p>` : ''}
+    ${r.link ? `<p>Activity: <a href="${esc(r.link)}" target="_blank" rel="noopener noreferrer">${esc(r.link)}</a></p>` : ''}
+    ${r.note ? `<p>“${esc(r.note)}”</p>` : ''}
+    ${checks}
+    <div class="photo-slot"></div>
+    <div class="buttons">
+      <button class="btn small${r.verified ? ' ghost' : ' red'}" data-act="verify">${r.verified ? 'Unverify' : 'Verify'}</button>
+      ${r.files.gpx ? '<button class="btn small ghost" data-act="gpx">Download GPX</button>' : ''}
+      ${r.files.photo ? '<button class="btn small ghost" data-act="photo">Show photo</button>' : ''}
+      <button class="btn small danger" data-act="remove">Remove</button>
+    </div>
+  </article>`;
+}
+
+function matches(r: StoredRound, q: string) {
+  return !q || r.name.toLowerCase().includes(q) || (r.email ?? '').toLowerCase().includes(q);
+}
+
+function renderRounds() {
+  const q = $<HTMLInputElement>('#rd-search').value.trim().toLowerCase();
+  const rows = rounds
+    .filter((r) => (filter === 'waiting' ? isWaiting(r) : filter === 'checked' ? !isWaiting(r) : true))
+    .filter((r) => matches(r, q));
+  const waiting = rounds.filter(isWaiting).length;
+  $('#rd-summary').textContent = `${waiting} waiting for a check · ${rounds.length} ${rounds.length === 1 ? 'round' : 'rounds'} in total.`;
+  $('#rd-list').innerHTML = rows.length
+    ? rows.map(entryHtml).join('')
+    : `<p class="muted">${filter === 'waiting' && !q ? 'Nothing waiting for a check.' : 'No rounds match.'}</p>`;
+}
+
+document.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((b) =>
+  b.addEventListener('click', () => {
+    filter = b.dataset.filter as typeof filter;
+    document.querySelectorAll('[data-filter]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    renderRounds();
+  }),
+);
+$('#rd-search').addEventListener('input', renderRounds);
+
+$('#rd-list').addEventListener('click', async (e) => {
   const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-act]');
   if (!btn) return;
   const card = btn.closest<HTMLElement>('[data-id]')!;
@@ -128,7 +292,7 @@ $('#list').addEventListener('click', async (e) => {
       const res = await api(`/api/admin/evidence/${id}/${act}`);
       if (!res.ok) throw new Error();
       const url = URL.createObjectURL(await res.blob());
-      photoUrls.push(url);
+      blobUrls.push(url);
       if (act === 'gpx') {
         const a = document.createElement('a');
         a.href = url;
@@ -145,11 +309,74 @@ $('#list').addEventListener('click', async (e) => {
   }
 });
 
+// ---------- Contacts ----------
+
+interface Contact {
+  name: string;
+  email: string;
+  rounds: number;
+  latest: string;
+  best: number;
+}
+
+function contacts(): Contact[] {
+  const map = new Map<string, Contact>();
+  for (const r of rounds) {
+    if (!r.email) continue;
+    const key = r.email.toLowerCase();
+    const c = map.get(key) ?? { name: r.name, email: r.email, rounds: 0, latest: r.date, best: 0 };
+    c.rounds++;
+    if (r.date >= c.latest) {
+      c.latest = r.date;
+      c.name = r.name;
+    }
+    if (r.secs && (!c.best || r.secs < c.best)) c.best = r.secs;
+    map.set(key, c);
+  }
+  return [...map.values()].sort((a, b) => b.latest.localeCompare(a.latest));
+}
+
+function renderContacts() {
+  const q = $<HTMLInputElement>('#ct-search').value.trim().toLowerCase();
+  const list = contacts().filter((c) => !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q));
+  $('#ct-rows').innerHTML = list
+    .map(
+      (c) =>
+        `<tr><td>${esc(c.name)}</td><td><a href="mailto:${esc(c.email)}">${esc(c.email)}</a></td><td>${c.rounds}</td><td>${formatDate(c.latest)}</td><td>${formatDuration(c.best)}</td></tr>`,
+    )
+    .join('');
+  $('#ct-empty').hidden = list.length > 0;
+}
+
+$('#ct-search').addEventListener('input', renderContacts);
+
+$('#ct-copy').addEventListener('click', async () => {
+  const emails = contacts().map((c) => c.email).join(', ');
+  const btn = $<HTMLButtonElement>('#ct-copy');
+  try {
+    await navigator.clipboard.writeText(emails);
+    btn.textContent = 'Copied';
+  } catch {
+    prompt('Copy these email addresses:', emails);
+  }
+  setTimeout(() => (btn.textContent = 'Copy all emails'), 2000);
+});
+
+$('#ct-csv').addEventListener('click', () => {
+  const cell = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
+  const rows = [['Name', 'Email', 'Rounds', 'Latest round', 'Best time'], ...contacts().map((c) => [c.name, c.email, c.rounds, c.latest, c.best ? formatDuration(c.best) : ''])];
+  const blob = new Blob([rows.map((r) => r.map(cell).join(',')).join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `postmans-challenge-contacts-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+// ---------- Start ----------
+
 if (token) {
   load()
-    .then(() => {
-      $('#login').hidden = true;
-      $('#panel').hidden = false;
-    })
+    .then(showApp)
     .catch(() => {});
 }

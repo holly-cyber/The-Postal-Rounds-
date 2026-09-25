@@ -43,6 +43,10 @@ export const GPX_RULES = {
   southOfLat: 54.5,
   /** Latitude the track must reach south of, when a round requires Mosedale Cottage (at 54.4779). */
   mosedaleSouthOfLat: 54.481,
+  /** Faster than this on average (km/h, including stops) is not a round on foot. */
+  maxAverageKmh: 18,
+  /** Stretches faster than this (km/h) look like a vehicle; a few GPS jumps are allowed. */
+  maxSegmentKmh: 40,
   /** Fewer points than this is a planned route, not a recorded activity. */
   minPoints: 10,
 } as const;

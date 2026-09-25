@@ -307,6 +307,10 @@ const today = todayInShap();
   .deliveries li { display: flex; gap: 0.5rem; align-items: center; opacity: 0; animation: tick-in 0.35s ease-out forwards; animation-delay: calc(0.5s + var(--i) * 0.25s); }
   .deliveries .mark { display: grid; place-items: center; width: 1.3rem; height: 1.3rem; border-radius: 50%; font-size: 0.75rem; font-weight: 800; color: #fff; background: var(--fell); flex: none; }
   .deliveries li.fail .mark { background: var(--red); }
+  .deliveries li.pass { color: var(--fell); }
+  .deliveries li.fail { color: var(--red); }
+  .deliveries li { flex-wrap: wrap; }
+  .deliveries .why { flex-basis: 100%; padding-left: 1.8rem; font-size: 0.88rem; color: var(--red); }
   @keyframes tick-in { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
   .frank {
     position: absolute; bottom: 1rem; right: 1rem;

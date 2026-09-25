@@ -84,7 +84,12 @@ function showGpx(r: GpxResult) {
   const head = document.createElement('p');
   head.className = 'gpx-head';
   const name = ROUNDS[chosenRound()].name.replace(/^The /, 'the ');
-  head.textContent = r.passed ? `Route checked: this is ${name}.` : `This track doesn’t look like ${name} yet.`;
+  const planned = r.checks.some((c) => c.id === 'recorded' && !c.pass);
+  head.textContent = r.passed
+    ? `Route checked: this is ${name}.`
+    : planned
+      ? 'This looks like a planned route, not a recorded activity.'
+      : `This track doesn’t look like ${name} yet.`;
   card.appendChild(head);
 
   const ul = document.createElement('ul');
@@ -101,6 +106,12 @@ function showGpx(r: GpxResult) {
     sr.className = 'sr-only';
     sr.textContent = c.pass ? ' (passed)' : ' (not passed)';
     li.append(mark, c.label, sr);
+    if (!c.pass && c.id === 'recorded') {
+      const why = document.createElement('span');
+      why.className = 'why';
+      why.textContent = c.detail;
+      li.appendChild(why);
+    }
     ul.appendChild(li);
   });
   card.appendChild(ul);
@@ -217,9 +228,7 @@ function checkGpx(prefill: boolean): GpxResult | null {
       : '';
     if (missing.length) {
       const list = missing.length > 1 ? `${missing.slice(0, -1).join(', ')} and ${missing.at(-1)}` : missing[0];
-      msg += `${msg ? ' ' : ''}${
-        parsed.elapsedSecs ? '' : 'This GPX has no timings in it, so it may be a planned route rather than your recorded activity. '
-      }Please add ${list} yourself.`;
+      msg += `${msg ? ' ' : ''}Please add ${list} yourself.`;
     }
     if (msg) {
       const note = document.createElement('p');

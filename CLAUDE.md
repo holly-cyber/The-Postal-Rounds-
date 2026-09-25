@@ -28,7 +28,7 @@ palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`; light and dark
 | **All tunable constants** — site name/strapline, Instagram, pins flag, Birchwood coordinates, the round (distance, GPX file name, check thresholds; one entry, id `long`, kept so stored entries match), upload limits, rate limit, the stops (text + sketch-map positions), home facts, route notices | `src/lib/config.ts` |
 | **Editable page text** (story, café, safety & respect, FAQ, privacy) | `src/content/pages/*.md` |
 | GPX downloads (buttons appear once the files exist) | `public/gpx/` |
-| **GPX parser + the five checks** (shared by browser and server; DOM-free) | `src/lib/gpx.ts` |
+| **GPX parser + the checks** (recorded activity, start, finish, distance, Swindale, Wet Sleddale, Mosedale) (shared by browser and server; DOM-free) | `src/lib/gpx.ts` |
 | Entry shapes, `toPublic()`, sorting for the three leaderboard views | `src/lib/rounds.ts` |
 | Server-side form validation (the check that counts) | `src/server/submission.ts` |
 | Blob stores, admin-token check | `src/server/store.ts`, `src/server/http.ts` |

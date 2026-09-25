@@ -5,14 +5,14 @@
  * Deliberately DOM-free: a small tag scanner works identically in the
  * browser and in Node, where there is no DOMParser.
  */
-import { BIRCHWOOD, GPX_RULES as R, ROUNDS, type LatLon, type RoundId } from './config.ts';
+import { BIRCHWOOD, GPX_RULES as R, LIMITS, ROUNDS, type LatLon, type RoundId } from './config.ts';
 
 export interface GpxPoint extends LatLon {
   time?: number;
 }
 
 export interface GpxCheck {
-  id: 'start' | 'finish' | 'distance' | 'west' | 'south' | 'mosedale';
+  id: 'recorded' | 'start' | 'finish' | 'distance' | 'west' | 'south' | 'mosedale';
   label: string;
   pass: boolean;
   detail: string;
@@ -93,6 +93,38 @@ export function parsePoints(text: string): GpxPoint[] {
 
 const fmtKm = (km: number) => `${km.toFixed(1)} km`;
 
+/**
+ * Is this a recorded activity rather than a planned route? Planned routes (OS Maps, Komoot,
+ * route builders) have no timestamps. Recorded activities time every point, the times run
+ * forwards, and the pace is something a person on foot could do.
+ */
+function recordedCheck(pts: GpxPoint[], times: number[], km: number, elapsedSecs: number | null): GpxCheck {
+  const fail = (detail: string): GpxCheck => ({ id: 'recorded', label: 'A recorded activity', pass: false, detail });
+  if (times.length < pts.length * 0.9 || !elapsedSecs) {
+    return fail('No timings in this file, so it looks like a planned route. Upload the GPX of your recorded activity.');
+  }
+  let backwards = 0;
+  let tooFast = 0;
+  let steps = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1].time;
+    const b = pts[i].time;
+    if (a === undefined || b === undefined) continue;
+    steps++;
+    if (b < a) backwards++;
+    else if (b > a && (haversineKm(pts[i - 1], pts[i]) / ((b - a) / 3_600_000)) > R.maxSegmentKmh) tooFast++;
+  }
+  if (backwards > steps * 0.01) return fail('The timings in this file run backwards, so it can’t be checked.');
+  if (elapsedSecs < LIMITS.minSecs || elapsedSecs > LIMITS.maxSecs) {
+    return fail('The recorded time doesn’t look right for the round.');
+  }
+  const avgKmh = km / (elapsedSecs / 3600);
+  if (avgKmh > R.maxAverageKmh || tooFast > steps * 0.02) {
+    return fail('Too fast for a round on foot. Upload the GPX of your walk or run.');
+  }
+  return { id: 'recorded', label: 'A recorded activity', pass: true, detail: 'Timed from start to finish' };
+}
+
 /** Run the round checks for the chosen round against a list of points. */
 export function checkPoints(pts: GpxPoint[], round: RoundId): GpxResult {
   const rules = ROUNDS[round];
@@ -115,10 +147,12 @@ export function checkPoints(pts: GpxPoint[], round: RoundId): GpxResult {
     times.length >= 2 ? Math.max(0, Math.round((times[times.length - 1] - times[0]) / 1000)) : null;
   const startDate = times.length ? new Date(times[0]).toISOString().slice(0, 10) : null;
 
+  const recorded = recordedCheck(pts, times, km, elapsedSecs);
   const reachedWest = minLon <= R.westOfLon;
   const reachedSouth = minLat <= R.southOfLat;
   const reachedMosedale = minLat <= R.mosedaleSouthOfLat;
   const all: (GpxCheck | null)[] = [
+    recorded,
     {
       id: 'start',
       label: 'Starts in Shap',

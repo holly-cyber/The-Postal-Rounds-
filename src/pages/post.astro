@@ -160,6 +160,17 @@ const today = todayInShap();
       </div>
     </section>
 
+    <!--
+      Netlify Forms copy of each posted round, so every entry shows in the Netlify Forms inbox and can be emailed.
+      Never shown; log.ts posts to it after the round book accepts an entry. Files are not sent here.
+    -->
+    <form name="round-entry" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input name="bot-field" />
+      <input name="name" /><input name="mode" /><input name="category" /><input name="ageGroup" />
+      <input name="date" /><input name="time" /><input name="km" /><input name="evidence" />
+      <input name="link" /><textarea name="note"></textarea>
+    </form>
+
     <section class="rb-cta" aria-labelledby="rb-h">
       <div class="wrap rb-cta-inner">
         <div>

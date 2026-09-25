@@ -38,6 +38,8 @@ const fullTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} — ${SITE.
     {description && <meta property="og:description" content={description} />}
     <meta property="og:type" content="website" />
     <meta property="og:image" content={ogUrl} />
+    {Astro.site && <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />}
+    {Astro.site && <meta property="og:url" content={new URL(Astro.url.pathname, Astro.site).href} />}
     <meta property="og:image:alt" content={HERO.alt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#2E4A2B" />

@@ -364,6 +364,7 @@ form.addEventListener('submit', async (e) => {
     }
     const entry = body.entry as PublicRound | undefined;
     showPosted(entry, name);
+    copyToNetlifyForms(entry, name);
   } catch {
     setMsg('Your round couldn’t be posted. Try again in a moment.', true);
   } finally {
@@ -406,3 +407,26 @@ $('post-another').addEventListener('click', () => {
   $<HTMLInputElement>('date').value = '';
   $<HTMLInputElement>('name').focus();
 });
+
+/**
+ * Send a copy of the accepted round to Netlify Forms (form "round-entry" on this page), so it
+ * lands in the Netlify Forms inbox and email notifications. Best effort: the round book entry is
+ * already saved, so a failure here is ignored.
+ */
+function copyToNetlifyForms(entry: PublicRound | undefined, name: string) {
+  if (!entry) return;
+  const body = new URLSearchParams({
+    'form-name': 'round-entry',
+    name,
+    mode: entry.mode === 'run' ? 'Ran' : 'Walked',
+    category: entry.sex === 'F' ? 'Female' : entry.sex === 'M' ? 'Male' : '',
+    ageGroup: entry.ageGroup ?? '',
+    date: entry.date,
+    time: entry.secs ? formatDuration(entry.secs) : '',
+    km: entry.km != null ? String(entry.km) : '',
+    evidence: entry.verified ? 'Verified' : entry.gpxChecked ? 'GPX checked' : 'Waiting for check',
+    link: entry.link ?? '',
+    note: entry.note ?? '',
+  });
+  fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body }).catch(() => {});
+}

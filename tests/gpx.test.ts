@@ -118,10 +118,10 @@ test('server: round defaults to the one round, and a GPX that skips Mosedale is 
   assert.equal(entry.gpxChecked, false);
 });
 
-test('server: rejects http links, future GPX dates and long names; ignores photos', async () => {
-  const http = baseForm();
-  http.set('link', 'http://example.com');
-  await assert.rejects(prepare(http, 'x', now), /https/);
+test('server: rejects future GPX dates and long names; ignores links and photos', async () => {
+  const withLink = baseForm();
+  withLink.set('link', 'https://www.strava.com/activities/1');
+  assert.equal((await prepare(withLink, 'x', now)).entry.link, null);
 
   const future = baseForm();
   future.set('gpx', new Blob([toGpx(roundTrack(LONG_WIGGLE, true), Date.parse('2026-09-30T08:00:00Z'))]), 'round.gpx');

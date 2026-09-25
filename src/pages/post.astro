@@ -105,17 +105,13 @@ import { AGE_GROUPS } from '../lib/rounds.ts';
             Used for the round book’s category tables. Age on the day of your round. Leave blank to appear in Overall only.
           </p>
           <div class="field">
-            <label for="link">Activity link <span class="hint">(optional)</span></label>
-            <input id="link" name="link" type="url" maxlength={LIMITS.linkMax} placeholder="https://www.strava.com/activities/…" />
-          </div>
-          <div class="field">
             <label for="note">A line for the round book <span class="hint">(optional)</span></label>
             <textarea id="note" name="note" rows="2" maxlength={LIMITS.noteMax} placeholder="Snow on Glede Howe, tea at Birchwood after"></textarea>
           </div>
           <div class="field">
             <label class="consent" for="consent">
               <input id="consent" name="consent" type="checkbox" value="yes" required />
-              <span>I’m happy for my name, walk or run, category, age group, date, time, distance, link and note to appear in the public round book.</span>
+              <span>I’m happy for my name, walk or run, category, age group, date, time, distance and note to appear in the public round book.</span>
             </label>
           </div>
           <div class="hp" aria-hidden="true">
@@ -151,7 +147,7 @@ import { AGE_GROUPS } from '../lib/rounds.ts';
       <input name="bot-field" />
       <input name="name" /><input name="email" /><input name="mode" /><input name="category" /><input name="ageGroup" />
       <input name="date" /><input name="time" /><input name="km" /><input name="evidence" />
-      <input name="link" /><textarea name="note"></textarea>
+      <textarea name="note"></textarea>
     </form>
 
     <section class="rb-cta" aria-labelledby="rb-h">

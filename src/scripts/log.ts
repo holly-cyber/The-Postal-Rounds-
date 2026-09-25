@@ -272,7 +272,6 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const val = (id: string) => $<HTMLInputElement>(id).value.trim();
   const name = val('name');
-  const link = val('link');
   const gpxFile = $<HTMLInputElement>('gpx').files?.[0];
 
   const focusErr = (msg: string, id?: string) => {
@@ -285,7 +284,6 @@ form.addEventListener('submit', async (e) => {
   if (!gpxFile || gpxText === null || !gpxPoints.length) {
     return focusErr('Add the GPX file of your recorded walk or run. It’s how we check your round.', 'gpx');
   }
-  if (link && !/^https:\/\//i.test(link)) return focusErr('Activity links must start with https://', 'link');
   const check = checkPoints(gpxPoints, chosenRound());
   if (!check.timed) {
     return focusErr('This GPX has no timings, so it looks like a planned route. Upload the GPX of your recorded walk or run instead.', 'gpx');
@@ -295,7 +293,7 @@ form.addEventListener('submit', async (e) => {
     return focusErr('Please tick the box to agree to your round appearing in the round book.', 'consent');
   }
 
-  const fd = new FormData(form); // name, email, mode, sex, ageGroup, link, note, consent, website
+  const fd = new FormData(form); // name, email, mode, sex, ageGroup, note, consent, website
   const submit = $<HTMLButtonElement>('submit');
   submit.disabled = true;
   setMsg('Posting your round…');
@@ -376,7 +374,6 @@ function copyToNetlifyForms(entry: PublicRound | undefined, name: string, email:
     time: entry.secs ? formatDuration(entry.secs) : '',
     km: entry.km != null ? String(entry.km) : '',
     evidence: entry.verified ? 'Verified' : entry.gpxChecked ? 'GPX checked' : 'Didn’t pass the route check',
-    link: entry.link ?? '',
     note: entry.note ?? '',
   });
   fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body }).catch(() => {});

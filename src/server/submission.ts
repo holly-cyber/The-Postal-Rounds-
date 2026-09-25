@@ -54,18 +54,8 @@ export async function prepare(form: FormData, id: string, now = new Date()): Pro
 
   if (clean(form.get('consent')) !== 'yes') fail('Please tick the box to agree to your round appearing in the round book.');
 
-  const linkRaw = clean(form.get('link'));
-  let link: string | null = null;
-  if (linkRaw) {
-    let url: URL | null = null;
-    try {
-      url = new URL(linkRaw);
-    } catch {
-      /* handled below */
-    }
-    if (!url || url.protocol !== 'https:' || linkRaw.length > LIMITS.linkMax) fail('Activity links must start with https://');
-    link = url!.toString();
-  }
+  // Activity links are no longer collected (the GPX is the evidence); anything sent is ignored.
+  const link: string | null = null;
 
   const noteRaw = clean(form.get('note'));
   if (noteRaw.length > LIMITS.noteMax) fail(`Keep the note to ${LIMITS.noteMax} characters.`);

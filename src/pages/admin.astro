@@ -128,6 +128,30 @@ import { LAUNCH, SITE } from '../lib/config.ts';
           </table>
         </div>
         <p id="ld-empty" class="muted" hidden>No sign-ups yet.</p>
+
+        <details class="panel ld-add">
+          <summary>Add a sign-up by hand</summary>
+          <p class="muted">
+            For sign-ups from the <a href="https://app.netlify.com/projects/the-postal-rounds/forms" target="_blank" rel="noopener">Netlify Forms inbox</a>,
+            or people who told you in person.
+          </p>
+          <form id="ld-form" class="ld-form">
+            <label>Name <input name="name" required maxlength="80" /></label>
+            <label>Email <input name="email" type="email" required maxlength="254" /></label>
+            <label>People
+              <select name="people">{Array.from({ length: 8 }, (_, i) => <option value={String(i + 1)}>{i === 7 ? '8 or more' : i + 1}</option>)}</select>
+            </label>
+            <label>Walk or run
+              <select name="mode"><option value="walk">Walk</option><option value="run">Run</option><option value="both">A mix</option></select>
+            </label>
+            <label class="wide">Message <input name="message" maxlength="1000" /></label>
+            <label><span>Signed up on <span class="muted">(optional)</span></span><input name="createdAt" type="datetime-local" /></label>
+            <div class="wide ld-form-foot">
+              <button class="btn small red" type="submit">Add sign-up</button>
+              <span id="ld-form-status" role="status"></span>
+            </div>
+          </form>
+        </details>
       </section>
     </main>
   </div>
@@ -230,6 +254,15 @@ import { LAUNCH, SITE } from '../lib/config.ts';
   .ct-table th { background: var(--paper-2); font-size: 0.85rem; color: var(--ink-soft); }
   .ct-table tr:last-child td { border-bottom: 0; }
   .ld-table td.msg { white-space: normal; min-width: 14rem; max-width: 28rem; color: var(--ink-soft); }
+  .ld-add { margin-top: 1.2rem; }
+  .ld-add summary { cursor: pointer; font-weight: 700; color: var(--fell); }
+  .ld-add[open] summary { margin-bottom: 0.6rem; }
+  .ld-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem 1rem; }
+  .ld-form label { display: grid; gap: 0.3rem; font-weight: 600; }
+  .ld-form .wide { grid-column: 1 / -1; }
+  .ld-form input, .ld-form select { font: inherit; font-weight: 400; padding: 0.55rem 0.7rem; border-radius: 8px; border: 1.5px solid var(--line); background: var(--paper); color: var(--ink); width: 100%; min-width: 0; box-sizing: border-box; }
+  .ld-form label .muted { font-weight: 400; }
+  .ld-form-foot { display: flex; align-items: center; gap: 1rem; }
   .ld-table .danger { border-color: var(--red); color: var(--red); background: transparent; }
 
   @media (max-width: 700px) {

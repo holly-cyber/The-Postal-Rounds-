@@ -412,6 +412,29 @@ $('#ld-csv').addEventListener('click', () =>
     'launch-day-signups',
   ),
 );
+$('#ld-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.currentTarget as HTMLFormElement;
+  const data = new FormData(form);
+  // datetime-local is the admin's local time; send it as an absolute ISO time.
+  const when = String(data.get('createdAt') ?? '');
+  if (when) data.set('createdAt', new Date(when).toISOString());
+  const status = $('#ld-form-status');
+  status.textContent = 'Adding…';
+  try {
+    const res = await api('/api/admin/signups', { method: 'POST', body: data });
+    if (!res.ok) {
+      status.textContent = ((await res.json().catch(() => null)) as { error?: string } | null)?.error ?? 'That didn’t save.';
+      return;
+    }
+    form.reset();
+    await load();
+    status.textContent = 'Added.';
+  } catch {
+    status.textContent = '';
+  }
+});
+
 $('#ld-rows').addEventListener('click', async (e) => {
   const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-act="remove-signup"]');
   if (!btn) return;

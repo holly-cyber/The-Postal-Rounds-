@@ -1,10 +1,11 @@
 ---
 /**
  * Round book admin. Not linked anywhere, noindex. Everything is fetched with the admin bearer token.
- * Three views (hash routes): #overview (stats), #rounds (check, verify, remove), #contacts (emails).
+ * Four views (hash routes): #overview (stats), #rounds (check, remove), #contacts (emails),
+ * #launch (launch day sign-ups).
  */
 import Base from '../layouts/Base.astro';
-import { SITE } from '../lib/config.ts';
+import { LAUNCH, SITE } from '../lib/config.ts';
 ---
 <Base title="Round book admin" noindex bare>
   <!-- Sign in -->
@@ -28,6 +29,7 @@ import { SITE } from '../lib/config.ts';
           <a href="#overview" data-tab="overview">Overview</a>
           <a href="#rounds" data-tab="rounds">Rounds</a>
           <a href="#contacts" data-tab="contacts">Contacts</a>
+          <a href="#launch" data-tab="launch">Launch day</a>
         </nav>
         <div class="admin-actions">
           <a class="btn small ghost" href="/round-book/" target="_blank" rel="noopener">View round book</a>
@@ -103,6 +105,30 @@ import { SITE } from '../lib/config.ts';
         </div>
         <p id="ct-empty" class="muted" hidden>No contacts yet.</p>
       </section>
+
+      <!-- Launch day sign-ups -->
+      <section id="view-launch" data-view="launch" aria-labelledby="ld-h" hidden>
+        <h1 id="ld-h">Launch day sign-ups</h1>
+        <p class="muted">
+          {LAUNCH.dateLabel}, {LAUNCH.startTime} from Birchwood Cafe. Emails are private: use them only to let people
+          know about the event. <a href="/launch/" target="_blank" rel="noopener">View the launch page</a>.
+        </p>
+        <div class="ov-tiles" id="ld-tiles"></div>
+        <div class="toolbar">
+          <label class="search"><span class="sr-only">Search sign-ups</span><input id="ld-search" type="search" placeholder="Search name or email" /></label>
+          <button class="btn small ghost" id="ld-copy" type="button">Copy all emails</button>
+          <button class="btn small ghost" id="ld-csv" type="button">Download CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table class="ct-table ld-table">
+            <thead>
+              <tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">People</th><th scope="col">Walk or run</th><th scope="col">Message</th><th scope="col">Signed up</th><th scope="col"><span class="sr-only">Remove</span></th></tr>
+            </thead>
+            <tbody id="ld-rows"></tbody>
+          </table>
+        </div>
+        <p id="ld-empty" class="muted" hidden>No sign-ups yet.</p>
+      </section>
     </main>
   </div>
 
@@ -136,7 +162,8 @@ import { SITE } from '../lib/config.ts';
   /* Bar */
   .admin-bar { position: sticky; top: 0; z-index: 5; background: var(--paper); border-bottom: 1px solid var(--line); }
   .admin-bar-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.5rem; padding-top: 0.7rem; padding-bottom: 0.7rem; }
-  .admin-tabs { display: flex; gap: 0.3rem; }
+  .admin-tabs { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .admin-tabs a { white-space: nowrap; }
   .admin-tabs a { padding: 0.45rem 0.9rem; border-radius: 999px; text-decoration: none; color: var(--ink); font-weight: 600; }
   .admin-tabs a[aria-current='page'] { background: var(--fell); color: #fff; }
   .admin-tabs .count { display: inline-grid; place-items: center; min-width: 1.4rem; height: 1.4rem; padding: 0 0.35rem; margin-left: 0.2rem; border-radius: 999px; background: var(--red); color: #fff; font-size: 0.78rem; }
@@ -202,9 +229,12 @@ import { SITE } from '../lib/config.ts';
   .ct-table th, .ct-table td { text-align: left; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
   .ct-table th { background: var(--paper-2); font-size: 0.85rem; color: var(--ink-soft); }
   .ct-table tr:last-child td { border-bottom: 0; }
+  .ld-table td.msg { white-space: normal; min-width: 14rem; max-width: 28rem; color: var(--ink-soft); }
+  .ld-table .danger { border-color: var(--red); color: var(--red); background: transparent; }
 
   @media (max-width: 700px) {
     .admin-actions { margin-left: 0; }
+    .admin-tabs a { padding: 0.4rem 0.7rem; }
     .search { margin-left: 0; width: 100%; }
     .search input { min-width: 0; width: 100%; }
   }

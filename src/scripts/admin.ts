@@ -1,9 +1,10 @@
 /**
- * Round book admin: sign in with the admin token, then three views (hash routes):
- * #overview (stats and facts), #rounds (check, verify, remove) and #contacts (emails, CSV).
+ * Round book admin: sign in with the admin token, then four views (hash routes):
+ * #overview (stats and facts), #rounds (check, remove), #contacts (emails, CSV) and #launch (launch day sign-ups).
  */
 import type { StoredRound } from '../lib/rounds.ts';
 import { AGE_LABELS, categoryLabel, formatDate, formatDuration } from '../lib/rounds.ts';
+import type { Signup } from '../server/signup.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
 const esc = (s: string) =>
@@ -16,6 +17,7 @@ try {
 } catch {}
 
 let rounds: StoredRound[] = [];
+let signups: Signup[] = [];
 const blobUrls: string[] = [];
 let filter: 'waiting' | 'checked' | 'all' = 'all';
 
@@ -55,7 +57,8 @@ function showApp() {
 }
 
 async function load() {
-  const res = await api('/api/admin/rounds');
+  const [res, su] = await Promise.all([api('/api/admin/rounds'), api('/api/admin/signups')]);
+  signups = su.ok ? ((await su.json()).signups as Signup[]) : [];
   if (!res.ok) {
     $('#status').textContent = 'The round book couldn’t load. Try Refresh in a moment.';
     return;
@@ -89,7 +92,7 @@ $('#logout').addEventListener('click', () => signOut());
 // ---------- Tabs (hash routes) ----------
 
 function route() {
-  const tab = ['overview', 'rounds', 'contacts'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview';
+  const tab = ['overview', 'rounds', 'contacts', 'launch'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview';
   document.querySelectorAll<HTMLElement>('[data-view]').forEach((v) => (v.hidden = v.dataset.view !== tab));
   document.querySelectorAll<HTMLAnchorElement>('[data-tab]').forEach((a) => {
     if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page');
@@ -102,6 +105,7 @@ function renderAll() {
   renderOverview();
   renderRounds();
   renderContacts();
+  renderSignups();
 }
 
 // ---------- Overview ----------
@@ -336,27 +340,91 @@ function renderContacts() {
 
 $('#ct-search').addEventListener('input', renderContacts);
 
-$('#ct-copy').addEventListener('click', async () => {
-  const emails = contacts().map((c) => c.email).join(', ');
-  const btn = $<HTMLButtonElement>('#ct-copy');
-  try {
-    await navigator.clipboard.writeText(emails);
-    btn.textContent = 'Copied';
-  } catch {
-    prompt('Copy these email addresses:', emails);
-  }
-  setTimeout(() => (btn.textContent = 'Copy all emails'), 2000);
-});
+$('#ct-copy').addEventListener('click', () => copyEmails($<HTMLButtonElement>('#ct-copy'), contacts().map((c) => c.email)));
 
-$('#ct-csv').addEventListener('click', () => {
+function downloadCsv(rows: (string | number)[][], name: string) {
   const cell = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
-  const rows = [['Name', 'Email', 'Rounds', 'Latest round', 'Best time'], ...contacts().map((c) => [c.name, c.email, c.rounds, c.latest, c.best ? formatDuration(c.best) : ''])];
   const blob = new Blob([rows.map((r) => r.map(cell).join(',')).join('\n')], { type: 'text/csv' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `postmans-challenge-contacts-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `${name}-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+async function copyEmails(btn: HTMLButtonElement, emails: string[]) {
+  const text = [...new Set(emails)].join(', ');
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = 'Copied';
+  } catch {
+    prompt('Copy these email addresses:', text);
+  }
+  setTimeout(() => (btn.textContent = 'Copy all emails'), 2000);
+}
+
+$('#ct-csv').addEventListener('click', () =>
+  downloadCsv(
+    [['Name', 'Email', 'Rounds', 'Latest round', 'Best time'], ...contacts().map((c) => [c.name, c.email, c.rounds, c.latest, c.best ? formatDuration(c.best) : ''])],
+    'postmans-challenge-contacts',
+  ),
+);
+
+// ---------- Launch day sign-ups ----------
+
+const MODE_LABEL: Record<Signup['mode'], string> = { walk: 'Walk', run: 'Run', both: 'A mix' };
+const peopleLabel = (n: number) => (n >= 8 ? '8+' : String(n));
+const signedUp = (iso: string) => new Date(iso).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+
+function renderSignups() {
+  const people = signups.reduce((s, x) => s + x.people, 0);
+  const by = (m: Signup['mode']) => signups.filter((x) => x.mode === m).reduce((s, x) => s + x.people, 0);
+  const tiles: [string, string][] = [
+    [`${people}${signups.some((x) => x.people >= 8) ? '+' : ''}`, 'people coming'],
+    [String(signups.length), signups.length === 1 ? 'sign-up' : 'sign-ups'],
+    [String(by('walk')), 'walking'],
+    [String(by('run')), 'running'],
+    [String(by('both')), 'a mix'],
+  ];
+  $('#ld-tiles').innerHTML = tiles
+    .map(([n, l]) => `<div class="tile"><span class="n">${esc(n)}</span><span class="l">${esc(l)}</span></div>`)
+    .join('');
+
+  const q = $<HTMLInputElement>('#ld-search').value.trim().toLowerCase();
+  const list = signups.filter((x) => !q || x.name.toLowerCase().includes(q) || x.email.includes(q));
+  $('#ld-rows').innerHTML = list
+    .map(
+      (x) =>
+        `<tr data-id="${x.id}"><td>${esc(x.name)}</td><td><a href="mailto:${esc(x.email)}">${esc(x.email)}</a></td><td>${peopleLabel(x.people)}</td><td>${MODE_LABEL[x.mode]}</td><td class="msg">${x.message ? esc(x.message) : ''}</td><td>${signedUp(x.createdAt)}</td><td><button class="btn small danger" type="button" data-act="remove-signup">Remove</button></td></tr>`,
+    )
+    .join('');
+  $('#ld-empty').hidden = list.length > 0;
+}
+
+$('#ld-search').addEventListener('input', renderSignups);
+$('#ld-copy').addEventListener('click', () => copyEmails($<HTMLButtonElement>('#ld-copy'), signups.map((x) => x.email)));
+$('#ld-csv').addEventListener('click', () =>
+  downloadCsv(
+    [
+      ['Name', 'Email', 'People', 'Walk or run', 'Message', 'Signed up'],
+      ...signups.map((x) => [x.name, x.email, peopleLabel(x.people), MODE_LABEL[x.mode], x.message ?? '', x.createdAt]),
+    ],
+    'launch-day-signups',
+  ),
+);
+$('#ld-rows').addEventListener('click', async (e) => {
+  const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-act="remove-signup"]');
+  if (!btn) return;
+  const id = btn.closest<HTMLElement>('[data-id]')!.dataset.id!;
+  const x = signups.find((s) => s.id === id);
+  if (!x || !confirm(`Remove ${x.name}'s sign-up? This can't be undone.`)) return;
+  btn.disabled = true;
+  try {
+    await api(`/api/admin/signups/${id}`, { method: 'DELETE' });
+    await load();
+  } catch {
+    btn.disabled = false;
+  }
 });
 
 // ---------- Start ----------

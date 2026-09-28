@@ -64,7 +64,7 @@ const details: [string, string][] = [
       </div>
 
       <div class="launch-signup">
-        <!-- Handled by Netlify Forms (form name "launch-signup"). Submissions appear in the Netlify dashboard. -->
+        <!-- Saved by /api/launch-signup (listed in /admin#launch) and copied to the Netlify form "launch-signup" for email alerts. -->
         <form
           id="signup"
           class="signup-form"
@@ -114,6 +114,7 @@ const details: [string, string][] = [
               I understand this isn’t a guided event and I’ll come prepared to navigate the round myself.
             </label>
           </div>
+          <p id="signup-status" class="signup-status" role="alert"></p>
           <button class="btn red" type="submit">Count me in</button>
           <p class="hint">
             Questions? Use the <a href="/contact/">contact form</a>. Please don’t call Birchwood Cafe about the event.
@@ -122,6 +123,9 @@ const details: [string, string][] = [
       </div>
     </div>
   </main>
+  <script>
+    import '../scripts/launch.ts';
+  </script>
 </Base>
 
 <style>
@@ -153,6 +157,8 @@ const details: [string, string][] = [
   .check input, .choice input { margin-top: 0.3rem; accent-color: #c4241c; }
   .opt { font-weight: 400; color: var(--ink-soft); }
   .hint { font-size: 0.85rem; color: var(--ink-soft); margin: 0.35rem 0 0; }
+  .signup-status { color: var(--red); font-weight: 600; margin: 0 0 0.6rem; }
+  .signup-status:empty { display: none; }
   .signup-form .btn { width: 100%; justify-content: center; margin-top: 0.4rem; }
 
   @media (max-width: 820px) {

@@ -1,0 +1,163 @@
+---
+import Base from '../layouts/Base.astro';
+import PageBanner from '../components/PageBanner.astro';
+import Postmark from '../components/Postmark.astro';
+import { LAUNCH, ROUNDS } from '../lib/config.ts';
+
+const details: [string, string][] = [
+  ['When', `${LAUNCH.dateLabel}, ${LAUNCH.startTime} start`],
+  ['Start and finish', 'Birchwood Cafe, Main Street, Shap CA10 3NJ'],
+  ['The round', `${ROUNDS.long.miles} miles (${ROUNDS.long.km} km) via Mosedale`],
+  ['Walk or run', 'Your choice. Go at your own pace'],
+  ['Cost', 'Free'],
+];
+---
+<Base
+  title="Launch day"
+  description={`Walk or run the Shap postal round together on ${LAUNCH.dateLabel}. ${LAUNCH.startTime} start from Birchwood Cafe. Free; sign up so we know numbers.`}
+>
+  <main id="main">
+    <PageBanner
+      page="launch"
+      title="Launch day"
+      kicker={`${LAUNCH.shortLabel} · ${LAUNCH.startTime} · Birchwood Cafe`}
+      lede="Come and walk or run the old postal round with us to mark the launch of the Postman’s Challenge. We set off together from the café at 9am and finish back there."
+    />
+
+    <div class="wrap page-body launch-grid">
+      <div class="launch-info">
+        <h2 id="details-h">The day</h2>
+        <dl class="launch-details">
+          {
+            details.map(([k, v]) => (
+              <div>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </div>
+            ))
+          }
+        </dl>
+
+        <div class="launch-note" role="note">
+          <h3>This isn’t a guided event</h3>
+          <p>
+            There are no marshals, signs or feed stations, and nobody will lead the way. Come prepared to navigate the
+            round yourself, with a map or the GPX on your phone or watch, and wear clothing and footwear suited to the
+            fells and the weather on the day. You take part at your own risk.
+          </p>
+          <p>
+            Read <a href="/route/">the route</a> and <a href="/safety/">safety &amp; respect</a> before you come.
+          </p>
+        </div>
+
+        <h3>Fancy dress</h3>
+        <p>
+          Postal-themed fancy dress is very welcome but not required: a postie’s cap, a satchel, a pillar-box red top or
+          a letter to carry round. Come as you are if you’d rather.
+        </p>
+
+        <h3>Log it afterwards</h3>
+        <p>
+          Record your round on your phone or watch, then <a href="/post/">post your round</a> with the GPX to get your
+          name in the round book. It isn’t a race: everyone who finishes goes in the book.
+        </p>
+      </div>
+
+      <div class="launch-signup">
+        <!-- Handled by Netlify Forms (form name "launch-signup"). Submissions appear in the Netlify dashboard. -->
+        <form
+          id="signup"
+          class="signup-form"
+          name="launch-signup"
+          method="POST"
+          action="/launch/thanks/"
+          data-netlify="true"
+          netlify-honeypot="bot-field"
+        >
+          <input type="hidden" name="form-name" value="launch-signup" />
+          <p class="hp" aria-hidden="true">
+            <label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off" /></label>
+          </p>
+          <Postmark line="LAUNCH" year="31.10.26" />
+          <h2 class="signup-title">Sign up</h2>
+          <p class="signup-lede">It’s free. Signing up just tells us how many to expect.</p>
+          <div class="field">
+            <label for="s-name">Your name</label>
+            <input id="s-name" name="name" type="text" autocomplete="name" required maxlength="80" />
+          </div>
+          <div class="field">
+            <label for="s-email">Email</label>
+            <input id="s-email" name="email" type="email" autocomplete="email" required maxlength="200" />
+            <p class="hint">Only so we can let you know if plans change. Never shown or shared.</p>
+          </div>
+          <div class="field">
+            <label for="s-people">How many of you are coming?</label>
+            <select id="s-people" name="people">
+              {Array.from({ length: 8 }, (_, i) => <option value={String(i + 1)}>{i === 7 ? '8 or more' : i + 1}</option>)}
+            </select>
+          </div>
+          <fieldset class="field">
+            <legend>Walking or running?</legend>
+            <div class="choice">
+              <label><input type="radio" name="mode" value="walk" required /> Walk</label>
+              <label><input type="radio" name="mode" value="run" /> Run</label>
+              <label><input type="radio" name="mode" value="both" /> A mix</label>
+            </div>
+          </fieldset>
+          <div class="field">
+            <label for="s-message">Anything else? <span class="opt">(optional)</span></label>
+            <textarea id="s-message" name="message" maxlength="1000" rows="3"></textarea>
+          </div>
+          <div class="field check">
+            <label>
+              <input type="checkbox" name="understood" value="yes" required />
+              I understand this isn’t a guided event and I’ll come prepared to navigate the round myself.
+            </label>
+          </div>
+          <button class="btn red" type="submit">Count me in</button>
+          <p class="hint">
+            Questions? Use the <a href="/contact/">contact form</a>. Please don’t call Birchwood Cafe about the event.
+          </p>
+        </form>
+      </div>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .launch-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: clamp(2rem, 5vw, 4rem); align-items: start; padding-bottom: 4rem; }
+  .launch-info h2 { margin-top: 0; }
+  .launch-info h3 { color: var(--fell); margin: 1.8rem 0 0.4rem; }
+  .launch-details { margin: 0 0 1.5rem; display: grid; gap: 0; border-top: 1px solid var(--line); }
+  .launch-details div { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; padding: 0.7rem 0; border-bottom: 1px solid var(--line); }
+  .launch-details dt { font-family: var(--sans); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--moss); padding-top: 0.15rem; }
+  .launch-details dd { margin: 0; font-weight: 600; }
+  .launch-note { border-left: 4px solid var(--red); background: var(--card); padding: 1rem 1.2rem; border-radius: 0 8px 8px 0; }
+  .launch-note h3 { margin-top: 0; color: var(--red); }
+  .launch-note p:last-child { margin-bottom: 0; }
+
+  .launch-signup { position: sticky; top: 5rem; }
+  .signup-form { position: relative; font-family: var(--sans); background: var(--card); border: 1px solid var(--line); border-top: 6px solid #c4241c; border-radius: 12px; padding: 1.6rem 1.5rem 1.4rem; box-shadow: 0 18px 44px rgba(20, 30, 18, 0.1); }
+  .signup-form :global(.postmark) { position: absolute; top: 0.9rem; right: 1rem; width: 78px; height: 78px; color: #c4241c; opacity: 0.75; transform: rotate(-12deg); }
+  .signup-title { margin: 0 0 0.3rem; }
+  .signup-lede { margin: 0 0 1.2rem; max-width: 70%; }
+  .signup-form .field { margin-bottom: 1rem; }
+  .signup-form label, .signup-form legend { display: block; font-weight: 700; margin-bottom: 0.3rem; }
+  .signup-form fieldset { border: 0; padding: 0; margin: 0 0 1rem; }
+  .signup-form input[type='text'], .signup-form input[type='email'], .signup-form select, .signup-form textarea {
+    width: 100%; font: inherit; font-size: 1rem; padding: 0.6rem 0.7rem; border: 1.5px solid var(--line);
+    border-radius: 4px; background: var(--paper); color: var(--ink);
+  }
+  .choice { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; }
+  .choice label, .check label { font-weight: 500; display: flex; gap: 0.5rem; align-items: flex-start; }
+  .check input, .choice input { margin-top: 0.3rem; accent-color: #c4241c; }
+  .opt { font-weight: 400; color: var(--ink-soft); }
+  .hint { font-size: 0.85rem; color: var(--ink-soft); margin: 0.35rem 0 0; }
+  .signup-form .btn { width: 100%; justify-content: center; margin-top: 0.4rem; }
+
+  @media (max-width: 820px) {
+    .launch-grid { grid-template-columns: 1fr; }
+    .launch-signup { position: static; }
+    .launch-details div { grid-template-columns: 1fr; gap: 0.15rem; }
+  }
+</style>

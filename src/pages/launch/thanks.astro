@@ -1,0 +1,16 @@
+---
+import Base from '../../layouts/Base.astro';
+import { LAUNCH } from '../../lib/config.ts';
+---
+<Base title="You’re signed up" noindex>
+  <main id="main">
+    <div class="wrap page-head">
+      <h1>You’re on the list</h1>
+      <p class="lede">
+        Thanks for signing up. See you at Birchwood Cafe at {LAUNCH.startTime} on {LAUNCH.dateLabel}. Bring a map or the
+        GPX, wear kit for the fells, and dig out that postie’s cap.
+      </p>
+      <p><a class="btn" href="/route/">Look at the route</a> <a class="btn" href="/launch/">Back to launch day</a></p>
+    </div>
+  </main>
+</Base>

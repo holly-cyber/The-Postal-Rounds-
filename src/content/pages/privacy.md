@@ -17,6 +17,10 @@ To limit spam, we keep a scrambled (hashed) version of your internet address wit
 
 Messages from the contact form go to the site organiser only, not to Birchwood Cafe. We use them to reply to you and nothing else.
 
+## When you sign up for launch day
+
+The launch day sign-up asks for your name, email, how many are coming and whether you’ll walk or run. It goes to the site organiser only, not to Birchwood Cafe, and we use it to know numbers and to tell you if plans change. We delete sign-ups after the event.
+
 ## Removing your entry
 
 Use the [contact form](/contact/) to ask for your round or GPX file to be removed, and we’ll delete it.

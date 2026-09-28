@@ -193,3 +193,16 @@ export const NOTICES: string[] = [
   'Near Shap Abbey the Coast to Coast path has been rerouted with new bridges, and some old signs have been removed. Follow the current right of way; don’t cut straight up from the abbey across the fields.',
   'A buzzard has been defending its territory in Swindale. Give it room, and keep moving.',
 ];
+
+/**
+ * The launch day: a group round from Birchwood. Shown on the home hero and at /launch/ until the day
+ * has passed (checked at build time, so the promo drops off at the next deploy after the event).
+ */
+export const LAUNCH = {
+  date: '2026-10-31',
+  dateLabel: 'Saturday 31 October 2026',
+  shortLabel: 'Sat 31 Oct',
+  startTime: '9am',
+};
+/** True until the end of launch day. */
+export const launchUpcoming = (now = new Date()) => now <= new Date(`${LAUNCH.date}T23:59:59Z`);

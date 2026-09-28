@@ -96,6 +96,7 @@ export const PAGE_PHOTOS = {
   log: { src: letterSummit, alt: 'A runner in a postie’s cap leaps along a grassy ridge holding a letter aloft.', focus: '40% 18%' },
   faq: { src: wall, alt: 'A dry stone wall with snowy fells beyond.', focus: '50% 40%' },
   cafe: { src: cafeCounter, alt: 'The old wooden post office counter at Birchwood Cafe, with the post office clock on the wall.', focus: '50% 22%' },
+  launch: { src: posties, alt: 'Two women in postie caps deliver letters at a ruined stone building.', focus: '50% 40%' },
   contact: { src: farmhouseSnow, alt: 'A stone farmhouse beneath a snow-dusted fell.', focus: '50% 40%' },
 } satisfies Record<string, Photo>;
 

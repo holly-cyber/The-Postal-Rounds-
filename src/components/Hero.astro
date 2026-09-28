@@ -2,7 +2,9 @@
 /** Full-bleed photo hero for the home page. */
 import { Picture } from 'astro:assets';
 import { HERO, PHOTO_CREDIT } from '../lib/photos.ts';
-import { ROUNDS, SITE } from '../lib/config.ts';
+import { LAUNCH, ROUNDS, SITE, launchUpcoming } from '../lib/config.ts';
+
+const showLaunch = launchUpcoming();
 
 const stats: [string, string][] = [
   [`${Math.round(ROUNDS.long.km)} km`, 'the round'],
@@ -33,6 +35,19 @@ const stats: [string, string][] = [
     </div>
 
     <div class="hero-panel">
+      {
+        showLaunch && (
+          <a class="hero-event" href="/launch/">
+            <span class="he-tag">Launch day</span>
+            <span class="he-when">
+              {LAUNCH.shortLabel} · {LAUNCH.startTime} · Birchwood Cafe
+            </span>
+            <span class="he-go">
+              Walk or run the round with us. Sign up <span aria-hidden="true">→</span>
+            </span>
+          </a>
+        )
+      }
       <p class="hero-lede">
         Until 1976, the local postman delivered mail to the remote farms and homes around Shap on foot: a tough 24 km, in
         all weathers, six days a week. Now it’s your turn.
@@ -154,6 +169,39 @@ const stats: [string, string][] = [
     border-radius: 10px;
     padding: 1.4rem 1.5rem 1.2rem;
   }
+  .hero-event {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.15rem 0.7rem;
+    align-items: center;
+    margin: -0.3rem 0 1.1rem;
+    padding: 0.75rem 0.9rem;
+    background: #c4241c;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    border: 1.5px dashed rgba(255, 255, 255, 0.55);
+    font-family: var(--sans);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .hero-event:hover { background: #a91e17; transform: translateY(-2px); }
+  .he-tag {
+    grid-row: span 2;
+    font-weight: 800;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: #fff;
+    color: #c4241c;
+    padding: 0.35rem 0.5rem;
+    border-radius: 4px;
+    line-height: 1.1;
+    max-width: 5.2rem;
+    text-align: center;
+  }
+  .he-when { font-weight: 800; font-size: 1.05rem; line-height: 1.2; }
+  .he-go { font-size: 0.9rem; color: #ffe3df; line-height: 1.3; }
   .hero-lede { font-size: 1.15rem; line-height: 1.5; margin: 0 0 1.1rem; color: #f3f5ef; }
   .hero-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.2rem; }
   .hero-ghost { background: transparent; border-color: #fff; color: #fff; }

@@ -31,7 +31,7 @@ palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`; light and dark
 | Entry shapes, `toPublic()`, sorting for the three leaderboard views | `src/lib/rounds.ts` |
 | Server-side form validation (the check that counts) | `src/server/submission.ts` |
 | Blob stores, admin-token check | `src/server/store.ts`, `src/server/http.ts` |
-| Pages: home, story, birchwood-cafe (Stacy's story, visiting), route, safety, post ("Post your round" entry form; /log/ redirects here), round-book (records + filterable leaderboard + everyone), FAQ, contact (Netlify Forms), privacy, admin | `src/pages/` |
+| Pages: home, story, birchwood-cafe (Stacy's story, visiting), route, safety, post ("Post your round" entry form; /log/ redirects here), round-book (records + filterable leaderboard + everyone), FAQ, contact (Netlify Forms), launch (31 Oct 2026 launch day + `launch-signup` Netlify form; details in `LAUNCH` in config.ts; home hero promo hides itself after the day at the next build), privacy, admin | `src/pages/` |
 | Browser logic: entry form (`log.ts`), round book with URL-shareable filters (`roundbook.ts`), admin | `src/scripts/` |
 | Sketch map (drawn from `STOPS`) | `src/components/SketchMap.astro` |
 | **Photos**: originals in `src/assets/photos/` (never `public/` — Astro optimises imported photos to AVIF/WebP). Which photo goes where, alt text, captions, crop focus | `src/lib/photos.ts` |

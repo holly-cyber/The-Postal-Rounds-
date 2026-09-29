@@ -1,7 +1,9 @@
 ---
-import { SITE } from '../lib/config.ts';
+import { SITE, launchUpcoming } from '../lib/config.ts';
 
+// Launch day leads the menu until the event has passed (build-time check).
 const NAV = [
+  ...(launchUpcoming() ? [{ href: '/launch/', label: 'Launch day' }] : []),
   { href: '/story/', label: 'The story' },
   { href: '/birchwood-cafe/', label: 'The café' },
   { href: '/route/', label: 'The route' },

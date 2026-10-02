@@ -105,7 +105,7 @@ function showGpx(r: GpxResult) {
     sr.className = 'sr-only';
     sr.textContent = c.pass ? ' (passed)' : ' (not passed)';
     li.append(mark, c.label, sr);
-    if (!c.pass && c.id === 'recorded') {
+    if (!c.pass && (c.id === 'recorded' || c.id === 'checkpoints' || c.id === 'route')) {
       const why = document.createElement('span');
       why.className = 'why';
       why.textContent = c.detail;

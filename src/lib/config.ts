@@ -37,12 +37,15 @@ export const GPX_RULES = {
   startRadiusKm: 1.0,
   /** …and finish this close to Birchwood. */
   finishRadiusKm: 1.0,
-  /** Longitude the track must reach west of, when a round requires Swindale. */
-  westOfLon: -2.735,
-  /** Latitude the track must reach south of, when a round requires Wet Sleddale. */
-  southOfLat: 54.5,
-  /** Latitude the track must reach south of, when a round requires Mosedale Cottage (at 54.4779). */
-  mosedaleSouthOfLat: 54.481,
+  /**
+   * A track passes a checkpoint when it comes this close (km). Generous, so GPS drift, a watch that
+   * drops signal for a while, or a slightly different line (the waterfalls, the fields at the end) still count.
+   */
+  checkpointRadiusKm: 0.3,
+  /** The track counts as following the route where it comes this close to the official line (km)… */
+  routeCorridorKm: 0.25,
+  /** …and must do so for at least this share of the official route. */
+  minRouteShare: 0.8,
   /** Faster than this on average (km/h, including stops) is not a round on foot. */
   maxAverageKmh: 18,
   /** Stretches faster than this (km/h) look like a vehicle; a few GPS jumps are allowed. */
@@ -65,9 +68,6 @@ export interface RoundInfo {
   gpxFile: string;
   /** Minimum recorded distance for a GPX of this round to pass. PROVISIONAL. */
   minDistanceKm: number;
-  requireSwindale: boolean;
-  requireWetSleddale: boolean;
-  requireMosedale: boolean;
 }
 
 export const ROUNDS: Record<RoundId, RoundInfo> = {
@@ -79,11 +79,24 @@ export const ROUNDS: Record<RoundId, RoundInfo> = {
     summary: 'Out through Swindale to Mosedale Cottage and home through Wet Sleddale. About 600 metres of climb. A steady run takes around 3 to 3½ hours; walkers should allow a full day.',
     gpxFile: 'shap-postal-long-round.gpx',
     minDistanceKm: 21,
-    requireSwindale: true,
-    requireWetSleddale: true,
-    requireMosedale: true,
   },
 };
+
+/**
+ * Checkpoints every GPX must pass, in this order (the direction the round is walked). Each point
+ * sits on the official route GPX, at or beside the stop it's named after. Stepps Hall isn't one:
+ * when the river is in spate the round takes the road from Thorney Bank to the A6 instead.
+ */
+export const ROUTE_CHECKPOINTS: (LatLon & { name: string })[] = [
+  { name: 'Shap Abbey', lat: 54.53117, lon: -2.70136 },
+  { name: 'Tailbert', lat: 54.52288, lon: -2.72891 },
+  { name: 'Swindale Foot', lat: 54.51748, lon: -2.73986 },
+  { name: 'Truss Gap', lat: 54.50935, lon: -2.75574 },
+  { name: 'Swindale Head', lat: 54.49861, lon: -2.7683 },
+  { name: 'Mosedale Cottage', lat: 54.47793, lon: -2.78109 },
+  { name: 'Sleddale Hall', lat: 54.49289, lon: -2.72209 },
+  { name: 'Thorney Bank', lat: 54.50055, lon: -2.69919 },
+];
 
 /** Form and upload limits. The server enforces these; the browser mirrors them. */
 export const LIMITS = {

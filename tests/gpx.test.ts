@@ -5,11 +5,11 @@ import { readFileSync } from 'node:fs';
 import { GpxError, parseGpx, parsePoints } from '../src/lib/gpx.ts';
 import { prepare } from '../src/server/submission.ts';
 import { leaderboard, categoryLabel, type PublicRound } from '../src/lib/rounds.ts';
-import { LONG_WIGGLE, SHORT_WIGGLE, roundTrack, toGpx } from './make-gpx.ts';
+import { incompleteTrack, reversedTrack, roundTrack, skipsMosedaleTrack, toGpx } from './make-gpx.ts';
 
-const passing = toGpx(roundTrack(LONG_WIGGLE, true));
-/** A round that cuts over Ralfland Fell and skips Mosedale. It no longer counts. */
-const skipsMosedale = toGpx(roundTrack(SHORT_WIGGLE));
+const passing = toGpx(roundTrack());
+/** Cuts from Swindale Head to Sleddale Hall and skips Mosedale. It doesn't count. */
+const skipsMosedale = toGpx(skipsMosedaleTrack(), undefined, 3 * 3600);
 
 test('a full round passes every check', () => {
   const r = parseGpx(passing, 'long');
@@ -19,11 +19,30 @@ test('a full round passes every check', () => {
   assert.equal(r.startDate, '2026-09-12');
 });
 
-test('a short walk fails west, south and distance', () => {
-  const pts = roundTrack().filter((p) => p.lon > -2.71 && p.lat > 54.505);
-  const r = parseGpx(toGpx(pts), 'long');
+test('a short walk fails the distance, the checkpoints and the route', () => {
+  const r = parseGpx(toGpx(incompleteTrack(), undefined, 2 * 3600), 'long');
   const failed = r.checks.filter((c) => !c.pass).map((c) => c.id).sort();
-  assert.deepEqual(failed, ['distance', 'mosedale', 'south', 'west']);
+  assert.deepEqual(failed, ['checkpoints', 'distance', 'route']);
+  assert.match(r.checks.find((c) => c.id === 'checkpoints')!.detail, /Truss Gap.*Thorney Bank/);
+});
+
+test('the round walked backwards passes every checkpoint, but not in order', () => {
+  const r = parseGpx(toGpx(reversedTrack()), 'long');
+  assert.deepEqual(r.checks.filter((c) => !c.pass).map((c) => c.id), ['checkpoints']);
+  assert.match(r.checks.find((c) => c.id === 'checkpoints')!.detail, /not in the round’s order/);
+});
+
+test('margin for error: a track up to ~200 m off the line, or with a GPS gap, still passes', () => {
+  // Shift the whole track ~200 m east and north.
+  const offset = roundTrack().map((p) => ({ lat: p.lat + 0.0013, lon: p.lon + 0.0018 }));
+  offset[0] = roundTrack()[0];
+  const r = parseGpx(toGpx(offset), 'long');
+  assert.equal(r.passed, true, JSON.stringify(r.checks));
+  // Drop 1 km of points around Truss Gap (the watch lost signal): the straight gap still passes it.
+  const full = roundTrack();
+  const i = full.findIndex((p) => Math.abs(p.lat - 54.50935) < 0.0004 && Math.abs(p.lon + 2.75574) < 0.0006);
+  const gappy = [...full.slice(0, i - 25), ...full.slice(i + 25)];
+  assert.equal(parseGpx(toGpx(gappy), 'long').passed, true);
 });
 
 test('a loop started elsewhere fails start and finish', () => {
@@ -49,9 +68,10 @@ test('rejects non-GPX input', () => {
   assert.throws(() => parseGpx('<gpx></gpx>', 'long'), GpxError);
 });
 
-test('a round that skips Mosedale over Ralfland Fell fails', () => {
+test('a round that skips Mosedale fails the checkpoints', () => {
   const r = parseGpx(skipsMosedale, 'long');
-  assert.deepEqual(r.checks.filter((c) => !c.pass).map((c) => c.id), ['distance', 'mosedale']);
+  assert.ok(r.checks.filter((c) => !c.pass).some((c) => c.id === 'checkpoints'));
+  assert.match(r.checks.find((c) => c.id === 'checkpoints')!.detail, /Didn’t pass Mosedale Cottage$/);
 });
 
 test('the OS Maps route follows the round but is refused as a planned route (no timings)', () => {
@@ -124,7 +144,7 @@ test('server: rejects future GPX dates and long names; ignores links and photos'
   assert.equal((await prepare(withLink, 'x', now)).entry.link, null);
 
   const future = baseForm();
-  future.set('gpx', new Blob([toGpx(roundTrack(LONG_WIGGLE, true), Date.parse('2026-09-30T08:00:00Z'))]), 'round.gpx');
+  future.set('gpx', new Blob([toGpx(roundTrack(), Date.parse('2026-09-30T08:00:00Z'))]), 'round.gpx');
   await assert.rejects(prepare(future, 'x', now), /future/);
 
   const longName = baseForm();
@@ -193,10 +213,10 @@ test('server: email is required, kept privately, and never public', async () => 
 });
 
 test('a timed round that is impossibly fast, or runs backwards in time, is not a recorded activity', () => {
-  const inAnHour = toGpx(roundTrack(LONG_WIGGLE, true), undefined, 3600);
+  const inAnHour = toGpx(roundTrack(), undefined, 3600);
   const fast = parseGpx(inAnHour, 'long');
   assert.equal(fast.checks.find((c) => c.id === 'recorded')!.pass, false);
-  const gpx = toGpx(roundTrack(LONG_WIGGLE, true));
+  const gpx = toGpx(roundTrack());
   const times = [...gpx.matchAll(/<time>([^<]+)<\/time>/g)].map((m) => m[1]).reverse();
   let n = 0;
   const backwards = gpx.replace(/<time>[^<]+<\/time>/g, () => `<time>${times[n++]}</time>`);

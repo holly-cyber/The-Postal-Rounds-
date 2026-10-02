@@ -5,14 +5,16 @@
  * Deliberately DOM-free: a small tag scanner works identically in the
  * browser and in Node, where there is no DOMParser.
  */
-import { BIRCHWOOD, GPX_RULES as R, LIMITS, ROUNDS, type LatLon, type RoundId } from './config.ts';
+import { BIRCHWOOD, GPX_RULES as R, LIMITS, ROUNDS, ROUTE_CHECKPOINTS, type LatLon, type RoundId } from './config.ts';
+import { ROUTE_LINE } from './route.ts';
 
 export interface GpxPoint extends LatLon {
   time?: number;
 }
 
 export interface GpxCheck {
-  id: 'recorded' | 'start' | 'finish' | 'distance' | 'west' | 'south' | 'mosedale';
+  /** 'west', 'south' and 'mosedale' are the older checks, still found on entries posted before Oct 2026. */
+  id: 'recorded' | 'start' | 'finish' | 'distance' | 'checkpoints' | 'route' | 'west' | 'south' | 'mosedale';
   label: string;
   pass: boolean;
   detail: string;
@@ -31,6 +33,8 @@ export interface GpxResult {
   timed: boolean;
   /** ISO date (YYYY-MM-DD) of the first timestamp, if any. */
   startDate: string | null;
+  /** Share of the official route the track followed (0–1). */
+  routeShare: number;
   checks: GpxCheck[];
   passed: boolean;
 }
@@ -127,6 +131,77 @@ function recordedCheck(pts: GpxPoint[], times: number[], km: number, elapsedSecs
   return { id: 'recorded', label: 'A recorded activity', pass: true, detail: 'Timed from start to finish' };
 }
 
+// ---------- Following the route ----------
+
+/** Flat x/y in km around Shap: accurate to well under 1% over the round. */
+const KM_PER_LAT = 110.574;
+const KM_PER_LON = 111.32 * Math.cos((BIRCHWOOD.lat * Math.PI) / 180);
+type XY = [number, number];
+const xy = (lat: number, lon: number): XY => [lon * KM_PER_LON, lat * KM_PER_LAT];
+
+/** Distance (km) from p to the segment a–b. Segments bridge GPS dropouts, so a gap still counts. */
+function segKm(p: XY, a: XY, b: XY): number {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const len2 = dx * dx + dy * dy;
+  const t = len2 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2)) : 0;
+  return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
+}
+
+/** The track as flat points, thinned to one every ~10 m (plenty for 300 m and 250 m margins). */
+function thin(pts: GpxPoint[]): XY[] {
+  const out: XY[] = [xy(pts[0].lat, pts[0].lon)];
+  for (const p of pts) {
+    const q = xy(p.lat, p.lon);
+    const last = out[out.length - 1];
+    if (Math.hypot(q[0] - last[0], q[1] - last[1]) >= 0.01) out.push(q);
+  }
+  return out;
+}
+
+/** First segment index at or after `from` that passes within `km` of p, or -1. */
+function firstNear(track: XY[], p: XY, km: number, from = 0): number {
+  if (track.length === 1) return segKm(p, track[0], track[0]) <= km ? 0 : -1;
+  for (let i = Math.max(0, from); i < track.length - 1; i++) if (segKm(p, track[i], track[i + 1]) <= km) return i;
+  return -1;
+}
+
+const listNames = (names: string[]) =>
+  names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+
+/** Every checkpoint, in the round's order, each within the margin. */
+function checkpointsCheck(track: XY[]): GpxCheck {
+  const label = 'Passes the checkpoints in order';
+  const missed: string[] = [];
+  const outOfOrder: string[] = [];
+  let at = 0;
+  for (const c of ROUTE_CHECKPOINTS) {
+    const p = xy(c.lat, c.lon);
+    const i = firstNear(track, p, R.checkpointRadiusKm, at);
+    if (i >= 0) at = i;
+    else if (firstNear(track, p, R.checkpointRadiusKm) >= 0) outOfOrder.push(c.name);
+    else missed.push(c.name);
+  }
+  const n = ROUTE_CHECKPOINTS.length;
+  if (missed.length) {
+    return { id: 'checkpoints', label, pass: false, detail: `Didn’t pass ${listNames(missed)}` };
+  }
+  if (outOfOrder.length) {
+    return {
+      id: 'checkpoints', label, pass: false,
+      detail: `Passed every checkpoint, but not in the round’s order (${ROUTE_CHECKPOINTS[0].name} first, ${ROUTE_CHECKPOINTS[n - 1].name} last)`,
+    };
+  }
+  return { id: 'checkpoints', label, pass: true, detail: `Passed all ${n} checkpoints, from ${ROUTE_CHECKPOINTS[0].name} to ${ROUTE_CHECKPOINTS[n - 1].name}` };
+}
+
+/** Share of the official line the track came close to. */
+function routeShare(track: XY[]): number {
+  let near = 0;
+  for (const [lat, lon] of ROUTE_LINE) if (firstNear(track, xy(lat, lon), R.routeCorridorKm) >= 0) near++;
+  return ROUTE_LINE.length ? near / ROUTE_LINE.length : 0;
+}
+
 /** Run the round checks for the chosen round against a list of points. */
 export function checkPoints(pts: GpxPoint[], round: RoundId): GpxResult {
   const rules = ROUNDS[round];
@@ -150,10 +225,10 @@ export function checkPoints(pts: GpxPoint[], round: RoundId): GpxResult {
   const startDate = times.length ? new Date(times[0]).toISOString().slice(0, 10) : null;
 
   const recorded = recordedCheck(pts, times, km, elapsedSecs);
-  const reachedWest = minLon <= R.westOfLon;
-  const reachedSouth = minLat <= R.southOfLat;
-  const reachedMosedale = minLat <= R.mosedaleSouthOfLat;
-  const all: (GpxCheck | null)[] = [
+  const track = thin(pts);
+  const share = routeShare(track);
+  const pct = Math.round(share * 100);
+  const checks: GpxCheck[] = [
     recorded,
     {
       id: 'start',
@@ -173,26 +248,14 @@ export function checkPoints(pts: GpxPoint[], round: RoundId): GpxResult {
       pass: km >= rules.minDistanceKm,
       detail: `Needs at least ${rules.minDistanceKm} km for ${rules.name.toLowerCase()}`,
     },
-    !rules.requireSwindale ? null : {
-      id: 'west',
-      label: 'Reaches Swindale',
-      pass: reachedWest,
-      detail: reachedWest ? 'Reached Swindale' : 'Didn’t get far enough west',
-    },
-    !rules.requireWetSleddale ? null : {
-      id: 'south',
-      label: 'Reaches Wet Sleddale',
-      pass: reachedSouth,
-      detail: reachedSouth ? 'Reached Wet Sleddale' : 'Didn’t get far enough south',
-    },
-    !rules.requireMosedale ? null : {
-      id: 'mosedale',
-      label: 'Reaches Mosedale Cottage',
-      pass: reachedMosedale,
-      detail: reachedMosedale ? 'Reached Mosedale Cottage' : 'Didn’t reach Mosedale Cottage',
+    checkpointsCheck(track),
+    {
+      id: 'route',
+      label: 'Follows the route',
+      pass: share >= R.minRouteShare,
+      detail: `Follows ${pct}% of the route (needs ${Math.round(R.minRouteShare * 100)}%)`,
     },
   ];
-  const checks = all.filter((c): c is GpxCheck => c !== null);
 
   return {
     points: pts.length,
@@ -204,6 +267,7 @@ export function checkPoints(pts: GpxPoint[], round: RoundId): GpxResult {
     elapsedSecs,
     timed: times.length >= pts.length * 0.9 && !!elapsedSecs,
     startDate,
+    routeShare: Math.round(share * 1000) / 1000,
     checks,
     passed: checks.every((c) => c.pass),
   };

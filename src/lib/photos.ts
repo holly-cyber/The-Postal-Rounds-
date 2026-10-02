@@ -27,6 +27,8 @@ import autumnValley from '../assets/photos/autumn-valley.jpg';
 import wall from '../assets/photos/dry-stone-wall.jpg';
 import cafeCounter from '../assets/photos/finish-at-birchwood.jpg';
 import trussGap from '../assets/photos/truss-gap-house.jpg';
+import thorneyPostbox from '../assets/photos/thorney-bank-postbox.jpg';
+import steppingStones from '../assets/photos/stepping-stones.jpg';
 
 export interface Photo {
   src: ImageMetadata;
@@ -66,7 +68,9 @@ export const STOP_PHOTOS: Record<string, Photo> = {
   'Swindale Foot': { src: swindaleOverlook, alt: 'A runner looks down a long green valley from a rocky knoll.', caption: 'Dropping into Swindale' },
   'Truss Gap': { src: trussGap, alt: 'Truss Gap House, a stone farmhouse behind dry stone walls, with snow on the fell above.', caption: 'Truss Gap House, Swindale', focus: '65% 55%' },
   'Mosedale Cottage': { src: mosedaleGroup, alt: 'Four runners outside Mosedale Cottage, a small white bothy on the fell.', caption: 'Mosedale Cottage' },
-  'Thorney Bank': { src: reservoir, alt: 'Autumn fellside above Wet Sleddale reservoir.', caption: 'Above Wet Sleddale' },
+  'Sleddale Hall': { src: reservoir, alt: 'Autumn fellside above Wet Sleddale reservoir.', caption: 'Above Wet Sleddale' },
+  'Thorney Bank': { src: thorneyPostbox, alt: 'A red Victorian postbox, marked VR, set into a mossy dry stone wall.', caption: 'The Victorian postbox at Thorney Bank, Wet Sleddale', focus: '50% 42%' },
+  'Stepps Hall and home': { src: steppingStones, alt: 'Big stepping stones crossing a shallow river, with fields and fells beyond.', caption: 'The stepping stones by Stepps Hall', focus: '50% 55%' },
 };
 
 /** The café's old post office counter, with the post office clock behind. */

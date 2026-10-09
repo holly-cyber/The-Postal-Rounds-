@@ -27,8 +27,8 @@ palette fell `#2E4A2B`, moss `#6F8B3F`, pillar-box red `#C4241C`; light and dark
 | **All tunable constants** — site name/strapline, Instagram, pins flag, Birchwood coordinates, the round (distance, GPX file name, check thresholds; one entry, id `long`, kept so stored entries match), upload limits, rate limit, the stops (text + sketch-map positions), home facts, route notices | `src/lib/config.ts` |
 | **Editable page text** (story, café, safety & respect, FAQ, privacy) | `src/content/pages/*.md` |
 | GPX downloads (buttons appear once the files exist) | `public/gpx/` |
-| **GPX parser + the checks** (recorded activity, start, finish, distance, the 8 checkpoints in order within 300 m (`ROUTE_CHECKPOINTS` in config), follows ≥80% of the official line within 250 m) (shared by browser and server; DOM-free) | `src/lib/gpx.ts` |
-| The official line used by the checks, generated from `public/gpx/` (`npm run route` after replacing the route GPX) | `src/lib/route.ts` |
+| **GPX parser + the checks** (recorded activity, start, finish, distance, the 10 checkpoints in order within 75 m (`ROUTE_CHECKPOINTS` in config); checkpoints are the only must-do points) (shared by browser and server; DOM-free) | `src/lib/gpx.ts` |
+| The official line, generated from `public/gpx/` (`npm run route`); used to build test tracks | `src/lib/route.ts` |
 | Entry shapes, `toPublic()`, sorting for the three leaderboard views | `src/lib/rounds.ts` |
 | Server-side form validation (the check that counts) | `src/server/submission.ts` |
 | Blob stores, admin-token check | `src/server/store.ts`, `src/server/http.ts` |

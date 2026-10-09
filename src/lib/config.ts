@@ -38,14 +38,11 @@ export const GPX_RULES = {
   /** …and finish this close to Birchwood. */
   finishRadiusKm: 1.0,
   /**
-   * A track passes a checkpoint when it comes this close (km). Generous, so GPS drift, a watch that
-   * drops signal for a while, or a slightly different line (the waterfalls, the fields at the end) still count.
+   * A track passes a checkpoint when it comes this close (km). Tight enough that turning back short of
+   * Mosedale Cottage or skipping Goggleby Stone doesn't count; loose enough for phone GPS wandering in
+   * the valleys. Distances are to the line between recorded points, so a watch that drops signal still counts.
    */
-  checkpointRadiusKm: 0.3,
-  /** The track counts as following the route where it comes this close to the official line (km)… */
-  routeCorridorKm: 0.25,
-  /** …and must do so for at least this share of the official route. */
-  minRouteShare: 0.8,
+  checkpointRadiusKm: 0.075,
   /** Faster than this on average (km/h, including stops) is not a round on foot. */
   maxAverageKmh: 18,
   /** Stretches faster than this (km/h) look like a vehicle; a few GPS jumps are allowed. */
@@ -83,12 +80,17 @@ export const ROUNDS: Record<RoundId, RoundInfo> = {
 };
 
 /**
- * Checkpoints every GPX must pass, in this order (the direction the round is walked). Each point
- * sits on the official route GPX, at or beside the stop it's named after. Stepps Hall isn't one:
- * when the river is in spate the round takes the road from Thorney Bank to the A6 instead.
+ * Checkpoints every GPX must pass, in this order (the direction the round is walked). They are the
+ * only must-do points: the best line between them is the traditional route anyway. Goggleby Stone,
+ * the Abbey bridge gate and the Rayside road gate were pinned in OS Maps (Oct 2026): the stone stops
+ * a faster run down the road, the Rayside gate stops cutting across fields, and the bridge gate counts
+ * whether or not you detour to the Abbey. The rest sit on the official route GPX. Stepps Hall isn't
+ * one: when the river is in spate the round takes the road from Thorney Bank to the A6 instead.
  */
 export const ROUTE_CHECKPOINTS: (LatLon & { name: string })[] = [
-  { name: 'Shap Abbey', lat: 54.53117, lon: -2.70136 },
+  { name: 'Goggleby Stone', lat: 54.529695, lon: -2.680719 },
+  { name: 'the gate over the bridge at Shap Abbey', lat: 54.531103, lon: -2.701209 },
+  { name: 'the gate onto Rayside road', lat: 54.533791, lon: -2.714462 },
   { name: 'Tailbert', lat: 54.52288, lon: -2.72891 },
   { name: 'Swindale Foot', lat: 54.51748, lon: -2.73986 },
   { name: 'Truss Gap', lat: 54.50935, lon: -2.75574 },

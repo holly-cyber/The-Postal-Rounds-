@@ -25,7 +25,7 @@ No. Any free tracking app works: Strava, Garmin Connect, OS Maps, Komoot or simi
 
 ### How is my round checked?
 
-Record it on your phone or watch and upload the GPX file when you post your round. We check that it’s a recorded activity (not a planned route), that it starts and finishes at Birchwood Cafe, that it’s the full distance, that it passes the checkpoints in order (Shap Abbey, Tailbert, Swindale Foot, Truss Gap, Swindale Head, Mosedale Cottage, Sleddale Hall and Thorney Bank) and that it follows most of the route. There’s room for GPS wobble, a watch that loses signal for a while, or a slightly different line: you only need to pass within about 300 metres of each checkpoint.
+Record it on your phone or watch and upload the GPX file when you post your round. We check that it’s a recorded activity (not a planned route), that it starts and finishes at Birchwood Cafe, that it’s the full distance, and that it passes the checkpoints in order: Goggleby Stone, the gate over the bridge at Shap Abbey, the gate onto Rayside road, Tailbert, Swindale Foot, Truss Gap, Swindale Head, Mosedale Cottage, Sleddale Hall and Thorney Bank. How you get between them is up to you, though the traditional route is the best line anyway. There’s room for GPS wobble and for a watch that loses signal for a while: you need to pass within about 75 metres of each checkpoint.
 
 ### Where do I start?
 

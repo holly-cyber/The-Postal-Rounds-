@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { gzipSync } from 'node:zlib';
 import { readFileSync } from 'node:fs';
-import { GpxError, parseGpx, parsePoints } from '../src/lib/gpx.ts';
+import { GpxError, haversineKm, parseGpx, parsePoints } from '../src/lib/gpx.ts';
 import { prepare } from '../src/server/submission.ts';
 import { leaderboard, categoryLabel, type PublicRound } from '../src/lib/rounds.ts';
 import { incompleteTrack, reversedTrack, roundTrack, skipsMosedaleTrack, toGpx } from './make-gpx.ts';
@@ -19,11 +19,21 @@ test('a full round passes every check', () => {
   assert.equal(r.startDate, '2026-09-12');
 });
 
-test('a short walk fails the distance, the checkpoints and the route', () => {
+test('a short walk fails the distance and the checkpoints', () => {
   const r = parseGpx(toGpx(incompleteTrack(), undefined, 2 * 3600), 'long');
   const failed = r.checks.filter((c) => !c.pass).map((c) => c.id).sort();
-  assert.deepEqual(failed, ['checkpoints', 'distance', 'route']);
+  assert.deepEqual(failed, ['checkpoints', 'distance']);
   assert.match(r.checks.find((c) => c.id === 'checkpoints')!.detail, /Truss Gap.*Thorney Bank/);
+});
+
+test('turning back 150 m short of Mosedale Cottage, or running down the road past Goggleby Stone, fails', () => {
+  const short = roundTrack().filter((p) => haversineKm(p, { lat: 54.47793, lon: -2.78109 }) > 0.15);
+  assert.match(parseGpx(toGpx(short), 'long').checks.find((c) => c.id === 'checkpoints')!.detail, /Didn’t pass Mosedale Cottage$/);
+  // North up the A6 from the café and along the road to the Abbey, then the rest of the round.
+  const full = roundTrack();
+  const abbey = full.findIndex((p) => haversineKm(p, { lat: 54.531103, lon: -2.701209 }) < 0.05);
+  const byRoad = [full[0], { lat: 54.5345, lon: -2.6795 }, { lat: 54.5335, lon: -2.6905 }, ...full.slice(abbey)];
+  assert.match(parseGpx(toGpx(byRoad), 'long').checks.find((c) => c.id === 'checkpoints')!.detail, /Didn’t pass Goggleby Stone$/);
 });
 
 test('the round walked backwards passes every checkpoint, but not in order', () => {
@@ -32,9 +42,9 @@ test('the round walked backwards passes every checkpoint, but not in order', () 
   assert.match(r.checks.find((c) => c.id === 'checkpoints')!.detail, /not in the round’s order/);
 });
 
-test('margin for error: a track up to ~200 m off the line, or with a GPS gap, still passes', () => {
-  // Shift the whole track ~200 m east and north.
-  const offset = roundTrack().map((p) => ({ lat: p.lat + 0.0013, lon: p.lon + 0.0018 }));
+test('margin for error: a track ~50 m off the line, or with a GPS gap, still passes', () => {
+  // Shift the whole track ~50 m east and north, like a phone drifting in a valley.
+  const offset = roundTrack().map((p) => ({ lat: p.lat + 0.0003, lon: p.lon + 0.0004 }));
   offset[0] = roundTrack()[0];
   const r = parseGpx(toGpx(offset), 'long');
   assert.equal(r.passed, true, JSON.stringify(r.checks));

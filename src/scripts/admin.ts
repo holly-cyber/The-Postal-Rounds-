@@ -229,6 +229,7 @@ function entryHtml(r: StoredRound): string {
     ${r.email ? `<p><a href="mailto:${esc(r.email)}">${esc(r.email)}</a></p>` : ''}
     ${r.link ? `<p>Activity: <a href="${esc(r.link)}" target="_blank" rel="noopener noreferrer">${esc(r.link)}</a></p>` : ''}
     ${r.note ? `<p>“${esc(r.note)}”</p>` : ''}
+    ${r.manual ? `<p class="adjusted">Added by hand: ${esc(r.manual.reason)}</p>` : ''}
     ${adjustmentHtml(r)}
     ${checks}
     <div class="photo-slot"></div>
@@ -491,6 +492,29 @@ $('#ld-form').addEventListener('submit', async (e) => {
     status.textContent = 'Added.';
   } catch {
     status.textContent = '';
+  }
+});
+
+$('#rd-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.currentTarget as HTMLFormElement;
+  const status = $('#rd-form-status');
+  const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+  submit.disabled = true;
+  status.textContent = 'Adding…';
+  try {
+    const res = await api('/api/admin/rounds', { method: 'POST', body: new FormData(form) });
+    if (!res.ok) {
+      status.textContent = ((await res.json().catch(() => null)) as { error?: string } | null)?.error ?? 'That didn’t save.';
+      return;
+    }
+    form.reset();
+    await load();
+    status.textContent = 'Added.';
+  } catch {
+    status.textContent = '';
+  } finally {
+    submit.disabled = false;
   }
 });
 

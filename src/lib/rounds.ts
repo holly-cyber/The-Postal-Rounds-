@@ -55,6 +55,11 @@ export interface StoredRound extends PublicRound {
     reason: string | null;
     at: string;
   };
+  /** Set when the round was added by hand in /admin (time known another way). Admin only. */
+  manual?: {
+    reason: string;
+    at: string;
+  };
   gpx: {
     points: number;
     elapsedSecs: number | null;

@@ -6,6 +6,7 @@
  */
 import Base from '../layouts/Base.astro';
 import { LAUNCH, SITE } from '../lib/config.ts';
+import { AGE_GROUPS } from '../lib/rounds.ts';
 ---
 <Base title="Round book admin" noindex bare>
   <!-- Sign in -->
@@ -80,6 +81,37 @@ import { LAUNCH, SITE } from '../lib/config.ts';
         </div>
         <p id="rd-summary" class="muted"></p>
         <div id="rd-list"></div>
+
+        <details class="panel ld-add">
+          <summary>Add a round by hand</summary>
+          <p class="muted">
+            For a round whose GPX can’t carry the time, such as a route export with no timings, when you know the time
+            another way (for example from someone who ran with them). It goes in the round book as Verified. A GPX is
+            optional: if you add one, its route checks are shown here.
+          </p>
+          <form id="rd-form" class="ld-form">
+            <label>Name <input name="name" required maxlength="40" /></label>
+            <label><span>Email <span class="muted">(optional)</span></span><input name="email" type="email" maxlength="254" /></label>
+            <label>Walked or ran
+              <select name="mode"><option value="run">Ran</option><option value="walk">Walked</option></select>
+            </label>
+            <label>Category
+              <select name="sex"><option value="">Not said</option><option value="F">Female</option><option value="M">Male</option></select>
+            </label>
+            <label>Age group
+              <select name="ageGroup"><option value="">Not said</option>{AGE_GROUPS.map(([v, l]) => <option value={v}>{l}</option>)}</select>
+            </label>
+            <label>Date <input name="date" type="date" required /></label>
+            <label>Time <input name="time" required placeholder="h:mm or h:mm:ss" pattern="\d{1,2}:[0-5]\d(:[0-5]\d)?" /></label>
+            <label><span>GPX <span class="muted">(optional)</span></span><input name="gpx" type="file" accept=".gpx,application/gpx+xml" /></label>
+            <label class="wide"><span>Reason <span class="muted">(admin only)</span></span><input name="reason" required maxlength="300" placeholder="e.g. Route export with no timings; time from a running partner’s recorded activity" /></label>
+            <label class="wide"><span>Note <span class="muted">(optional, shown publicly)</span></span><input name="note" maxlength="140" /></label>
+            <div class="wide ld-form-foot">
+              <button class="btn small red" type="submit">Add round</button>
+              <span id="rd-form-status" role="status"></span>
+            </div>
+          </form>
+        </details>
       </section>
 
       <!-- Contacts -->

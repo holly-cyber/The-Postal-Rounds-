@@ -45,6 +45,16 @@ export interface StoredRound extends PublicRound {
   /** For follow-up only. Never public; older entries may not have one. */
   email?: string;
   verifiedAt: string | null;
+  /**
+   * Set when an admin verified the round by hand and added time (a watch started late) or gave
+   * a reason. `secs` is then `gpxSecs + addedSecs`. Admin only; never in the public API.
+   */
+  adjustment?: {
+    gpxSecs: number;
+    addedSecs: number;
+    reason: string | null;
+    at: string;
+  };
   gpx: {
     points: number;
     elapsedSecs: number | null;

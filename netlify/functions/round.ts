@@ -1,11 +1,13 @@
 /**
- * PATCH  /api/rounds/:id  { verified: boolean }  — admin only.
+ * PATCH  /api/rounds/:id  { verified: boolean, addMins?, reason? }  — admin only (see src/server/verify.ts).
  * DELETE /api/rounds/:id                         — admin only; removes evidence too.
  */
 import type { Config, Context } from '@netlify/functions';
 import type { StoredRound } from '../../src/lib/rounds.ts';
 import { error, isAdmin, json } from '../../src/server/http.ts';
 import { evidenceStore, roundsStore } from '../../src/server/store.ts';
+import { InvalidSubmission } from '../../src/server/submission.ts';
+import { applyAdminPatch } from '../../src/server/verify.ts';
 
 export default async (req: Request, context: Context) => {
   if (!isAdmin(req)) return error(401, 'Admin token required.');
@@ -24,12 +26,15 @@ export default async (req: Request, context: Context) => {
     } catch {
       return error(400, 'Send JSON.');
     }
-    const verified = (body as { verified?: unknown })?.verified;
-    if (typeof verified !== 'boolean') return error(400, 'Send { "verified": true | false }.');
-    entry.verified = verified;
-    entry.verifiedAt = verified ? new Date().toISOString() : null;
-    await store.setJSON(id, entry);
-    return json({ ok: true, entry });
+    let next: StoredRound;
+    try {
+      next = applyAdminPatch(entry, body);
+    } catch (e) {
+      if (e instanceof InvalidSubmission) return error(400, e.message);
+      throw e;
+    }
+    await store.setJSON(id, next);
+    return json({ ok: true, entry: next });
   }
 
   if (req.method === 'DELETE') {

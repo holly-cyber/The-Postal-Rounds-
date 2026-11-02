@@ -229,14 +229,33 @@ function entryHtml(r: StoredRound): string {
     ${r.email ? `<p><a href="mailto:${esc(r.email)}">${esc(r.email)}</a></p>` : ''}
     ${r.link ? `<p>Activity: <a href="${esc(r.link)}" target="_blank" rel="noopener noreferrer">${esc(r.link)}</a></p>` : ''}
     ${r.note ? `<p>“${esc(r.note)}”</p>` : ''}
+    ${adjustmentHtml(r)}
     ${checks}
     <div class="photo-slot"></div>
     <div class="buttons">
+      ${r.verified ? '<button class="btn small ghost" data-act="unverify">Undo verify</button>' : '<button class="btn small" data-act="verify">Verify…</button>'}
       ${r.files.gpx ? '<button class="btn small ghost" data-act="gpx">Download GPX</button>' : ''}
       ${r.files.photo ? '<button class="btn small ghost" data-act="photo">Show photo</button>' : ''}
       <button class="btn small danger" data-act="remove">Remove</button>
     </div>
   </article>`;
+}
+
+function adjustmentHtml(r: StoredRound): string {
+  const a = r.adjustment;
+  if (!a) return '';
+  const added = a.addedSecs ? `${Math.round(a.addedSecs / 60)} min added to the GPX time (${formatDuration(a.gpxSecs)})` : 'Time as recorded';
+  return `<p class="adjusted">Verified by hand: ${esc(added)}${a.reason ? ` · ${esc(a.reason)}` : ''}</p>`;
+}
+
+/** Inline form under a round's buttons: minutes to add to the GPX time and a reason, then save. */
+function verifyFormHtml(r: StoredRound): string {
+  return `<form class="verify-form">
+    <p class="meta">Verify ${esc(r.name)}’s round by hand so it counts in the round book. GPX time ${formatDuration(r.secs)}.</p>
+    <label>Minutes to add <span class="muted">(watch started late)</span><input name="addMins" type="number" min="0" max="60" step="1" value="0" inputmode="numeric" /></label>
+    <label class="wide">Reason <span class="muted">(admin only)</span><input name="reason" maxlength="300" placeholder="e.g. Watch started at the stile after Goggleby Stone; time confirmed by a running partner" /></label>
+    <div class="verify-foot"><button class="btn small" type="submit">Verify round</button><button class="btn small ghost" type="button" data-act="cancel-verify">Cancel</button><span class="verify-status" role="status"></span></div>
+  </form>`;
 }
 
 function matches(r: StoredRound, q: string) {
@@ -274,7 +293,19 @@ $('#rd-list').addEventListener('click', async (e) => {
   const act = btn.dataset.act;
   btn.disabled = true;
   try {
-    if (act === 'remove') {
+    if (act === 'verify') {
+      if (!card.querySelector('.verify-form')) {
+        card.querySelector('.buttons')!.insertAdjacentHTML('afterend', verifyFormHtml(r));
+      }
+      card.querySelector<HTMLInputElement>('.verify-form input[name="addMins"]')!.focus();
+    } else if (act === 'cancel-verify') {
+      card.querySelector('.verify-form')?.remove();
+    } else if (act === 'unverify') {
+      if (!confirm(`Undo the hand check on ${r.name}'s round? It goes back to its GPX time and stops counting unless the GPX passed.`)) return;
+      const res = await api(`/api/rounds/${id}`, { method: 'PATCH', body: JSON.stringify({ verified: false }), headers: { 'content-type': 'application/json' } });
+      if (!res.ok) throw new Error();
+      await load();
+    } else if (act === 'remove') {
       if (!confirm(`Remove ${r.name}'s round and its evidence? This can't be undone.`)) return;
       await api(`/api/rounds/${id}`, { method: 'DELETE' });
       await load();
@@ -296,6 +327,34 @@ $('#rd-list').addEventListener('click', async (e) => {
     /* 401 already handled; other errors leave the list as it was */
   } finally {
     btn.disabled = false;
+  }
+});
+
+$('#rd-list').addEventListener('submit', async (e) => {
+  const form = (e.target as HTMLElement).closest<HTMLFormElement>('.verify-form');
+  if (!form) return;
+  e.preventDefault();
+  const id = form.closest<HTMLElement>('[data-id]')!.dataset.id!;
+  const data = new FormData(form);
+  const status = form.querySelector<HTMLElement>('.verify-status')!;
+  const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+  submit.disabled = true;
+  status.textContent = 'Saving…';
+  try {
+    const res = await api(`/api/rounds/${id}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ verified: true, addMins: Number(data.get('addMins') || 0), reason: String(data.get('reason') ?? '') }),
+    });
+    if (!res.ok) {
+      status.textContent = ((await res.json().catch(() => ({}))) as { error?: string }).error ?? 'That didn’t save.';
+      return;
+    }
+    await load();
+  } catch {
+    status.textContent = 'That didn’t save.';
+  } finally {
+    submit.disabled = false;
   }
 });
 

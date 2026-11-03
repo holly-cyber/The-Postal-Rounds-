@@ -1,0 +1,38 @@
+---
+/**
+ * Shown only inside an app's built-in browser (Facebook, Instagram, Messenger, WhatsApp and
+ * other Android in-app views). Those browsers can't save or pick files reliably, so a GPX
+ * download or upload silently does nothing. Hidden by default; the script reveals it.
+ */
+interface Props {
+  /** What the visitor is trying to do, e.g. "download the GPX". */
+  task: string;
+}
+const { task } = Astro.props;
+---
+<p class="inapp" data-inapp hidden role="note">
+  <strong>Opened this from Facebook, Instagram or another app?</strong>{' '}Its built-in browser often can’t {task}.
+  Tap the <b aria-hidden="true">⋯</b> menu and choose{' '}<em>Open in browser</em>{' '}(Safari or Chrome), then try again.
+</p>
+
+<script>
+  const ua = navigator.userAgent || '';
+  // FBAN/FBAV: Facebook and Messenger. Instagram, Line, Snapchat, LinkedIn and WhatsApp name themselves.
+  // "; wv)" marks an Android in-app web view.
+  const inApp = /FBAN|FBAV|FB_IAB|Instagram|Line\/|Snapchat|LinkedInApp|WhatsApp|; wv\)/i.test(ua);
+  if (inApp) document.querySelectorAll<HTMLElement>('[data-inapp]').forEach((el) => (el.hidden = false));
+</script>
+
+<style>
+  .inapp {
+    margin: 0.9rem 0 0;
+    padding: 0.75rem 0.9rem;
+    border-left: 4px solid var(--red);
+    border-radius: 8px;
+    background: var(--paper-2);
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .inapp[hidden] { display: none; }
+</style>

@@ -2,6 +2,8 @@
 import Base from '../layouts/Base.astro';
 import PageBanner from '../components/PageBanner.astro';
 import Postmark from '../components/Postmark.astro';
+import GpxHelp from '../components/GpxHelp.astro';
+import InAppNotice from '../components/InAppNotice.astro';
 import { LIMITS, SITE } from '../lib/config.ts';
 import { AGE_GROUPS } from '../lib/rounds.ts';
 
@@ -65,6 +67,8 @@ import { AGE_GROUPS } from '../lib/rounds.ts';
                 <span id="gpx-help">or tap to choose a file. We’ll check it and read your date, time and distance from it.</span>
               </span>
             </label>
+            <InAppNotice task="pick a file from your phone" />
+            <GpxHelp />
             <div class="gpxresult" id="gpxres" aria-live="polite"></div>
           </div>
           <div class="field">

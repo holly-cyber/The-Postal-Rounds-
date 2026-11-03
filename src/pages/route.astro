@@ -8,6 +8,7 @@ import Photo from '../components/Photo.astro';
 import Postmark from '../components/Postmark.astro';
 import { STOP_PHOTOS } from '../lib/photos.ts';
 import { NOTICES, ROUNDS, STOPS } from '../lib/config.ts';
+import InAppNotice from '../components/InAppNotice.astro';
 
 // A download button appears only once the GPX file has been added to public/gpx/.
 const rounds = Object.values(ROUNDS).map((r) => ({
@@ -50,9 +51,12 @@ const rounds = Object.values(ROUNDS).map((r) => ({
                 </dl>
                 <p class="round-summary">{r.summary}</p>
                 {r.hasGpx ? (
-                  <a class="btn red" href={`/gpx/${r.gpxFile}`} download>
-                    Download GPX
-                  </a>
+                  <>
+                    <a class="btn red" href={`/gpx/${r.gpxFile}`} download>
+                      Download GPX
+                    </a>
+                    <InAppNotice task="save the GPX file" />
+                  </>
                 ) : (
                   <p class="soon">GPX download coming soon</p>
                 )}
